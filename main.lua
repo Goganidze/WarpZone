@@ -26,7 +26,10 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
     local player = entity:ToPlayer()
     if player:GetNumCoins() > 0 and inDamage == false and player:HasCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
         inDamage = true
-        player:TakeDamage(amount, damageflags, source, countdownframes)
+        if amount == 1 then
+            player:TakeDamage(amount, damageflags, source, countdownframes)
+        end
+        
         local coinsToLose = math.max(5, math.floor(player:GetNumCoins()/2))
         player:AddCoins(-coinsToLose)
 
@@ -50,12 +53,13 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
     local i=RNG:RandomInt(2)
 
     if i == 1 and player:HasCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
-        Isaac.Spawn(EntityType.ENTITY_PICKUP, 
+        local coin = Isaac.Spawn(EntityType.ENTITY_PICKUP, 
                      PickupVariant.PICKUP_COIN,
                      CoinSubType.COIN_NICKEL,
                      Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
                      Vector(0,0),
                     nil)
+        coin.Timeout = 90
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, WarpZone.spawnCleanAward)
@@ -95,8 +99,6 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
 function WarpZone:usePastkiller()
     local player = Isaac.GetPlayer(0)
     local entities = Isaac.GetRoomEntities()
-
-
 
     Isaac.Spawn(EntityType.ENTITY_PICKUP, 
                      PickupVariant.PICKUP_COLLECTIBLE,
