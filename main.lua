@@ -13,11 +13,30 @@ CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 
 local SfxManager = SFXManager()
 
+
+local function RandomFloatRange(greater)
+    local lower = 0
+    return lower + math.random()  * (greater - lower);
+end
+
+
 function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes)
     local player = entity:ToPlayer()
-    if inDamage == false and player:HasCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
+    if player:GetNumCoins() > 0 and inDamage == false and player:HasCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
         inDamage = true
         player:TakeDamage(amount, damageflags, source, countdownframes)
+        local coinsToLose = math.max(5, math.floor(player:GetNumCoins()/2))
+        player:AddCoins(-coinsToLose)
+
+        local coinsToDrop = math.floor(coinsToLose/2)
+        
+        for i = 1, coinsToDrop do
+            local vel = RandomVector() * (RandomFloatRange(0.5) + 0.5) * 16.0
+            local coin = Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_COIN, CoinSubType.COIN_PENNY, player.Position, vel, player):ToPickup()
+            coin.Timeout = 45 + math.floor(RandomFloatRange(15))
+            coin:GetSprite():SetFrame(math.floor(coinsToDrop - i))
+        end
+        
         inDamage = false
     end
 end
