@@ -7,6 +7,7 @@ local saveData = {}
 local itemsSeen = {}
 
 local inDamage = false
+local tookDamage = false
 
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
@@ -69,8 +70,7 @@ function WarpZone:OnGameStart(isSave)
 
     if not isSave then
         itemsSeen = {}
-
-        local player = Isaac.GetPlayer(0)
+        saveData = {}
     end
 
 end
@@ -87,7 +87,6 @@ function WarpZone:preGameExit()
 
 
 function WarpZone:DebugText()
-    local player = Isaac.GetPlayer(0)
     Isaac.RenderText(debug_str, 100, 60, 1, 1, 1, 255)
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
@@ -112,7 +111,7 @@ function WarpZone:usePastkiller()
         ShowAnim = true
     }
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.Pastkiller, CollectibleType.COLLECTIBLE_PASTKILLER)
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.usePastkiller, CollectibleType.COLLECTIBLE_PASTKILLER)
 
 
 
