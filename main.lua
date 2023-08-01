@@ -6,12 +6,22 @@ local saveData = {}
 
 local itemsSeen = {}
 
+local inDamage = false
 
-CollectibleType.COLLECTIBLE_6D = Isaac.GetItemIdByName("The Sticky D6")
+CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 
 
 local SfxManager = SFXManager()
 
+function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes)
+    local player = entity:ToPlayer()
+    if inDamage == false and player:HasCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
+        inDamage = true
+        player:TakeDamage(amount, damageflags, source, countdownframes)
+        inDamage = false
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.OnTakeHit, EntityType.ENTITY_PLAYER)
 
 
 function WarpZone:OnGameStart(isSave)
