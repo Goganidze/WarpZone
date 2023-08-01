@@ -1,4 +1,4 @@
 <items gfxroot="gfx/items/" version="1">
 	<passive	id="1"	gfx="Collectibles_1_GoldenIdol.png" name="Golden Idol" description="Cursed wealth" quality = "3"/>
-    <active description="Reroll your legacy" gfx="Collectibles_2_The6D.png" id="2" maxcharges="3" name="The Sticky D6" />
+    <active	id="2"	gfx="Collectibles_2_Past_Killer.png" name="Gun that can kill the Past" description="Leave your past behind" maxcharges = 0 quality = "2"/>
 </items>

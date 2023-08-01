@@ -9,6 +9,7 @@ local itemsSeen = {}
 local inDamage = false
 
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
+CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
 
 
 local SfxManager = SFXManager()
@@ -51,7 +52,7 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
         Isaac.Spawn(EntityType.ENTITY_PICKUP, 
                      PickupVariant.PICKUP_COIN,
                      CoinSubType.COIN_NICKEL,
-                     Game():GetRoom():FindFreePickupSpawnPosition(player.Position + Vector(0,-40)),
+                     Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
                      Vector(0,0),
                     nil)
     end
@@ -92,6 +93,26 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
 
 
+function WarpZone:usePastkiller()
+    local player = Isaac.GetPlayer(0)
+    local entities = Isaac.GetRoomEntities()
+
+
+
+    Isaac.Spawn(EntityType.ENTITY_PICKUP, 
+                     PickupVariant.PICKUP_COLLECTIBLE,
+                     CoinSubType.COIN_NICKEL,
+                     Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
+                     Vector(0,0),
+                    nil)
+
+    return {
+        Discharge = false,
+        Remove = true,
+        ShowAnim = true
+    }
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.Pastkiller, CollectibleType.COLLECTIBLE_PASTKILLER)
 
 
 
