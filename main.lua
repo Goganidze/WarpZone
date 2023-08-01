@@ -43,6 +43,23 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.OnTakeHit, EntityType.ENTITY_PLAYER)
 
 
+function WarpZone:spawnCleanAward(RNG, SpawnPosition)
+    local player = Isaac.GetPlayer(0)
+    local i=RNG:RandomInt(2)
+
+    if i == 1 and player:HasCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL) == true then
+        Isaac.Spawn(EntityType.ENTITY_PICKUP, 
+                     PickupVariant.PICKUP_COIN,
+                     CoinSubType.COIN_NICKEL,
+                     Game():GetRoom():FindFreePickupSpawnPosition(player.Position + Vector(0,-40)),
+                     Vector(0,0),
+                    nil)
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, WarpZone.spawnCleanAward)
+
+
+
 function WarpZone:OnGameStart(isSave)
     if WarpZone:HasData()  and isSave then
         saveData = json.decode(WarpZone:LoadData())
