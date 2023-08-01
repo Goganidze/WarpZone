@@ -1,24 +1,11 @@
-local WarpZone  = RegisterMod("MinmaxersAnonymous", 1)
-
+local WarpZone  = RegisterMod("WarpZone", 1)
 local debug_str = "Placeholder"
-local ascending = 0
 local json = require("json")
-local itemPool = Game():GetItemPool()
 
-local lastRoomIndex
-local flashTearsUp = 0
-local fixationVariant = -1
-local fixationType = -1
-
-local bombs = {}
 local saveData = {}
 
 local itemsSeen = {}
 
-
-MINMAXES = {
-    LADDER_VARIANT = Isaac.GetEntityVariantByName("Monkey Bar")
-}
 
 CollectibleType.COLLECTIBLE_6D = Isaac.GetItemIdByName("The Sticky D6")
 
@@ -50,6 +37,7 @@ function WarpZone:preGameExit()
   end
 
   WarpZone:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, WarpZone.preGameExit)
+
 
 function WarpZone:DebugText()
     local player = Isaac.GetPlayer(0)
