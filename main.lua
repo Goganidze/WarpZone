@@ -47,7 +47,7 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
     local player = Isaac.GetPlayer(0)
     local i=RNG:RandomInt(2)
 
-    if i == 1 and player:HasCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL) == true then
+    if i == 1 and player:HasCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
         Isaac.Spawn(EntityType.ENTITY_PICKUP, 
                      PickupVariant.PICKUP_COIN,
                      CoinSubType.COIN_NICKEL,
