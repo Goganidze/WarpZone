@@ -2,6 +2,7 @@
 	<Pool Name="treasure">
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
 		<Item Name="Gun that can kill the Past" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Rusty Spoon" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="curse">
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -12,6 +13,7 @@
 	<Pool Name="greedTreasure">
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
 		<Item Name="Gun that can kill the Past" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Rusty Spoon" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="greedCurse">
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -24,5 +26,11 @@
     </Pool>
 	<Pool Name="greedBoss">
         <Item Name="Birthday Cake" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+    </Pool>
+    <Pool Name="rottenBeggar">
+        <Item Name="Rusty Spoon" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+    </Pool>
+    <Pool Name="craneGame">
+        <Item Name="Rusty Spoon" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 </ItemPools>

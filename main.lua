@@ -10,14 +10,22 @@ local poolsTaken = {}
 local inDamage = false
 local tookDamage = false
 
+local myRNG = RNG()
+myRNG:SetSeed(Random(), 1)
+local pickupindex = RNG():RandomInt(10000) + 10000 --this makes it like a 1 in 10,000 chance there's any collision with existing pedestals
+
 local itemPool = Game():GetItemPool()
 
 local game = Game()
 local hud = game:GetHUD()
 
+local rustColor = Color(.68, .21, .1, 1, 0, 0, 0)
+local lastIsRusty = false
+
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
 CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE = Isaac.GetItemIdByName("Birthday Cake")
+CollectibleType.COLLECTIBLE_RUSTY_SPOON = Isaac.GetItemIdByName("Rusty Spoon")
 
 local SfxManager = SFXManager()
 
@@ -57,8 +65,8 @@ WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.OnTakeHit, Entity
 function WarpZone:spawnCleanAward(RNG, SpawnPosition)
     local player = Isaac.GetPlayer(0)
     local i=RNG:RandomInt(2)
-
-    if i == 1 and player:HasCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
+    local room = Game():GetRoom():GetType() == RoomType.ROOM_BOSS
+    if (i == 1 or room) and player:HasCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
         local coin = Isaac.Spawn(EntityType.ENTITY_PICKUP, 
                      PickupVariant.PICKUP_COIN,
                      CoinSubType.COIN_NICKEL,
@@ -66,6 +74,15 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
                      Vector(0,0),
                     nil)
         coin.Timeout = 90
+        if room then
+            local coin2 = Isaac.Spawn(EntityType.ENTITY_PICKUP, 
+                     PickupVariant.PICKUP_COIN,
+                     CoinSubType.COIN_NICKEL,
+                     Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
+                     Vector(0,0),
+                    nil)
+            coin2.Timeout = 90
+        end
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, WarpZone.spawnCleanAward)
@@ -134,7 +151,7 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, WarpZone.LevelStart)
 function WarpZone:usePastkiller(collectible, rng, entityplayer, useflags, activeslot, customvardata)
 
     local player =  entityplayer:ToPlayer()
-    debug_str = tostring(player.ControllerIndex)
+    --debug_str = tostring(player.ControllerIndex)
  
     
     local shift = 0
@@ -156,7 +173,6 @@ function WarpZone:usePastkiller(collectible, rng, entityplayer, useflags, active
 
 
     local pos = Game():GetRoom():GetCenterPos() + Vector(-180, -100)
-    local pickupindex = RNG():RandomInt(10000) + 10000 --this makes it like a 1 in 10,000 chance there's any collision with existing pedestals
     local pool
     local item_removed
 
@@ -220,3 +236,42 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, WarpZone.EvaluateCache)
+
+
+function WarpZone:checkTear(entitytear)
+    local tear = entitytear:ToTear()
+    local player = Isaac.GetPlayer(0)
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) then
+        local chance = player.Luck * 5 + 5
+        local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_RUSTY_SPOON)
+        if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
+            chance = chance + 15
+        end
+        local chance_num = rng:RandomInt(100)
+        if chance_num < chance then
+            tear:GetData().Is_Rusty = true
+            tear:GetData().BleedIt = true
+        end
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_INIT, WarpZone.checkTear)
+
+
+function WarpZone:updateTear(entitytear)
+    local tear = entitytear:ToTear()
+    if tear:GetData().Is_Rusty == true then
+        tear:GetData().Is_Rusty = false
+        tear:AddTearFlags(TearFlags.TEAR_HOMING)
+        local sprite_tear = tear:GetSprite()
+        sprite_tear.Color = rustColor
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, WarpZone.updateTear)
+
+function WarpZone:hitEnemy(entitytear, collider, low)
+    local tear = entitytear:ToTear()
+    if collider:IsEnemy() and tear:GetData().BleedIt == true then
+        collider:AddEntityFlags(EntityFlag.FLAG_BLEED_OUT)
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, WarpZone.hitEnemy)
