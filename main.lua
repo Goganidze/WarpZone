@@ -4,10 +4,16 @@ local json = require("json")
 
 local saveData = {}
 
-local itemsSeen = {}
+local itemsTaken = {}
+local poolsTaken = {}
 
 local inDamage = false
 local tookDamage = false
+
+local itemPool = Game():GetItemPool()
+
+local game = Game()
+local hud = game:GetHUD()
 
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
@@ -29,7 +35,7 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
         if amount == 1 then
             player:TakeDamage(amount, damageflags, source, countdownframes)
         end
-        
+
         local coinsToLose = math.max(5, math.floor(player:GetNumCoins()/2))
         player:AddCoins(-coinsToLose)
 
@@ -69,11 +75,13 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, WarpZone.spawnCleanA
 function WarpZone:OnGameStart(isSave)
     if WarpZone:HasData()  and isSave then
         saveData = json.decode(WarpZone:LoadData())
-        itemsSeen = saveData[1]
+        itemsTaken = saveData[1]
+        poolsTaken = saveData[2]
     end
 
     if not isSave then
-        itemsSeen = {}
+        itemsTaken = {}
+        poolsTaken = {}
         saveData = {}
     end
 
@@ -82,7 +90,8 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, WarpZone.OnGameStart)
 
 
 function WarpZone:preGameExit()
-    saveData[1] = itemsSeen
+    saveData[1] = itemsTaken
+    saveData[2] = poolsTaken
     local jsonString = json.encode(saveData)
     WarpZone:SaveData(jsonString)
   end
@@ -91,21 +100,64 @@ function WarpZone:preGameExit()
 
 
 function WarpZone:DebugText()
-    Isaac.RenderText(debug_str, 100, 60, 1, 1, 1, 255)
+    local player = Isaac.GetPlayer(0)
+    local coords = player.Position
+    Isaac.RenderText(tostring(coords.X) .. " , " .. tostring(coords.Y), 100, 60, 1, 1, 1, 255)
+
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
 
 
-function WarpZone:usePastkiller()
-    local player = Isaac.GetPlayer(0)
-    local entities = Isaac.GetRoomEntities()
+function WarpZone:usePastkiller(collectible, rng, entityplayer, useflags, activeslot, customvardata)
 
-    Isaac.Spawn(EntityType.ENTITY_PICKUP, 
-                     PickupVariant.PICKUP_COLLECTIBLE,
-                     CoinSubType.COIN_NICKEL,
-                     Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
-                     Vector(0,0),
-                    nil)
+    local player =  entityplayer:ToPlayer()
+    debug_str = tostring(player.ControllerIndex)
+ 
+    
+    local shift = 0
+    for i, item_tag in ipairs(itemsTaken) do
+        if player:HasCollectible(item_tag) == false then
+            table.remove(itemsTaken, i-shift)
+            table.remove(poolsTaken, i-shift)
+            shift = shift + 1
+        end
+    end
+
+    if #itemsTaken < 3 then
+        return {
+            Discharge = false,
+            Remove = false,
+            ShowAnim = false
+        }
+    end
+
+
+    local pos = Game():GetRoom():GetCenterPos() + Vector(-180, -100)
+    print(tostring(pos.X) .. " ! " .. tostring(pos.Y))
+    local pickupindex = RNG():RandomInt(10000) + 10000 --this makes it like a 3 in 10,000 chance there's any collision with existing pedestals
+    local pool
+    local item_removed
+
+
+    for j = 1, 3 do
+        pickupindex = pickupindex + 1
+        pool = table.remove(poolsTaken, 1)
+        item_removed  = table.remove(itemsTaken, 1)
+        player:RemoveCollectible(item_removed)
+        for i = 1, 3 do
+            print(tostring((pos + Vector(90 * i, 60 * j)).X) .. " , " .. tostring((pos + Vector(90 * i, 60 * j)).Y))
+            local pedestal = Isaac.Spawn(EntityType.ENTITY_PICKUP,
+                        PickupVariant.PICKUP_COLLECTIBLE,
+                        itemPool:GetCollectible(pool),
+                        Game():GetRoom():FindFreePickupSpawnPosition(pos + Vector(90 * i, 60 * j)),
+                        Vector(0,0),
+                        nil)
+            pedestal:ToPickup().OptionsPickupIndex = pickupindex
+        end
+    end
+    
+    SfxManager:Play(SoundEffect.SOUND_GFUEL_AIR_HORN, 1)
+    SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT_SPREAD, 4)
 
     return {
         Discharge = false,
@@ -116,5 +168,22 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.usePastkiller, CollectibleType.COLLECTIBLE_PASTKILLER)
 
 
-
+function WarpZone:OnPickupCollide(entity, Collider, Low)
+    local player = Collider:ToPlayer()
+    if player == nil then
+        return nil
+    end
+    
+    if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant == PickupVariant.PICKUP_COLLECTIBLE) and entity:ToPickup():GetData().Logged ~= true then
+        local config = Isaac.GetItemConfig():GetCollectible(entity.SubType)
+        entity:ToPickup():GetData().Logged = true
+        local pool = Game():GetItemPool():GetLastPool()
+        if config.Type ~= ItemType.ITEM_ACTIVE then
+            table.insert(itemsTaken, entity.SubType)
+            table.insert(poolsTaken, pool)
+        end
+    end
+    return nil
+end
+WarpZone:AddCallback(ModCallbacks.MC_PRE_PICKUP_COLLISION, WarpZone.OnPickupCollide)
 
