@@ -214,9 +214,9 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
 
     if Cache == CacheFlag.CACHE_FIREDELAY then
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BINGE_EATER) then
-            cakeBingeBonus = entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE)
+            cakeBingeBonus = entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE) * 2
         end
-        EntityPlayer.MaxFireDelay = math.max(5, (EntityPlayer.MaxFireDelay - cakeBingeBonus))
+        entityplayer.MaxFireDelay = math.max(5, (entityplayer.MaxFireDelay - cakeBingeBonus))
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, WarpZone.EvaluateCache)
