@@ -17,7 +17,7 @@ local hud = game:GetHUD()
 
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
-
+CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE = Isaac.GetItemIdByName("Birthday Cake")
 
 local SfxManager = SFXManager()
 
@@ -107,6 +107,29 @@ function WarpZone:DebugText()
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
 
+function WarpZone:LevelStart()
+    local player = Isaac.GetPlayer(0)
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE) then
+        local spawnArray = {PickupVariant.PICKUP_BOMB, PickupVariant.PICKUP_COIN, PickupVariant.PICKUP_HEART, PickupVariant.PICKUP_KEY}
+
+        if RNG():RandomInt(2) == 1 then
+            table.insert(spawnArray, PickupVariant.PICKUP_PILL)
+        else
+            table.insert(spawnArray, PickupVariant.PICKUP_TAROTCARD)
+        end
+
+        for i, spawn_type in ipairs(spawnArray) do
+            Isaac.Spawn(EntityType.ENTITY_PICKUP,
+                        spawn_type,
+                        0,
+                        Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
+                        Vector(0,0),
+                        nil)
+        end
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, WarpZone.LevelStart)
+
 
 function WarpZone:usePastkiller(collectible, rng, entityplayer, useflags, activeslot, customvardata)
 
@@ -133,7 +156,7 @@ function WarpZone:usePastkiller(collectible, rng, entityplayer, useflags, active
 
 
     local pos = Game():GetRoom():GetCenterPos() + Vector(-180, -100)
-    local pickupindex = RNG():RandomInt(10000) + 10000 --this makes it like a 3 in 10,000 chance there's any collision with existing pedestals
+    local pickupindex = RNG():RandomInt(10000) + 10000 --this makes it like a 1 in 10,000 chance there's any collision with existing pedestals
     local pool
     local item_removed
 
@@ -183,5 +206,17 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
     end
     return nil
 end
+
 WarpZone:AddCallback(ModCallbacks.MC_PRE_PICKUP_COLLISION, WarpZone.OnPickupCollide)
 
+function WarpZone:EvaluateCache(entityplayer, Cache)
+    local cakeBingeBonus = 0
+
+    if Cache == CacheFlag.CACHE_FIREDELAY then
+        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BINGE_EATER) then
+            cakeBingeBonus = entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE)
+        end
+        EntityPlayer.MaxFireDelay = math.max(5, (EntityPlayer.MaxFireDelay - cakeBingeBonus))
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, WarpZone.EvaluateCache)
