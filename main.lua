@@ -26,6 +26,7 @@ CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
 CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE = Isaac.GetItemIdByName("Birthday Cake")
 CollectibleType.COLLECTIBLE_RUSTY_SPOON = Isaac.GetItemIdByName("Rusty Spoon")
+CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK = Isaac.GetItemIdByName("Newgrounds Tank")
 
 local SfxManager = SFXManager()
 
@@ -38,6 +39,16 @@ end
 
 function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes)
     local player = entity:ToPlayer()
+
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK) then
+        local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK)
+        if rng:RandomInt(10) == 1 then
+            SfxManager:Play(SoundEffect.SOUND_SCYTHE_BREAK)
+            player:SetMinDamageCooldown(60)
+            return false
+        end
+    end
+
     if player:GetNumCoins() > 0 and inDamage == false and player:HasCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
         inDamage = true
         if amount == 1 then
@@ -228,12 +239,38 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_PICKUP_COLLISION, WarpZone.OnPickupColl
 function WarpZone:EvaluateCache(entityplayer, Cache)
     local cakeBingeBonus = 0
 
+    local tank_qty =  entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK)
+
     if Cache == CacheFlag.CACHE_FIREDELAY then
+        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK) then
+            entityplayer.MaxFireDelay = math.max(5, (entityplayer.MaxFireDelay - tank_qty))
+        end
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BINGE_EATER) then
             cakeBingeBonus = entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE) * 2
         end
         entityplayer.MaxFireDelay = math.max(5, (entityplayer.MaxFireDelay - cakeBingeBonus))
     end
+
+    if Cache == CacheFlag.CACHE_DAMAGE then
+        entityplayer.Damage = entityplayer.Damage + (0.5 * tank_qty)
+    end
+
+    if Cache == CacheFlag.CACHE_RANGE then
+        entityplayer.TearRange = entityplayer.TearRange + (1.5 * tank_qty)
+    end
+
+    if Cache == CacheFlag.CACHE_LUCK then
+        entityplayer.Luck = entityplayer.Luck + tank_qty
+    end
+
+    if Cache == CacheFlag.CACHE_SPEED then
+        entityplayer.MoveSpeed = entityplayer.MoveSpeed - (tank_qty * .3)
+    end
+
+    if Cache == CacheFlag.CACHE_SHOTSPEED then
+        entityplayer.ShotSpeed = entityplayer.ShotSpeed + (tank_qty * .16)
+    end
+
 end
 WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, WarpZone.EvaluateCache)
 
