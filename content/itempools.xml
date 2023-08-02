@@ -19,4 +19,10 @@
 	<Pool Name="greedSecret">
         <Item Name="Gun that can kill the Past" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
+	<Pool Name="boss">
+        <Item Name="Birthday Cake" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+    </Pool>
+	<Pool Name="greedBoss">
+        <Item Name="Birthday Cake" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+    </Pool>
 </ItemPools>
