@@ -102,7 +102,7 @@ function WarpZone:preGameExit()
 function WarpZone:DebugText()
     local player = Isaac.GetPlayer(0)
     local coords = player.Position
-    Isaac.RenderText(tostring(coords.X) .. " , " .. tostring(coords.Y), 100, 60, 1, 1, 1, 255)
+    --Isaac.RenderText(debug_str, 100, 60, 1, 1, 1, 255)
 
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
@@ -133,7 +133,6 @@ function WarpZone:usePastkiller(collectible, rng, entityplayer, useflags, active
 
 
     local pos = Game():GetRoom():GetCenterPos() + Vector(-180, -100)
-    print(tostring(pos.X) .. " ! " .. tostring(pos.Y))
     local pickupindex = RNG():RandomInt(10000) + 10000 --this makes it like a 3 in 10,000 chance there's any collision with existing pedestals
     local pool
     local item_removed
@@ -145,7 +144,6 @@ function WarpZone:usePastkiller(collectible, rng, entityplayer, useflags, active
         item_removed  = table.remove(itemsTaken, 1)
         player:RemoveCollectible(item_removed)
         for i = 1, 3 do
-            print(tostring((pos + Vector(90 * i, 60 * j)).X) .. " , " .. tostring((pos + Vector(90 * i, 60 * j)).Y))
             local pedestal = Isaac.Spawn(EntityType.ENTITY_PICKUP,
                         PickupVariant.PICKUP_COLLECTIBLE,
                         itemPool:GetCollectible(pool),
