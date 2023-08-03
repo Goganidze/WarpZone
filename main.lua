@@ -79,6 +79,45 @@ local function findFreeTile(pos)
     end
 end
 
+function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
+    if entity:IsVulnerableEnemy() then
+        local player_ =  Isaac.GetPlayer(0)
+        local source_entity = source.Entity
+
+        if source_entity and source_entity:GetData().FocusIndicator == nil and
+            (CollectibleType.COLLECTIBLE_FOCUS == player_:GetActiveItem() or
+            CollectibleType.COLLECTIBLE_FOCUS_2 == player_:GetActiveItem() or
+            CollectibleType.COLLECTIBLE_FOCUS_3 == player_:GetActiveItem() or
+            CollectibleType.COLLECTIBLE_FOCUS_4 == player_:GetActiveItem()
+            )
+        then
+            totalFocusDamage = totalFocusDamage + math.min(amount, entity.HitPoints)
+            local chargeMax = (Game():GetLevel():GetStage() * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
+            local chargesToSet = math.floor((20 * totalFocusDamage)/chargeMax)
+            local chargeThreshold = 20
+            if player_:HasCollectible(CollectibleType.COLLECTIBLE_BATTERY) then
+                chargeThreshold = 40
+            end
+            local pastCharge = player_:GetActiveCharge()
+            local newCharge = math.min(chargeThreshold, chargesToSet)
+            print()
+            if pastCharge <= 3  and 3 < newCharge and newCharge <= 10 then
+                player_:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_2, newCharge, false, ActiveSlot.SLOT_PRIMARY)
+            elseif pastCharge <= 10 and 10 < newCharge and newCharge <= 19 then
+                player_:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_3, newCharge, false, ActiveSlot.SLOT_PRIMARY)
+            elseif pastCharge <=19 and newCharge and newCharge >= 20 then
+                player_:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_4, newCharge, false, ActiveSlot.SLOT_PRIMARY)
+                SfxManager:Play(SoundEffect.SOUND_BATTERYCHARGE)
+            else
+                player_:SetActiveCharge(newCharge)
+            end
+        end
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.EnemyHit)
+
+
+
 function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes)
     local player = entity:ToPlayer()
     if player == nil then
@@ -478,34 +517,7 @@ function WarpZone:hitEnemy(entitytear, collider, low)
         collider:AddEntityFlags(EntityFlag.FLAG_BLEED_OUT)
     end
 
-    if collider:IsEnemy() and tear:GetData().FocusIndicator == nil and 
-    (CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() or
-    CollectibleType.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
-    CollectibleType.COLLECTIBLE_FOCUS_3 == player:GetActiveItem() or
-    CollectibleType.COLLECTIBLE_FOCUS_4 == player:GetActiveItem()
-)
-    then
-        totalFocusDamage = totalFocusDamage + math.min(tear.CollisionDamage, collider.HitPoints)
-        local chargeMax = (Game():GetLevel():GetStage() * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
-        local chargesToSet = math.floor((20 * totalFocusDamage)/chargeMax)
-        local chargeThreshold = 20
-        if player:HasCollectible(CollectibleType.COLLECTIBLE_BATTERY) then
-            chargeThreshold = 40
-        end
-        local pastCharge = player:GetActiveCharge()
-        local newCharge = math.min(chargeThreshold, chargesToSet)
-        print()
-        if pastCharge <= 3  and 3 < newCharge and newCharge <= 10 then
-            player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_2, newCharge, false, ActiveSlot.SLOT_PRIMARY)
-        elseif pastCharge <= 10 and 10 < newCharge and newCharge <= 19 then
-            player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_3, newCharge, false, ActiveSlot.SLOT_PRIMARY)
-        elseif pastCharge <=19 and newCharge and newCharge >= 20 then
-            player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_4, newCharge, false, ActiveSlot.SLOT_PRIMARY)
-            SfxManager:Play(SoundEffect.SOUND_BATTERYCHARGE)
-        else
-            player:SetActiveCharge(newCharge)
-        end
-    end
+    
 
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, WarpZone.hitEnemy)
