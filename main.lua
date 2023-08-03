@@ -16,6 +16,8 @@ local pickupindex = RNG():RandomInt(10000) + 10000 --this makes it like a 1 in 1
 
 local itemPool = Game():GetItemPool()
 
+local FocusChargeMultiplier = 2.5
+
 local game = Game()
 local hud = game:GetHUD()
 
@@ -27,6 +29,9 @@ whiteColor:SetColorize(1, 1, 1, 1)
 whiteColor:SetTint(20, 20, 20, 2)
 local primeShot = false
 
+local totalFocusDamage = 0
+
+
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
 CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE = Isaac.GetItemIdByName("Birthday Cake")
@@ -34,6 +39,9 @@ CollectibleType.COLLECTIBLE_RUSTY_SPOON = Isaac.GetItemIdByName("Rusty Spoon")
 CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK = Isaac.GetItemIdByName("Newgrounds Tank")
 CollectibleType.COLLECTIBLE_GREED_BUTT = Isaac.GetItemIdByName("Greed Butt")
 CollectibleType.COLLECTIBLE_FOCUS = Isaac.GetItemIdByName("Focus")
+CollectibleType.COLLECTIBLE_FOCUS_2 = Isaac.GetItemIdByName(" Focus ")
+CollectibleType.COLLECTIBLE_FOCUS_3 = Isaac.GetItemIdByName("  Focus  ")
+CollectibleType.COLLECTIBLE_FOCUS_4 = Isaac.GetItemIdByName("   Focus   ")
 
 local SfxManager = SFXManager()
 
@@ -228,6 +236,15 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
 
 function WarpZone:LevelStart()
     local player = Isaac.GetPlayer(0)
+    if totalFocusDamage > 0 and (CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() or
+    CollectibleType.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
+    CollectibleType.COLLECTIBLE_FOCUS_3 == player:GetActiveItem() or
+    CollectibleType.COLLECTIBLE_FOCUS_4 == player:GetActiveItem()) then
+        local one_unit_full_charge = (Game():GetLevel():GetStage() * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
+        local one_unit_full_charge_prev = (math.min(Game():GetLevel():GetStage()-1, 1) * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
+        totalFocusDamage = totalFocusDamage * (one_unit_full_charge/one_unit_full_charge_prev)
+    end
+
     if player:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE) then
         local spawnArray = {PickupVariant.PICKUP_BOMB, PickupVariant.PICKUP_COIN, PickupVariant.PICKUP_HEART, PickupVariant.PICKUP_KEY}
 
@@ -311,14 +328,31 @@ function WarpZone:UseFocus(collectible, rng, entityplayer, useflags, activeslot,
 
     if not player:HasFullHearts() then
         player:AddHearts(2)
-        SfxManager:Play(SoundEffect.SOUND_DEATH_CARD, 2)
+        SfxManager:Play(SoundEffect.SOUND_DEATH_CARD, 3)
     else
-        SfxManager:Play(SoundEffect.SOUND_VAMP_GULP, 2)
+        SfxManager:Play(SoundEffect.SOUND_ANGEL_WING, 2)
         primeShot = true
     end
 
+    local one_unit_full_charge = (Game():GetLevel():GetStage() * FocusChargeMultiplier * 40) + FocusChargeMultiplier * 60
+    local adjustedcharge = 0
+
+    if player:GetActiveCharge() >= 20 then
+        adjustedcharge = player:GetActiveCharge() - 20
+        totalFocusDamage = math.floor(one_unit_full_charge * (adjustedcharge/20))
+    else
+        totalFocusDamage = 0
+    end
+
+    player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS, adjustedcharge, false, activeslot)
+
+    return {
+        Discharge = false,
+        Remove = false,
+        ShowAnim = true
+    }
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseFocus, CollectibleType.COLLECTIBLE_FOCUS)
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseFocus, CollectibleType.COLLECTIBLE_FOCUS_4)
 
 
 function WarpZone:OnPickupCollide(entity, Collider, Low)
@@ -396,9 +430,10 @@ function WarpZone:checkTear(entitytear)
         end
     end
     if CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() and primeShot then
-        SfxManager:Play(SoundEffect.SOUND_BLACK_POOF, 2)
+        SfxManager:Play(SoundEffect.SOUND_EXPLOSION_WEAK, 3)
         primeShot = false
         tear:GetData().FocusShot = true
+        tear:GetData().FocusIndicator = true
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_INIT, WarpZone.checkTear)
@@ -432,9 +467,42 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, WarpZone.updateTear)
 
 function WarpZone:hitEnemy(entitytear, collider, low)
+    local player = Isaac.GetPlayer(0)
+
     local tear = entitytear:ToTear()
+
     if collider:IsEnemy() and tear:GetData().BleedIt == true then
         collider:AddEntityFlags(EntityFlag.FLAG_BLEED_OUT)
     end
+
+    if collider:IsEnemy() and tear:GetData().FocusIndicator == nil and 
+    (CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() or
+    CollectibleType.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
+    CollectibleType.COLLECTIBLE_FOCUS_3 == player:GetActiveItem() or
+    CollectibleType.COLLECTIBLE_FOCUS_4 == player:GetActiveItem()
+)
+    then
+        totalFocusDamage = totalFocusDamage + math.min(tear.CollisionDamage, collider.HitPoints)
+        local chargeMax = (Game():GetLevel():GetStage() * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
+        local chargesToSet = math.floor((20 * totalFocusDamage)/chargeMax)
+        local chargeThreshold = 20
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_BATTERY) then
+            chargeThreshold = 40
+        end
+        local pastCharge = player:GetActiveCharge()
+        local newCharge = math.min(chargeThreshold, chargesToSet)
+        print()
+        if pastCharge <= 3  and 3 < newCharge and newCharge <= 10 then
+            player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_2, newCharge, false, ActiveSlot.SLOT_PRIMARY)
+        elseif pastCharge <= 10 and 10 < newCharge and newCharge <= 19 then
+            player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_3, newCharge, false, ActiveSlot.SLOT_PRIMARY)
+        elseif pastCharge <=19 and newCharge and newCharge >= 20 then
+            player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_4, newCharge, false, ActiveSlot.SLOT_PRIMARY)
+            SfxManager:Play(SoundEffect.SOUND_BATTERYCHARGE)
+        else
+            player:SetActiveCharge(newCharge)
+        end
+    end
+
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, WarpZone.hitEnemy)
