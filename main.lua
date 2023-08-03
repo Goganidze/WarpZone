@@ -42,7 +42,7 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
 
     if player:HasCollectible(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK) then
         local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK)
-        if rng:RandomInt(10) == 1 then
+        if rng:RandomInt(10) == 1 and  damageflags & DamageFlag.DAMAGE_NO_PENALTIES ~= DamageFlag.DAMAGE_NO_PENALTIES then
             SfxManager:Play(SoundEffect.SOUND_SCYTHE_BREAK)
             player:SetMinDamageCooldown(60)
             return false
