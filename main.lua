@@ -22,12 +22,18 @@ local hud = game:GetHUD()
 local rustColor = Color(.68, .21, .1, 1, 0, 0, 0)
 local lastIsRusty = false
 
+local whiteColor = Color(1, 1, 1, 1, 0, 0, 0)
+whiteColor:SetColorize(1, 1, 1, 1)
+whiteColor:SetTint(20, 20, 20, 2)
+local primeShot = false
+
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
 CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE = Isaac.GetItemIdByName("Birthday Cake")
 CollectibleType.COLLECTIBLE_RUSTY_SPOON = Isaac.GetItemIdByName("Rusty Spoon")
 CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK = Isaac.GetItemIdByName("Newgrounds Tank")
 CollectibleType.COLLECTIBLE_GREED_BUTT = Isaac.GetItemIdByName("Greed Butt")
+CollectibleType.COLLECTIBLE_FOCUS = Isaac.GetItemIdByName("Focus")
 
 local SfxManager = SFXManager()
 
@@ -300,13 +306,27 @@ function WarpZone:usePastkiller(collectible, rng, entityplayer, useflags, active
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.usePastkiller, CollectibleType.COLLECTIBLE_PASTKILLER)
 
+function WarpZone:UseFocus(collectible, rng, entityplayer, useflags, activeslot, customvardata)
+    local player =  entityplayer:ToPlayer()
+
+    if not player:HasFullHearts() then
+        player:AddHearts(2)
+        SfxManager:Play(SoundEffect.SOUND_DEATH_CARD, 2)
+    else
+        SfxManager:Play(SoundEffect.SOUND_VAMP_GULP, 2)
+        primeShot = true
+    end
+
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseFocus, CollectibleType.COLLECTIBLE_FOCUS)
+
 
 function WarpZone:OnPickupCollide(entity, Collider, Low)
     local player = Collider:ToPlayer()
     if player == nil then
         return nil
     end
-    
+
     if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant == PickupVariant.PICKUP_COLLECTIBLE) and entity:ToPickup():GetData().Logged ~= true then
         local config = Isaac.GetItemConfig():GetCollectible(entity.SubType)
         entity:ToPickup():GetData().Logged = true
@@ -364,7 +384,7 @@ function WarpZone:checkTear(entitytear)
     local tear = entitytear:ToTear()
     local player = Isaac.GetPlayer(0)
     if player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) then
-        local chance = player.Luck * 5 + 5
+        local chance = player.Luck * 5 + 10
         local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_RUSTY_SPOON)
         if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
             chance = chance + 15
@@ -374,6 +394,11 @@ function WarpZone:checkTear(entitytear)
             tear:GetData().Is_Rusty = true
             tear:GetData().BleedIt = true
         end
+    end
+    if CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() and primeShot then
+        SfxManager:Play(SoundEffect.SOUND_BLACK_POOF, 2)
+        primeShot = false
+        tear:GetData().FocusShot = true
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_INIT, WarpZone.checkTear)
@@ -386,6 +411,22 @@ function WarpZone:updateTear(entitytear)
         tear:AddTearFlags(TearFlags.TEAR_HOMING)
         local sprite_tear = tear:GetSprite()
         sprite_tear.Color = rustColor
+    elseif tear:GetData().FocusShot == true then
+        tear:GetData().FocusShot = false
+        tear:AddTearFlags(TearFlags.TEAR_PIERCING)
+        tear:AddTearFlags(TearFlags.TEAR_SPECTRAL)
+        tear:AddTearFlags(TearFlags.TEAR_DARK_MATTER)
+        
+        --tear.Velocity.X = math.max(tear.Velocity.X * 1.5, 20)
+        --tear.Velocity.Y = math.max(tear.Velocity.Y * 1.5, 20)
+        tear.Velocity = tear.Velocity * Vector(1.5, 1.5)
+        
+        local sprite_tear = tear:GetSprite()
+        sprite_tear.Color = whiteColor
+
+        tear.Scale = tear.Scale * 3.5
+        tear.CollisionDamage = tear.CollisionDamage + 185
+        tear:ResetSpriteScale()
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, WarpZone.updateTear)
