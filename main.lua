@@ -204,12 +204,14 @@ function WarpZone:OnGameStart(isSave)
         saveData = json.decode(WarpZone:LoadData())
         itemsTaken = saveData[1]
         poolsTaken = saveData[2]
+        totalFocusDamage = saveData[3]
     end
 
     if not isSave then
         itemsTaken = {}
         poolsTaken = {}
         saveData = {}
+        totalFocusDamage = 0
     end
 
 end
@@ -219,6 +221,7 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, WarpZone.OnGameStart)
 function WarpZone:preGameExit()
     saveData[1] = itemsTaken
     saveData[2] = poolsTaken
+    saveData[3] = totalFocusDamage
     local jsonString = json.encode(saveData)
     WarpZone:SaveData(jsonString)
   end
