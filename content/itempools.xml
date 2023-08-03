@@ -9,6 +9,7 @@
     </Pool>
 	<Pool Name="secret">
 		<Item Name="Gun that can kill the Past" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Greed Butt" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
 	</Pool>
 	<Pool Name="greedTreasure">
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -20,6 +21,9 @@
     </Pool>
 	<Pool Name="greedSecret">
         <Item Name="Gun that can kill the Past" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+    </Pool>
+    <Pool Name="shop">
+        <Item Name="Greed Butt" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="boss">
         <Item Name="Birthday Cake" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>

@@ -27,6 +27,7 @@ CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kil
 CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE = Isaac.GetItemIdByName("Birthday Cake")
 CollectibleType.COLLECTIBLE_RUSTY_SPOON = Isaac.GetItemIdByName("Rusty Spoon")
 CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK = Isaac.GetItemIdByName("Newgrounds Tank")
+CollectibleType.COLLECTIBLE_GREED_BUTT = Isaac.GetItemIdByName("Greed Butt")
 
 local SfxManager = SFXManager()
 
@@ -37,15 +38,99 @@ local function RandomFloatRange(greater)
 end
 
 
+local function findFreeTile(pos)
+    local room = Game():GetRoom()
+    local idx = type(pos) == 'number' and pos or room:GetGridIndex(pos)
+    local w = room:GetGridWidth()
+    if room:GetGridEntity(idx) == nil or room:GetGridEntity(idx).State == 4 then
+        return idx
+    elseif room:GetGridEntity(idx - 1) == nil or room:GetGridEntity(idx - 1).State == 4 then
+        return idx - 1
+    elseif room:GetGridEntity(idx + 1) == nil or room:GetGridEntity(idx + 1).State == 4 then
+        return idx + 1
+    elseif room:GetGridEntity(idx - w) == nil or room:GetGridEntity(idx - w).State == 4 then
+        return idx - w
+    elseif room:GetGridEntity(idx + w) == nil or room:GetGridEntity(idx + w).State == 4 then
+        return idx + w
+    elseif room:GetGridEntity(idx - w - 1) == nil or room:GetGridEntity(idx - w - 1).State == 4 then
+        return idx - w - 1
+    elseif room:GetGridEntity(idx + w - 1) == nil or room:GetGridEntity(idx + w - 1).State == 4 then
+        return idx + w - 1
+    elseif room:GetGridEntity(idx - w + 1) == nil or room:GetGridEntity(idx - w + 1).State == 4 then
+        return idx - w + 1
+    elseif room:GetGridEntity(idx + w + 1) == nil or room:GetGridEntity(idx + w + 1).State == 4 then
+        return idx + w + 1
+    else
+        return false
+    end
+end
+
 function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes)
     local player = entity:ToPlayer()
-
+    if player == nil then
+        return
+    end
+    
     if player:HasCollectible(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK) then
         local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK)
         if rng:RandomInt(10) == 1 and  damageflags & DamageFlag.DAMAGE_NO_PENALTIES ~= DamageFlag.DAMAGE_NO_PENALTIES then
             SfxManager:Play(SoundEffect.SOUND_SCYTHE_BREAK)
             player:SetMinDamageCooldown(60)
             return false
+        end
+    end
+
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_GREED_BUTT) and source ~= nil then
+        local source_entity = source.Entity
+        if source_entity ~= nil and (source_entity:IsEnemy() or (source_entity.Type == EntityType.ENTITY_PROJECTILE and source_entity.Variant ~= ProjectileVariant.PROJECTILE_FIRE)) then
+            local direction = player:GetHeadDirection()
+            local sourcePosition = source_entity.Position
+            local playerPosition = player.Position
+            
+            local vectorSum = playerPosition - sourcePosition
+            
+            local backstab = false
+            local coinvelocity
+            local velConstant = 16
+
+            if math.abs(vectorSum.X) > math.abs(vectorSum.Y) then
+                if (vectorSum.X > 0  and direction == Direction.RIGHT) then
+                    backstab = true
+                    coinvelocity = Vector(-velConstant, 0)
+                elseif (vectorSum.X < 0  and direction == Direction.LEFT) then
+                    backstab = true
+                    coinvelocity = Vector(velConstant, 0)
+                end
+            elseif math.abs(vectorSum.X) < math.abs(vectorSum.Y) then
+                if  (vectorSum.Y > 0  and direction == Direction.DOWN) then
+                    backstab = true
+                    coinvelocity = Vector(0, -velConstant)
+                elseif (vectorSum.Y < 0  and direction == Direction.UP) then
+                    backstab = true
+                    coinvelocity = Vector(0, velConstant)
+                end
+            end
+            if backstab == true then
+                local gb_rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_GREED_BUTT)
+                local benchmark = gb_rng:RandomInt(100)
+                if benchmark < 4 then
+                    local id = findFreeTile(player.Position)
+                    if id ~= false then
+                        Game():GetRoom():SpawnGridEntity(id, GridEntityType.GRID_POOP, 3, gb_rng:Next(), 0)
+                        SfxManager:Play(SoundEffect.SOUND_FART, 1.0, 0, false, 1.0)
+                    end
+                else
+                    Isaac.Spawn(EntityType.ENTITY_PICKUP,
+                        PickupVariant.PICKUP_COIN,
+                        0,
+                        Game():GetRoom():FindFreePickupSpawnPosition(player.Position),
+                        coinvelocity,
+                        nil)
+                    player:UseActiveItem(CollectibleType.COLLECTIBLE_BEAN)
+                    player:UseActiveItem(CollectibleType.COLLECTIBLE_BUTTER_BEAN)
+                end
+            end
+
         end
     end
 
