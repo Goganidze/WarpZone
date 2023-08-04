@@ -26,6 +26,7 @@
     </Pool>
     <Pool Name="shop">
         <Item Name="Greed Butt" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="The Doorway" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="boss">
         <Item Name="Birthday Cake" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
