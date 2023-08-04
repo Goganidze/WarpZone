@@ -36,10 +36,8 @@ local primeShot = false
 local totalFocusDamage = 0
 
 --doorway
-local DoorwayFloor = 1
-local currentStage = Game():GetLevel():GetStage()
-local doors
-local allopen = false
+local DoorwayFloor = -1
+
 
 
 --item defintions
@@ -53,6 +51,7 @@ CollectibleType.COLLECTIBLE_FOCUS = Isaac.GetItemIdByName("Focus")
 CollectibleType.COLLECTIBLE_FOCUS_2 = Isaac.GetItemIdByName(" Focus ")
 CollectibleType.COLLECTIBLE_FOCUS_3 = Isaac.GetItemIdByName("  Focus  ")
 CollectibleType.COLLECTIBLE_FOCUS_4 = Isaac.GetItemIdByName("   Focus   ")
+CollectibleType.COLLECTIBLE_DOORWAY = Isaac.GetItemIdByName("The Doorway")
 
 local SfxManager = SFXManager()
 
@@ -304,7 +303,7 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
 
 function WarpZone:LevelStart()
-    currentStage = Game():GetLevel():GetStage()
+    local currentStage = Game():GetLevel():GetStage()
     local player = Isaac.GetPlayer(0)
     if totalFocusDamage > 0 and (CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() or
     CollectibleType.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
@@ -341,6 +340,14 @@ function WarpZone:NewRoom()
     local player = Isaac.GetPlayer(0)
     local room = Game():GetRoom()
     if Game():GetLevel():GetStage() == DoorwayFloor or true then
+        if room:GetType() == RoomType.ROOM_BOSS then
+            room:TrySpawnDevilRoomDoor(false, true)
+            if Game():GetLevel():GetStage() == LevelStage.STAGE3_2 then
+                room:TrySpawnBossRushDoor()
+            elseif Game():GetLevel():GetStage() == LevelStage.STAGE4_2 and Game():GetLevel():GetStageType() < 3 then
+                room:TrySpawnBlueWombDoor()
+            end
+        end
         for i = 0, 7 do
             local door = room:GetDoor(i)
             if door then -- if it isnt nil, then
@@ -445,6 +452,85 @@ function WarpZone:UseFocus(collectible, rng, entityplayer, useflags, activeslot,
     }
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseFocus, CollectibleType.COLLECTIBLE_FOCUS_4)
+
+function WarpZone:UseDoorway(collectible, rng, entityplayer, useflags, activeslot, customvardata)
+    local room = Game():GetRoom()
+    local currentLevel = Game():GetLevel()
+    currentLevel:DisableDevilRoom()
+    entityplayer:UseActiveItem(CollectibleType.COLLECTIBLE_DADS_KEY)
+    DoorwayFloor = currentLevel:GetStage()
+    currentLevel:ApplyBlueMapEffect()
+    
+
+
+    local rooms = currentLevel:GetRooms()
+
+    print(#rooms)
+    for i=1, #rooms, 1 do
+
+        if rooms:Get(i) and rooms:Get(i).Data and rooms:Get(i).Data.Type == RoomType.ROOM_ULTRASECRET then
+            local newindex = rooms:Get(i).GridIndex
+            local room_obj = currentLevel:GetRoomByIdx(rooms:Get(i).GridIndex)
+            room_obj.DisplayFlags = 101
+            local x = (newindex % 13)
+            local y = (math.floor(newindex / 13))
+            local unlocked = false
+            if x > 1 then
+                local test_room = currentLevel:GetRoomByIdx(newindex-2, 0)
+                if test_room.Data ~= nil then
+                    currentLevel:MakeRedRoomDoor(newindex-2, DoorSlot.RIGHT0)
+                    currentLevel:MakeRedRoomDoor(newindex-1, DoorSlot.RIGHT0)
+                    unlocked = true
+                    for j = x, 12, 1 do
+                        currentLevel:MakeRedRoomDoor((y*13) + j, DoorSlot.RIGHT0)
+                    end
+                end
+            end
+            if x < 11 and not unlocked then
+                local test_room = currentLevel:GetRoomByIdx(newindex+2, 0)
+                if test_room.Data ~= nil then
+                    currentLevel:MakeRedRoomDoor(newindex+2, DoorSlot.LEFT0)
+                    currentLevel:MakeRedRoomDoor(newindex+1, DoorSlot.LEFT0)
+                    unlocked = true
+                    for j = x, 0, -1 do
+                        currentLevel:MakeRedRoomDoor((y*13) + j, DoorSlot.LEFT0)
+                    end
+                end
+            end
+            if y > 1 and not unlocked then
+                local test_room = currentLevel:GetRoomByIdx(newindex-26, 0)
+                if test_room.Data ~= nil then
+                    currentLevel:MakeRedRoomDoor(newindex-26, DoorSlot.DOWN0)
+                    currentLevel:MakeRedRoomDoor(newindex-13, DoorSlot.DOWN0)
+                    unlocked = true
+                    for j = y, 12, 1 do
+                        currentLevel:MakeRedRoomDoor(x + (13 * j), DoorSlot.DOWN0)
+                    end
+                end
+            end
+            if y < 11 and not unlocked then
+                local test_room = currentLevel:GetRoomByIdx(newindex+26, 0)
+                if test_room.Data ~= nil then
+                    currentLevel:MakeRedRoomDoor(newindex+26, DoorSlot.UP0)
+                    currentLevel:MakeRedRoomDoor(newindex+13, DoorSlot.UP0)
+                    unlocked = true
+                    for j = y, 0, -1 do
+                        currentLevel:MakeRedRoomDoor(x + (13 * j), DoorSlot.UP0)
+                    end
+                end
+            end
+        end
+    end
+
+    currentLevel:ApplyCompassEffect(true)
+    currentLevel:ApplyMapEffect()
+    return {
+        Discharge = false,
+        Remove = true,
+        ShowAnim = true
+    }
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseDoorway, CollectibleType.COLLECTIBLE_DOORWAY)
 
 
 function WarpZone:OnPickupCollide(entity, Collider, Low)
@@ -594,3 +680,5 @@ function WarpZone:OnFrame(entityplayer)
         end
     end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, WarpZone.OnFrame)
+
+--disable devil room
