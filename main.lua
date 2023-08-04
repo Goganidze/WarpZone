@@ -19,7 +19,7 @@ local inDamage = false
 
 --pastkiller
 local pickupindex = RNG():RandomInt(10000) + 10000 --this makes it like a 1 in 10,000 chance there's any collision with existing pedestals
-local itemPool = Game():GetItemPool()
+local itemPool = game:GetItemPool()
 
 
 --rusty spoon
@@ -90,19 +90,6 @@ local function findFreeTile(pos)
 end
 
 
-local function GetGridEntities()
-    ---@type GridEntity[]
-    local gridEntities = {}
-    local room = Game():GetRoom()
-      
-    for i = 0, room:GetGridSize() - 1, 1 do
-        local gridEntity = room:GetGridEntity(i)
-      
-        gridEntities[#gridEntities+1] = gridEntity
-    end
-    return gridEntities
-end
-doors = GetGridEntities()
 
  --callbacks
 function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
@@ -681,5 +668,3 @@ function WarpZone:OnFrame(entityplayer)
         end
     end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, WarpZone.OnFrame)
-
---disable devil room
