@@ -465,7 +465,6 @@ function WarpZone:UseDoorway(collectible, rng, entityplayer, useflags, activeslo
 
     local rooms = currentLevel:GetRooms()
 
-    print(#rooms)
     for i=1, #rooms, 1 do
 
         if rooms:Get(i) and rooms:Get(i).Data and rooms:Get(i).Data.Type == RoomType.ROOM_ULTRASECRET then
@@ -521,7 +520,7 @@ function WarpZone:UseDoorway(collectible, rng, entityplayer, useflags, activeslo
             end
         end
     end
-
+    currentLevel:RemoveCurses(LevelCurse.CURSE_OF_MAZE)
     currentLevel:ApplyCompassEffect(true)
     currentLevel:ApplyMapEffect()
     return {
