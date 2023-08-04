@@ -9,5 +9,6 @@
     <active	id="8" gfx="Collectibles_7_Focus_frame3.png" name="  Focus  " description="Take their SOUL" maxcharges = "20" chargetype = "special" quality="2"/>
     <active	id="9" gfx="Collectibles_7_Focus_frame2.png" name=" Focus " description="Take their SOUL" maxcharges = "20" chargetype = "special" quality="2"/>
     <active	id="10" gfx="Collectibles_7_Focus_frame1.png" name="Focus" description="Take their SOUL" maxcharges = "20" chargetype = "special" quality="2"/>
+    <active	id="11" gfx="Collectibles_11_The_Doorway.png" name="The Doorway" description="Opens ALL doors" maxcharges = "0" quality="3"/>
 
 </items>

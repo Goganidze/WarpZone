@@ -1,37 +1,48 @@
+--basic data
+local game = Game()
 local WarpZone  = RegisterMod("WarpZone", 1)
 local debug_str = "Placeholder"
 local json = require("json")
+local myRNG = RNG()
+myRNG:SetSeed(Random(), 1)
 
+----------------------------------
+--save data
 local saveData = {}
-
 local itemsTaken = {}
 local poolsTaken = {}
 
+
+-----------------------------------
+--golden idol
 local inDamage = false
-local tookDamage = false
 
-local myRNG = RNG()
-myRNG:SetSeed(Random(), 1)
+--pastkiller
 local pickupindex = RNG():RandomInt(10000) + 10000 --this makes it like a 1 in 10,000 chance there's any collision with existing pedestals
-
 local itemPool = Game():GetItemPool()
 
-local FocusChargeMultiplier = 2.5
 
-local game = Game()
-local hud = game:GetHUD()
-
+--rusty spoon
 local rustColor = Color(.68, .21, .1, 1, 0, 0, 0)
 local lastIsRusty = false
 
+
+--focus
+local FocusChargeMultiplier = 2.5
 local whiteColor = Color(1, 1, 1, 1, 0, 0, 0)
 whiteColor:SetColorize(1, 1, 1, 1)
 whiteColor:SetTint(20, 20, 20, 2)
 local primeShot = false
-
 local totalFocusDamage = 0
 
+--doorway
+local DoorwayFloor = 1
+local currentStage = Game():GetLevel():GetStage()
+local doors
+local allopen = false
 
+
+--item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
 CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE = Isaac.GetItemIdByName("Birthday Cake")
@@ -45,7 +56,7 @@ CollectibleType.COLLECTIBLE_FOCUS_4 = Isaac.GetItemIdByName("   Focus   ")
 
 local SfxManager = SFXManager()
 
-
+--util functions
 local function RandomFloatRange(greater)
     local lower = 0
     return lower + math.random()  * (greater - lower);
@@ -79,6 +90,22 @@ local function findFreeTile(pos)
     end
 end
 
+
+local function GetGridEntities()
+    ---@type GridEntity[]
+    local gridEntities = {}
+    local room = Game():GetRoom()
+      
+    for i = 0, room:GetGridSize() - 1, 1 do
+        local gridEntity = room:GetGridEntity(i)
+      
+        gridEntities[#gridEntities+1] = gridEntity
+    end
+    return gridEntities
+end
+doors = GetGridEntities()
+
+ --callbacks
 function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
     if entity:IsVulnerableEnemy() then
         local player_ =  Isaac.GetPlayer(0)
@@ -100,7 +127,7 @@ function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
             end
             local pastCharge = player_:GetActiveCharge()
             local newCharge = math.min(chargeThreshold, chargesToSet)
-            print()
+
             if pastCharge <= 3  and 3 < newCharge and newCharge <= 10 then
                 player_:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_2, newCharge, false, ActiveSlot.SLOT_PRIMARY)
             elseif pastCharge <= 10 and 10 < newCharge and newCharge <= 19 then
@@ -277,6 +304,7 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
 
 function WarpZone:LevelStart()
+    currentStage = Game():GetLevel():GetStage()
     local player = Isaac.GetPlayer(0)
     if totalFocusDamage > 0 and (CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() or
     CollectibleType.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
@@ -308,6 +336,28 @@ function WarpZone:LevelStart()
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, WarpZone.LevelStart)
 
+
+function WarpZone:NewRoom()
+    local player = Isaac.GetPlayer(0)
+    local room = Game():GetRoom()
+    if Game():GetLevel():GetStage() == DoorwayFloor or true then
+        for i = 0, 7 do
+            local door = room:GetDoor(i)
+            if door then -- if it isnt nil, then
+              local doorEntity = door:ToDoor()
+            if doorEntity:IsLocked() then
+                doorEntity:TryUnlock(player, true)
+            end
+            if not doorEntity:IsOpen() then
+                doorEntity:Open()
+            end
+              
+              room:DestroyGrid(door:GetGridIndex(), true)
+            end
+          end
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, WarpZone.NewRoom)
 
 function WarpZone:usePastkiller(collectible, rng, entityplayer, useflags, activeslot, customvardata)
 
@@ -521,3 +571,26 @@ function WarpZone:hitEnemy(entitytear, collider, low)
 
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, WarpZone.hitEnemy)
+
+
+function WarpZone:OnFrame(entityplayer)
+    local player = Isaac.GetPlayer(0)
+        local room = Game():GetRoom()
+        if Game():GetLevel():GetStage() == DoorwayFloor or true then
+            for i = 0, 7 do
+                local door = room:GetDoor(i)
+                if door then -- if it isnt nil, then
+                local doorEntity = door:ToDoor()
+                if doorEntity:IsLocked() then
+                    doorEntity:TryUnlock(player, true)
+                end
+                if not doorEntity:IsOpen() then
+                    doorEntity:Open()
+                end
+                
+                room:DestroyGrid(door:GetGridIndex(), true)
+                end
+            end
+        end
+    end
+WarpZone:AddCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, WarpZone.OnFrame)
