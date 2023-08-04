@@ -339,7 +339,7 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, WarpZone.LevelStart)
 function WarpZone:NewRoom()
     local player = Isaac.GetPlayer(0)
     local room = Game():GetRoom()
-    if Game():GetLevel():GetStage() == DoorwayFloor or true then
+    if Game():GetLevel():GetStage() == DoorwayFloor then
         if room:GetType() == RoomType.ROOM_BOSS then
             room:TrySpawnDevilRoomDoor(false, true)
             if Game():GetLevel():GetStage() == LevelStage.STAGE3_2 then
@@ -663,7 +663,7 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, WarpZone.hitEnemy)
 function WarpZone:OnFrame(entityplayer)
     local player = Isaac.GetPlayer(0)
         local room = Game():GetRoom()
-        if Game():GetLevel():GetStage() == DoorwayFloor or true then
+        if Game():GetLevel():GetStage() == DoorwayFloor then
             for i = 0, 7 do
                 local door = room:GetDoor(i)
                 if door then -- if it isnt nil, then
