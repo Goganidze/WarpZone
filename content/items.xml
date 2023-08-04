@@ -1,5 +1,5 @@
 <items gfxroot="gfx/items/" version="1">
-    <passive id="1"	gfx="Collectibles_1_GoldenIdol.png" name="Golden Idol" description="Cursed wealth" quality="3"/>
+    <passive id="1"	gfx="Collectibles_1_GoldenIdol.png" name="Golden Idol" description="Cursed wealth" quality="2"/>
     <active	id="2" gfx="Collectibles_2_Past_Killer.png" name="Gun that can kill the Past" description="Leave your past behind" maxcharges = "0" quality="2"/>
     <passive id="3"	gfx="Collectibles_3_Birthday_Cake.png" name="Birthday Cake" description="Happy me!" maxhearts="2" hearts="4" tags="food nolostbr nocantrip" quality = "2"/>
     <passive id="4"	gfx="Collectibles_4_Rusty_Spoon.png" name="Rusty Spoon" description="You like touching them..." cache="tearcolor" tags="offensive" quality="2"/>
