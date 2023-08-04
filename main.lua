@@ -257,6 +257,7 @@ function WarpZone:OnGameStart(isSave)
         itemsTaken = saveData[1]
         poolsTaken = saveData[2]
         totalFocusDamage = saveData[3]
+        DoorwayFloor = saveData[4]
     end
 
     if not isSave then
@@ -264,6 +265,7 @@ function WarpZone:OnGameStart(isSave)
         poolsTaken = {}
         saveData = {}
         totalFocusDamage = 0
+        DoorwayFloor = 0
     end
 
 end
@@ -274,6 +276,7 @@ function WarpZone:preGameExit()
     saveData[1] = itemsTaken
     saveData[2] = poolsTaken
     saveData[3] = totalFocusDamage
+    saveData[4] = DoorwayFloor
     local jsonString = json.encode(saveData)
     WarpZone:SaveData(jsonString)
   end
@@ -464,44 +467,52 @@ function WarpZone:UseDoorway(collectible, rng, entityplayer, useflags, activeslo
             if x > 1 then
                 local test_room = currentLevel:GetRoomByIdx(newindex-2, 0)
                 if test_room.Data ~= nil then
-                    currentLevel:MakeRedRoomDoor(newindex-2, DoorSlot.RIGHT0)
+                    local success = currentLevel:MakeRedRoomDoor(newindex-2, DoorSlot.RIGHT0)
                     currentLevel:MakeRedRoomDoor(newindex-1, DoorSlot.RIGHT0)
-                    unlocked = true
-                    for j = x, 12, 1 do
-                        currentLevel:MakeRedRoomDoor((y*13) + j, DoorSlot.RIGHT0)
+                    if success then
+                        unlocked = true
+                        for j = x, 12, 1 do
+                            currentLevel:MakeRedRoomDoor((y*13) + j, DoorSlot.RIGHT0)
+                        end
                     end
                 end
             end
             if x < 11 and not unlocked then
                 local test_room = currentLevel:GetRoomByIdx(newindex+2, 0)
                 if test_room.Data ~= nil then
-                    currentLevel:MakeRedRoomDoor(newindex+2, DoorSlot.LEFT0)
+                    local success = currentLevel:MakeRedRoomDoor(newindex+2, DoorSlot.LEFT0)
                     currentLevel:MakeRedRoomDoor(newindex+1, DoorSlot.LEFT0)
-                    unlocked = true
-                    for j = x, 0, -1 do
-                        currentLevel:MakeRedRoomDoor((y*13) + j, DoorSlot.LEFT0)
+                    if success then
+                        unlocked = true
+                        for j = x, 0, -1 do
+                            currentLevel:MakeRedRoomDoor((y*13) + j, DoorSlot.LEFT0)
+                        end
                     end
                 end
             end
             if y > 1 and not unlocked then
                 local test_room = currentLevel:GetRoomByIdx(newindex-26, 0)
                 if test_room.Data ~= nil then
-                    currentLevel:MakeRedRoomDoor(newindex-26, DoorSlot.DOWN0)
+                    local success = currentLevel:MakeRedRoomDoor(newindex-26, DoorSlot.DOWN0)
                     currentLevel:MakeRedRoomDoor(newindex-13, DoorSlot.DOWN0)
-                    unlocked = true
-                    for j = y, 12, 1 do
-                        currentLevel:MakeRedRoomDoor(x + (13 * j), DoorSlot.DOWN0)
+                    if success then
+                        unlocked = true
+                        for j = y, 12, 1 do
+                            currentLevel:MakeRedRoomDoor(x + (13 * j), DoorSlot.DOWN0)
+                        end
                     end
                 end
             end
             if y < 11 and not unlocked then
                 local test_room = currentLevel:GetRoomByIdx(newindex+26, 0)
                 if test_room.Data ~= nil then
-                    currentLevel:MakeRedRoomDoor(newindex+26, DoorSlot.UP0)
+                    local success = currentLevel:MakeRedRoomDoor(newindex+26, DoorSlot.UP0)
                     currentLevel:MakeRedRoomDoor(newindex+13, DoorSlot.UP0)
-                    unlocked = true
-                    for j = y, 0, -1 do
-                        currentLevel:MakeRedRoomDoor(x + (13 * j), DoorSlot.UP0)
+                    if success then
+                        unlocked = true
+                        for j = y, 0, -1 do
+                            currentLevel:MakeRedRoomDoor(x + (13 * j), DoorSlot.UP0)
+                        end
                     end
                 end
             end
