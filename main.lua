@@ -559,13 +559,15 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
     local tank_qty =  entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK)
 
     if Cache == CacheFlag.CACHE_FIREDELAY then
+        local maxFireDelay = math.min(5, entityplayer.MaxFireDelay)
+
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK) then
-            entityplayer.MaxFireDelay = math.max(5, (entityplayer.MaxFireDelay - tank_qty))
+            entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - tank_qty
         end
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BINGE_EATER) then
             cakeBingeBonus = entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE) * 2
         end
-        entityplayer.MaxFireDelay = math.max(5, (entityplayer.MaxFireDelay - cakeBingeBonus))
+        entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - cakeBingeBonus
     end
 
     if Cache == CacheFlag.CACHE_DAMAGE then
