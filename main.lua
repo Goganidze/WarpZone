@@ -280,7 +280,7 @@ local function findGridEntityResponse(position)
     if bestTask and bestTask.distance <= 2500 then
         hud:ShowItemText(bestTask.blurb, "", false)
         baba_active = bestTask.active
-        print(tostring(bestTask.typevar) .. "~~" .. tostring(bestTask.distance))
+        SfxManager:Play(SoundEffect.SOUND_THUMBSUP, 2)
     else
         SfxManager:Play(SoundEffect.SOUND_BOSS2INTRO_ERRORBUZZ, 2)
     end
