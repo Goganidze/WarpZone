@@ -8,6 +8,7 @@
     </Pool>
 	<Pool Name="curse">
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Nightmare Tick" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="secret">
 		<Item Name="Gun that can kill the Past" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -21,6 +22,7 @@
     </Pool>
 	<Pool Name="greedCurse">
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Nightmare Tick" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="greedSecret">
         <Item Name="Gun that can kill the Past" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -47,5 +49,11 @@
     </Pool>
     <Pool Name="greedAngel">
         <Item Name="Focus" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+    </Pool>
+    <Pool Name="ultraSecret">
+        <Item Name="Nightmare Tick" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+    </Pool>
+    <Pool Name="redChest">
+        <Item Name="Nightmare Tick" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 </ItemPools>

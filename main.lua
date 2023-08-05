@@ -44,6 +44,10 @@ local blinkTime = 10
 local baba_active = nil
 local timeSinceTheSpacebarWasLastPressed = 0
 
+--nightmare tick
+local roomsClearedSinceTake = -1
+local itemsSucked = 0
+
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
@@ -58,6 +62,7 @@ CollectibleType.COLLECTIBLE_FOCUS_4 = Isaac.GetItemIdByName("   Focus   ")
 CollectibleType.COLLECTIBLE_DOORWAY = Isaac.GetItemIdByName("The Doorway")
 CollectibleType.COLLECTIBLE_STRANGE_MARBLE = Isaac.GetItemIdByName("Strange Marble")
 CollectibleType.COLLECTIBLE_IS_YOU = Isaac.GetItemIdByName("Is You")
+CollectibleType.COLLECTIBLE_NIGHTMARE_TICK = Isaac.GetItemIdByName("Nightmare Tick")
 
 local SfxManager = SFXManager()
 
@@ -606,6 +611,40 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
             coin2.Timeout = 90
         end
     end
+
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
+        roomsClearedSinceTake = roomsClearedSinceTake + 1
+        local roomsToSuck = math.max(8 - (2 * player:GetCollectibleNum(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK)), 1)
+        if roomsClearedSinceTake % roomsToSuck == 0 then
+            local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK)
+            local shift = 0
+            for j, item_tag in ipairs(itemsTaken) do
+                if player:HasCollectible(item_tag) == false then
+                    table.remove(itemsTaken, j-shift)
+                    table.remove(poolsTaken, j-shift)
+                    shift = shift + 1
+                end
+            end
+            
+            local pos_to_delete = rng:RandomInt(#itemsTaken) + 1
+            local config = Isaac.GetItemConfig():GetCollectible(itemsTaken[pos_to_delete])
+            if (itemsTaken[pos_to_delete] == CollectibleType.COLLECTIBLE_NIGHTMARE_TICK or (config.Tags & ItemConfig.TAG_QUEST == ItemConfig.TAG_QUEST)) and #itemsTaken > 1 then
+                pos_to_delete = (pos_to_delete % #itemsTaken) + 1
+            end
+            
+            config = Isaac.GetItemConfig():GetCollectible(itemsTaken[pos_to_delete])
+            if itemsTaken[pos_to_delete] ~= CollectibleType.COLLECTIBLE_NIGHTMARE_TICK and (config.Tags & ItemConfig.TAG_QUEST ~= ItemConfig.TAG_QUEST) then
+                local item_del = table.remove(itemsTaken, pos_to_delete)
+                table.remove(poolsTaken, pos_to_delete)
+                player:RemoveCollectible(item_del)
+                itemsSucked = itemsSucked + 1
+                player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
+                player:EvaluateItems()
+                SfxManager:Play(SoundEffect.SOUND_THUMBS_DOWN)
+                SfxManager:Play(SoundEffect.SOUND_BOSS_BUG_HISS)
+            end
+        end
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, WarpZone.spawnCleanAward)
 
@@ -618,6 +657,8 @@ function WarpZone:OnGameStart(isSave)
         poolsTaken = saveData[2]
         totalFocusDamage = saveData[3]
         DoorwayFloor = saveData[4]
+        roomsClearedSinceTake = saveData[5]
+        itemsSucked = saveData[6]
     end
 
     if not isSave then
@@ -626,6 +667,8 @@ function WarpZone:OnGameStart(isSave)
         saveData = {}
         totalFocusDamage = 0
         DoorwayFloor = -1
+        roomsClearedSinceTake = -1
+        itemsSucked = 0
     end
 
 end
@@ -637,6 +680,8 @@ function WarpZone:preGameExit()
     saveData[2] = poolsTaken
     saveData[3] = totalFocusDamage
     saveData[4] = DoorwayFloor
+    saveData[5] = roomsClearedSinceTake
+    saveData[6] = itemsSucked
     local jsonString = json.encode(saveData)
     WarpZone:SaveData(jsonString)
   end
@@ -970,6 +1015,10 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
 
     if Cache == CacheFlag.CACHE_DAMAGE then
         entityplayer.Damage = entityplayer.Damage + (0.5 * tank_qty)
+
+        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
+            entityplayer.Damage = entityplayer.Damage + (itemsSucked * 0.5)
+        end
     end
 
     if Cache == CacheFlag.CACHE_RANGE then
