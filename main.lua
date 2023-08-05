@@ -52,6 +52,7 @@ CollectibleType.COLLECTIBLE_FOCUS_2 = Isaac.GetItemIdByName(" Focus ")
 CollectibleType.COLLECTIBLE_FOCUS_3 = Isaac.GetItemIdByName("  Focus  ")
 CollectibleType.COLLECTIBLE_FOCUS_4 = Isaac.GetItemIdByName("   Focus   ")
 CollectibleType.COLLECTIBLE_DOORWAY = Isaac.GetItemIdByName("The Doorway")
+CollectibleType.COLLECTIBLE_STRANGE_MARBLE = Isaac.GetItemIdByName("Strange Marble")
 
 local SfxManager = SFXManager()
 
@@ -89,6 +90,129 @@ local function findFreeTile(pos)
     end
 end
 
+--if this ever makes it to workshop credit to catinsurance, holy shit
+local ChampionsToLoot = {
+        [ChampionColor.RED] = function (ref, rng)
+            local npc = ref.Entity
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_HEART, 0, npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.YELLOW] = function (ref, rng)
+            local npc = ref.Entity
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_LIL_BATTERY, 0, npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.GREEN] = function (ref, rng)
+            ---@type EntityNPC
+            local npc = ref.Entity
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_PILL, PillColor.PILL_NULL, npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.ORANGE] = function (ref, rng)
+            local npc = ref.Entity
+            for _ = 0, 1 do
+                Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_COIN, 0, npc.Position, Vector(0, 0), npc)
+            end
+        end,
+        [ChampionColor.BLUE] = function (ref, rng, playerRef)
+            local npc = ref.Entity
+            ---@type EntityPlayer
+            local player = playerRef.Entity:ToPlayer() 
+            player:AddBlueFlies(3, player.Position, player)
+        end,
+        [ChampionColor.BLACK] = function (ref, rng)
+            local npc = ref.Entity
+            Isaac.Explode(npc.Position, npc, 100)
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_BOMB, 0, npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.WHITE] = function (ref, rng)
+            local npc = ref.Entity
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_HEART, HeartSubType.HEART_ETERNAL, npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.GREY] = function (ref, rng)
+            local npc = ref.Entity
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_KEY, 0, npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.TRANSPARENT] = function (ref, rng)
+            local npc = ref.Entity
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_LOCKEDCHEST, ChestSubType.CHEST_CLOSED, npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.FLICKER] = function (ref, rng)
+            local npc = ref.Entity
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_REDCHEST, ChestSubType.CHEST_CLOSED, npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.PINK] = function (ref, rng)
+            local npc = ref.Entity
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TAROTCARD, Game():GetItemPool():GetCard(rng:GetSeed(), true, false, false), npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.PURPLE] = function (ref, rng)
+            local npc = ref.Entity
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, 0, npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.DARK_RED] = function (ref, rng)
+            local npc = ref.Entity
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_HEART, HeartSubType.HEART_DOUBLEPACK, npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.LIGHT_BLUE] = function (ref, rng)
+            local npc = ref.Entity
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_HEART, HeartSubType.HEART_HALF, npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.CAMO] = function (ref, rng)
+            local npc = ref.Entity
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TAROTCARD, Game():GetItemPool():GetCard(rng:GetSeed(), false, true, true), npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.PULSE_GREEN] = function (ref, rng)
+            local npc = ref.Entity
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_COIN, 0, npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.PULSE_GREY] = function (ref, rng)
+            local npc = ref.Entity
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_HEART, HeartSubType.HEART_BLENDED, npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.FLY_PROTECTED] = function (ref, rng, playerRef)
+            local npc = ref.Entity
+            ---@type EntityPlayer
+            local player = playerRef.Entity:ToPlayer()
+            for i = 0, 2 do
+                player:AddBlueSpider(player.Position)
+            end
+        end,
+        [ChampionColor.TINY] = function (ref, rng)
+            local npc = ref.Entity
+            local pool = Game():GetItemPool()
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_PILL, pool:ForceAddPillEffect(PillEffect.PILLEFFECT_SMALLER), npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.GIANT] = function (ref, rng)
+            local npc = ref.Entity
+            local pool = Game():GetItemPool()
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_PILL, pool:ForceAddPillEffect(PillEffect.PILLEFFECT_LARGER), npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.PULSE_RED] = function (ref, rng)
+            local npc = ref.Entity
+            Game():SpawnParticles(npc.Position, EffectVariant.PLAYER_CREEP_RED, 10, 0, Color(1, 0, 0, 1, 0, 0, 0), 0)
+        end,
+        [ChampionColor.SIZE_PULSE] = function (ref, rng, playerRef)
+            local npc = ref.Entity
+            local player = playerRef.Entity:ToPlayer()
+            for i = 0, 1 do
+                Isaac.Spawn(EntityType.ENTITY_FAMILIAR, FamiliarVariant.BLUE_FLY, LocustSubtypes.LOCUST_OF_WRATH, player.Position, Vector(0, 0), player)
+            end
+        end,
+        [ChampionColor.KING] = function (ref, rng)
+            local npc = ref.Entity
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_COIN, CoinSubType.COIN_DIME, npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.DEATH] = function (ref, rng)
+            local npc = ref.Entity
+           Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_HEART, HeartSubType.HEART_BLACK, npc.Position, Vector(0, 0), npc)
+        end,
+        [ChampionColor.BROWN] = function (ref, rng)
+            local npc = ref.Entity
+            Game():Fart(npc.Position)
+        end,
+        [ChampionColor.RAINBOW] = function (ref, rng)
+            local npc = ref.Entity
+            local game = Game()
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_HEART, HeartSubType.HEART_BONE, npc.Position, Vector(0, 0), npc)
+        end
+    }
 
 
  --callbacks
@@ -679,3 +803,26 @@ function WarpZone:OnFrame(entityplayer)
         end
     end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, WarpZone.OnFrame)
+
+function WarpZone:OnEntitySpawn(npc)
+    local player = Isaac.GetPlayer(0)
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_STRANGE_MARBLE) then
+        local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_STRANGE_MARBLE)
+        if not npc:IsChampion() and not npc:IsBoss() and rng:RandomInt(8) == 1 then
+            npc:MakeChampion(rng:GetSeed())
+        end
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_NPC_INIT, WarpZone.OnEntitySpawn)
+
+
+function WarpZone:OnEntityDeath(npc)
+    local player = Isaac.GetPlayer(0)
+    if npc:IsEnemy() and npc:IsChampion() and player:HasCollectible(CollectibleType.COLLECTIBLE_STRANGE_MARBLE) then
+        local championColor = npc:GetChampionColorIdx()
+        print(championColor)
+        local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_STRANGE_MARBLE)
+        ChampionsToLoot[championColor](EntityRef(npc), rng, EntityRef(player))
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_NPC_DEATH, WarpZone.OnEntityDeath)
