@@ -5,7 +5,7 @@ local debug_str = "Placeholder"
 local json = require("json")
 local myRNG = RNG()
 myRNG:SetSeed(Random(), 1)
-
+local hud = game:GetHUD()
 ----------------------------------
 --save data
 local saveData = {}
@@ -38,7 +38,11 @@ local totalFocusDamage = 0
 --doorway
 local DoorwayFloor = -1
 
-
+--is you
+local reticle
+local blinkTime = 10
+local baba_active = nil
+local timeSinceTheSpacebarWasLastPressed = 0
 
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
@@ -53,6 +57,7 @@ CollectibleType.COLLECTIBLE_FOCUS_3 = Isaac.GetItemIdByName("  Focus  ")
 CollectibleType.COLLECTIBLE_FOCUS_4 = Isaac.GetItemIdByName("   Focus   ")
 CollectibleType.COLLECTIBLE_DOORWAY = Isaac.GetItemIdByName("The Doorway")
 CollectibleType.COLLECTIBLE_STRANGE_MARBLE = Isaac.GetItemIdByName("Strange Marble")
+CollectibleType.COLLECTIBLE_IS_YOU = Isaac.GetItemIdByName("Is You")
 
 local SfxManager = SFXManager()
 
@@ -62,6 +67,224 @@ local function RandomFloatRange(greater)
     return lower + math.random()  * (greater - lower);
 end
 
+local function tableContains(table_, value, removeValue)
+    removeValue = removeValue or false
+    local i = 1
+    local contains = false
+    local index = -1
+
+    if #table_ > 0 then
+        repeat if (table_[i] == value) then contains = true end i = i + 1 until(i == #table_+1)
+        i = 1
+        repeat if (table_[i] == value) then index = i end i = i + 1 until(i == #table_+1)
+    end
+
+    if removeValue and #table_ > 0 and index >= 0 then
+        table.remove(table_, index)
+    end
+
+    return contains
+end
+
+local function findGridEntityResponse(position)
+    local room = Game():GetRoom()
+    local bestTask
+    local floor = Game():GetLevel():GetStage()
+    local floortype = Game():GetLevel():GetStageType()
+    for i=1, room:GetGridSize() do
+        local ge = room:GetGridEntity(i)
+        if ge and ge.State ~= 2 then
+            local t
+            local geType = ge.Desc.Type
+            if geType == GridEntityType.GRID_ROCKT or
+                geType == GridEntityType.GRID_ROCK_SS or
+                geType == GridEntityType.GRID_ROCK then
+                t = {
+                    blurb = "ROCK IS YOU",
+                    position = ge.Position,
+                    active = CollectibleType.COLLECTIBLE_MOMS_BRACELET,
+                    typevar = tostring(geType) .. "~~" .. tostring(ge.Desc.Variant)
+                }
+            elseif geType == GridEntityType.GRID_PRESSURE_PLATE then
+                t = {
+                    blurb = "BUTTON IS YOU",
+                    position = ge.Position,
+                    active = CollectibleType.COLLECTIBLE_TELEPORT,
+                    typevar = tostring(geType) .. "~~" .. tostring(ge.Desc.Variant)
+                }
+            elseif geType == GridEntityType.GRID_STATUE and ge.Desc.Variant == 1 or (geType == GridEntityType.GRID_POOP and ge.Desc.Variant == 6) then -- Angel
+                t = {
+                    blurb = "ANGEL IS YOU",
+                    position = ge.Position,
+                    active = CollectibleType.COLLECTIBLE_CRACK_THE_SKY,
+                    typevar = tostring(geType) .. "~~" .. tostring(ge.Desc.Variant)
+                }
+            elseif geType == GridEntityType.GRID_STATUE and ge.Desc.Variant == 0 then -- Devil
+                t = {
+                    blurb = "DEVIL IS YOU",
+                    position = ge.Position,
+                    active = CollectibleType.COLLECTIBLE_BOOK_OF_BELIAL,
+                    typevar = tostring(geType) .. "~~" .. tostring(ge.Desc.Variant)
+                }
+            elseif geType == GridEntityType.GRID_ROCK_GOLD or (geType == GridEntityType.GRID_POOP and ge.Desc.Variant == 3) then 
+                t = {
+                    blurb = "GOLD IS YOU",
+                    position = ge.Position,
+                    active = CollectibleType.COLLECTIBLE_WOODEN_NICKEL,
+                    typevar = tostring(geType) .. "~~" .. tostring(ge.Desc.Variant)
+                }
+            elseif geType == GridEntityType.GRID_POOP and (ge.Desc.Variant == 2 or ge.Desc.Variant == 0 or ge.Desc.Variant == 1 or ge.Desc.Variant == 5 or ge.Desc.Variant == 4) then
+                t = {
+                    blurb = "POOP IS YOU",
+                    position = ge.Position,
+                    active = CollectibleType.COLLECTIBLE_POOP,
+                    typevar = tostring(geType) .. "~~" .. tostring(ge.Desc.Variant)
+                }
+            elseif geType == GridEntityType.GRID_SPIDERWEB then 
+                t = {
+                    blurb = "WEB IS YOU",
+                    position = ge.Position,
+                    active = CollectibleType.COLLECTIBLE_SPIDER_BUTT,
+                    typevar = tostring(geType) .. "~~" .. tostring(ge.Desc.Variant)
+                }
+            elseif geType == GridEntityType.GRID_TELEPORTER then
+                t = {
+                    blurb = "TELE IS YOU",
+                    position = ge.Position,
+                    active = CollectibleType.COLLECTIBLE_TELEKINESIS,
+                    typevar = tostring(geType) .. "~~" .. tostring(ge.Desc.Variant)
+                }
+            elseif geType == GridEntityType.GRID_SPIKES or geType == GridEntityType.GRID_ROCK_SPIKED or geType == GridEntityType.GRID_SPIKES_ONOFF then
+                t = {
+                    blurb = "SPIKE IS YOU",
+                    position = ge.Position,
+                    active = CollectibleType.COLLECTIBLE_DULL_RAZOR,
+                    typevar = tostring(geType) .. "~~" .. tostring(ge.Desc.Variant)
+                }
+            elseif geType == GridEntityType.GRID_ROCK_BOMB or geType == GridEntityType.GRID_TNT then
+                t = {
+                    blurb = "BOOM IS YOU",
+                    position = ge.Position,
+                    active = CollectibleType.COLLECTIBLE_MINE_CRAFTER,
+                    typevar = tostring(geType) .. "~~" .. tostring(ge.Desc.Variant)
+                }
+            elseif geType == GridEntityType.GRID_LOCK then
+                t = {
+                    blurb = "LOCK IS YOU",
+                    position = ge.Position,
+                    active = CollectibleType.COLLECTIBLE_DADS_KEY,
+                    typevar = tostring(geType) .. "~~" .. tostring(ge.Desc.Variant)
+                }
+            elseif geType == GridEntityType.GRID_ROCKB or geType == GridEntityType.GRID_PILLAR then
+                t = {
+                    blurb = "BLOCK IS YOU",
+                    position = ge.Position,
+                    active = CollectibleType.COLLECTIBLE_UNICORN_STUMP,
+                    typevar = tostring(geType) .. "~~" .. tostring(ge.Desc.Variant)
+                }
+            elseif geType == GridEntityType.GRID_ROCK_ALT then
+                local altToUse = nil
+                local activeToUse = nil
+                if room:GetType() == RoomType.ROOM_SECRET then
+                    altToUse = "SHROOM"
+                    activeToUse = CollectibleType.COLLECTIBLE_WAVY_CAP
+                elseif room:GetType() == RoomType.ROOM_ARCADE or room:GetType() == RoomType.ROOM_SHOP or room:GetType() == RoomType.ROOM_ANGEL then
+                    altToUse = "POT"
+                    activeToUse = CollectibleType.COLLECTIBLE_WOODEN_NICKEL
+                elseif room:GetType() == RoomType.ROOM_DEVIL or room:GetType() == RoomType.ROOM_SACRIFICE then
+                    altToUse = "SKULL"
+                    activeToUse = CollectibleType.COLLECTIBLE_GUPPYS_HEAD
+                elseif Game():IsGreedMode() then
+                    if floor == 2 then
+                        altToUse = "SHROOM"
+                        activeToUse = CollectibleType.COLLECTIBLE_WAVY_CAP
+                    elseif floor == 1 or floor == 6 then
+                        altToUse = "POT"
+                        activeToUse = CollectibleType.COLLECTIBLE_WOODEN_NICKEL
+                    elseif floor == 4 then
+                        altToUse = "POLYP"
+                        activeToUse = CollectibleType.COLLECTIBLE_TAMMYS_HEAD
+                    else
+                        altToUse = "SKULL"
+                        activeToUse = CollectibleType.COLLECTIBLE_GUPPYS_HEAD
+                    end
+                elseif not Game():IsGreedMode() then
+                    if floor == 3 or floor == 4 then
+                        altToUse = "SHROOM"
+                        activeToUse = CollectibleType.COLLECTIBLE_WAVY_CAP
+                    elseif ((floor == 1 or floor == 2) and
+                    floortype ~= StageType.STAGETYPE_REPENTANCE and floortype ~= StageType.STAGETYPE_REPENTANCE_B)
+                    or (floor == 10 and floortype == StageType.STAGETYPE_WOTL) then
+                        altToUse = "POT"
+                        activeToUse = CollectibleType.COLLECTIBLE_WOODEN_NICKEL
+                    elseif (floor == 1 or floor == 2) and
+                    (floortype == StageType.STAGETYPE_REPENTANCE or floortype == StageType.STAGETYPE_REPENTANCE_B) then
+                        altToUse = "BUCKET"
+                        activeToUse = CollectibleType.COLLECTIBLE_ISAACS_TEARS
+                    elseif floor == 7 or floor == 8 or floor == 9 then
+                        altToUse = "POLYP"
+                        activeToUse = CollectibleType.COLLECTIBLE_TAMMYS_HEAD
+                    elseif floor == 12 then
+                        altToUse = "CONFUSED"
+                        activeToUse = CollectibleType.COLLECTIBLE_METRONOME
+                    else
+                        altToUse = "SKULL"
+                        activeToUse = CollectibleType.COLLECTIBLE_GUPPYS_HEAD
+                    end
+                end
+                t = {
+                    blurb = altToUse .. " IS YOU",
+                    position = ge.Position,
+                    active = activeToUse,
+                    typevar = tostring(geType) .. "~~" .. tostring(ge.Desc.Variant)
+                }
+            elseif geType == GridEntityType.GRID_ROCK_ALT2 then
+                t = {
+                    blurb = "SKULL IS YOU",
+                    position = ge.Position,
+                    active = CollectibleType.COLLECTIBLE_GUPPYS_HEAD,
+                    typevar = tostring(geType) .. "~~" .. tostring(ge.Desc.Variant)
+                }
+
+            else
+                t = nil
+            end
+            if t then
+                t.distance = math.abs((position - t.position):LengthSquared())
+                if (not bestTask) or t.distance < bestTask.distance then
+                    bestTask = t
+                end
+            end
+        end
+    end
+    local entities = Isaac.GetRoomEntities()
+    local t
+    for i=1, #entities do
+        local entity = entities[i]
+        if entity.Type == EntityType.ENTITY_FIREPLACE then
+             t = {
+                blurb = "FIRE IS YOU",
+                position = entity.Position,
+                active = CollectibleType.COLLECTIBLE_RED_CANDLE,
+                typevar = tostring(entity.Type) .. "~~" .. tostring(entity.Variant)
+            }
+        end
+        if t then
+            t.distance = math.abs((position - t.position):LengthSquared())
+            if (not bestTask) or t.distance < bestTask.distance then
+                bestTask = t
+            end
+        end
+    end
+
+    if bestTask and bestTask.distance <= 2500 then
+        hud:ShowItemText(bestTask.blurb, "", false)
+        baba_active = bestTask.active
+        print(tostring(bestTask.typevar) .. "~~" .. tostring(bestTask.distance))
+    else
+        SfxManager:Play(SoundEffect.SOUND_BOSS2INTRO_ERRORBUZZ, 2)
+    end
+end
 
 local function findFreeTile(pos)
     local room = Game():GetRoom()
@@ -216,6 +439,19 @@ local ChampionsToLoot = {
 
 
  --callbacks
+
+ function WarpZone:postRender()
+	local player = Isaac.GetPlayer(0)
+	local actions = player:GetLastActionTriggers()
+	if actions & ActionTriggers.ACTIONTRIGGER_ITEMACTIVATED > 0 then
+		timeSinceTheSpacebarWasLastPressed = 0
+	else
+		timeSinceTheSpacebarWasLastPressed = timeSinceTheSpacebarWasLastPressed + 1
+	end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.postRender)
+
+
 function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
     if entity:IsVulnerableEnemy() then
         local player_ =  Isaac.GetPlayer(0)
@@ -670,6 +906,33 @@ function WarpZone:UseDoorway(collectible, rng, entityplayer, useflags, activeslo
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseDoorway, CollectibleType.COLLECTIBLE_DOORWAY)
 
+function WarpZone:UseIsYou(collectible, rng, entityplayer, useflags, activeslot, customvardata)
+    if baba_active == nil then
+        reticle = Isaac.Spawn(1000, 30, 0, entityplayer.Position, Vector(0, 0), entityplayer)
+        blinkTime = 10
+        entityplayer:AnimateCollectible(CollectibleType.COLLECTIBLE_IS_YOU, "LiftItem", "PlayerPickupSparkle")
+        return {
+            Discharge = false,
+            Remove = false,
+            ShowAnim = false
+        }
+    else
+        entityplayer:UseActiveItem(baba_active)
+        local show_anim = true
+        if baba_active == CollectibleType.COLLECTIBLE_MOMS_BRACELET or baba_active == CollectibleType == CollectibleType.COLLECTIBLE_RED_CANDLE then
+            show_anim = false
+        end
+        baba_active = nil
+        return {
+            Discharge = true,
+            Remove = false,
+            ShowAnim = show_anim
+        }
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseIsYou, CollectibleType.COLLECTIBLE_IS_YOU)
+
+
 
 function WarpZone:OnPickupCollide(entity, Collider, Low)
     local player = Collider:ToPlayer()
@@ -820,7 +1083,43 @@ function WarpZone:OnFrame(entityplayer)
                 end
             end
         end
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_IS_YOU) and reticle ~= nil then
+            local aimDir = player:GetAimDirection()
+            reticle.Velocity = aimDir * 20
+
+            if reticle.FrameCount % blinkTime < blinkTime/2 then
+                reticle.Color = Color(0, 0, 0, 0.5, -230, 100, 215)
+            else
+                reticle.Color = Color(0, 0, 0, 0.8, -200, 150, 255)
+            end
+
+                local stop = false
+                if (reticle.FrameCount > 5 and timeSinceTheSpacebarWasLastPressed < 4) or reticle.FrameCount > 75 then
+                    findGridEntityResponse(reticle.Position)
+                    reticle:Remove()
+                    reticle = nil
+                    stop = true
+                else
+                    -- Prevent the player from shooting
+                    player.FireDelay = 1
+
+                    -- Make the target blink faster
+                    if reticle.FrameCount > 70 then
+                        blinkTime = 2
+                    elseif reticle.FrameCount > 65 then
+                        blinkTime = 4
+                    elseif reticle.FrameCount > 55 then
+                        blinkTime = 6
+                    elseif reticle.FrameCount > 40 then
+                        blinkTime = 8
+                    end
+                end
+                if stop then --and ai.player:GetSprite():IsPlaying("LiftItem")
+                    player:AnimateCollectible(CollectibleType.COLLECTIBLE_IS_YOU, "HideItem", "Empty")
+                end
+        end
     end
+
 WarpZone:AddCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, WarpZone.OnFrame)
 
 function WarpZone:OnEntitySpawn(npc)
