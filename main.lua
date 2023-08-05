@@ -221,7 +221,7 @@ function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
         local player_ =  Isaac.GetPlayer(0)
         local source_entity = source.Entity
 
-        if source_entity and source_entity:GetData().FocusIndicator == nil and
+        if source_entity and source_entity:GetData() and source_entity:GetData().FocusIndicator == nil and
             (CollectibleType.COLLECTIBLE_FOCUS == player_:GetActiveItem() or
             CollectibleType.COLLECTIBLE_FOCUS_2 == player_:GetActiveItem() or
             CollectibleType.COLLECTIBLE_FOCUS_3 == player_:GetActiveItem() or
@@ -453,7 +453,7 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, WarpZone.LevelStart)
 function WarpZone:NewRoom()
     local player = Isaac.GetPlayer(0)
     local room = Game():GetRoom()
-    if Game():GetLevel():GetStage() == DoorwayFloor and (Game():GetLevel():GetCurrentRoomIndex() ~=84 or Game():GetLevel():GetStage()~= 1) then
+    if Game():GetLevel():GetStage() == DoorwayFloor and (Game():GetLevel():GetCurrentRoomIndex() ~=84 or Game():GetLevel():GetStage()~= 1 or not room:IsFirstVisit()) then
         if room:GetType() == RoomType.ROOM_BOSS then
             room:TrySpawnDevilRoomDoor(false, true)
             if Game():GetLevel():GetStage() == LevelStage.STAGE3_2 then
@@ -477,6 +477,23 @@ function WarpZone:NewRoom()
             end
           end
     end
+
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_STRANGE_MARBLE) then
+        local marbleRNG = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_STRANGE_MARBLE)
+        for i = 0, room:GetGridSize() do
+            local gridIndexPosition = room:GetGridPosition(i)
+            if room:IsPositionInRoom(gridIndexPosition , 1) then
+                local gridEntity = room:GetGridEntity(i)
+                if gridEntity == nil or gridEntity:ToRock() == nil or marbleRNG:RandomInt(10) ~= 1 then
+                    goto continue
+                end
+                local sprite = gridEntity:ToRock():GetSprite()
+                sprite.Color = Color(marbleRNG:RandomFloat(), marbleRNG:RandomFloat(), marbleRNG:RandomFloat(), .75)
+            end
+            ::continue::
+        end
+    end
+
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, WarpZone.NewRoom)
 
@@ -742,27 +759,29 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_INIT, WarpZone.checkTear)
 
 function WarpZone:updateTear(entitytear)
     local tear = entitytear:ToTear()
-    if tear:GetData().Is_Rusty == true then
-        tear:GetData().Is_Rusty = false
-        tear:AddTearFlags(TearFlags.TEAR_HOMING)
-        local sprite_tear = tear:GetSprite()
-        sprite_tear.Color = rustColor
-    elseif tear:GetData().FocusShot == true then
-        tear:GetData().FocusShot = false
-        tear:AddTearFlags(TearFlags.TEAR_PIERCING)
-        tear:AddTearFlags(TearFlags.TEAR_SPECTRAL)
-        tear:AddTearFlags(TearFlags.TEAR_DARK_MATTER)
-        
-        --tear.Velocity.X = math.max(tear.Velocity.X * 1.5, 20)
-        --tear.Velocity.Y = math.max(tear.Velocity.Y * 1.5, 20)
-        tear.Velocity = tear.Velocity * Vector(1.5, 1.5)
-        
-        local sprite_tear = tear:GetSprite()
-        sprite_tear.Color = whiteColor
+    if tear:GetData() then 
+        if tear:GetData().Is_Rusty == true then
+            tear:GetData().Is_Rusty = false
+            tear:AddTearFlags(TearFlags.TEAR_HOMING)
+            local sprite_tear = tear:GetSprite()
+            sprite_tear.Color = rustColor
+        elseif tear:GetData().FocusShot == true then
+            tear:GetData().FocusShot = false
+            tear:AddTearFlags(TearFlags.TEAR_PIERCING)
+            tear:AddTearFlags(TearFlags.TEAR_SPECTRAL)
+            tear:AddTearFlags(TearFlags.TEAR_DARK_MATTER)
+            
+            --tear.Velocity.X = math.max(tear.Velocity.X * 1.5, 20)
+            --tear.Velocity.Y = math.max(tear.Velocity.Y * 1.5, 20)
+            tear.Velocity = tear.Velocity * Vector(1.5, 1.5)
+            
+            local sprite_tear = tear:GetSprite()
+            sprite_tear.Color = whiteColor
 
-        tear.Scale = tear.Scale * 3.5
-        tear.CollisionDamage = tear.CollisionDamage + 185
-        tear:ResetSpriteScale()
+            tear.Scale = tear.Scale * 3.5
+            tear.CollisionDamage = tear.CollisionDamage + 185
+            tear:ResetSpriteScale()
+        end
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, WarpZone.updateTear)
