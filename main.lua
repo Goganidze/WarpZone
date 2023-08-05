@@ -918,15 +918,12 @@ function WarpZone:UseIsYou(collectible, rng, entityplayer, useflags, activeslot,
         }
     else
         entityplayer:UseActiveItem(baba_active)
-        local show_anim = true
-        if baba_active == CollectibleType.COLLECTIBLE_MOMS_BRACELET or baba_active == CollectibleType == CollectibleType.COLLECTIBLE_RED_CANDLE then
-            show_anim = false
-        end
+
         baba_active = nil
         return {
             Discharge = true,
             Remove = false,
-            ShowAnim = show_anim
+            ShowAnim = true
         }
     end
 end
