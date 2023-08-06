@@ -13,4 +13,6 @@
     <passive id="12" gfx="Collectibles_12_Strange_Marble.png" name="Strange Marble" description="Pretty colors..." quality="2"/>
     <active id="13" gfx="Collectibles_13_Is_You.png" name="Is You" description="ITEM IS OBSTACLE" quality="2" maxcharges = "3"/>
     <passive id="14" gfx="Collectibles_14_Nightmare_Tick.png" name="Nightmare Tick" description="Hey, get off of that!" quality="2"/>
+    <passive id="15" gfx="Collectibles_15_Spelunkers_Pack.png" name="Spelunker's Pack" description="Treasure finder +12 bombs" quality="2" bombs="12"/>
+
 </items>

@@ -48,6 +48,8 @@ local timeSinceTheSpacebarWasLastPressed = 0
 local roomsClearedSinceTake = -1
 local itemsSucked = 0
 
+
+
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
@@ -63,6 +65,7 @@ CollectibleType.COLLECTIBLE_DOORWAY = Isaac.GetItemIdByName("The Doorway")
 CollectibleType.COLLECTIBLE_STRANGE_MARBLE = Isaac.GetItemIdByName("Strange Marble")
 CollectibleType.COLLECTIBLE_IS_YOU = Isaac.GetItemIdByName("Is You")
 CollectibleType.COLLECTIBLE_NIGHTMARE_TICK = Isaac.GetItemIdByName("Nightmare Tick")
+CollectibleType.COLLECTIBLE_SPELUNKERS_PACK = Isaac.GetItemIdByName("Spelunker's Pack")
 
 local SfxManager = SFXManager()
 
@@ -444,6 +447,60 @@ local ChampionsToLoot = {
 
 
  --callbacks
+
+ function WarpZone:OnUpdate()
+	local room = game:GetRoom()
+	local player = Isaac.GetPlayer(0)
+
+	if player:HasCollectible(CollectibleType.COLLECTIBLE_SPELUNKERS_PACK) == true then
+		local entities = Isaac.GetRoomEntities()
+
+		for i=1,#entities do
+			--Normal bombs
+			if entities[i].Type == EntityType.ENTITY_BOMBDROP and entities[i].SpawnerType == EntityType.ENTITY_PLAYER then
+				local sprite = entities[i]:GetSprite()
+				--If First frame
+				if entities[i].FrameCount  == 1 then
+					sprite:Load("gfx/bridgebomb.anm2",false)
+					sprite:LoadGraphics()
+				end
+
+				--If exploding
+				if sprite:IsPlaying("Explode") then
+					WarpZone:TriggerEffect(entities[i].Position)
+				end
+			end
+		end
+
+	end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.OnUpdate)
+
+function WarpZone:TriggerEffect(position)
+    local room = Game():GetRoom()
+    local numBridged = 0
+	for i=1, room:GetGridSize() do
+        local ge = room:GetGridEntity(i)
+        if ge and ge.Desc.Type == GridEntityType.GRID_PIT then
+            local distance = math.abs((position - ge.Position):LengthSquared())
+            if distance <= 10000 then
+                ge:ToPit():MakeBridge(ge)
+                numBridged  = numBridged + 1
+            end
+        elseif ge and (ge.Desc.Type == GridEntityType.GRID_ROCKT or ge.Desc.Type == GridEntityType.GRID_ROCKSS or ge.Desc.Type == GridEntityType.GRID_ROCK_GOLD) then
+            room:DestroyGrid(ge:GetGridIndex(), true)
+            numBridged = numBridged + 1
+        elseif ge and ge.Desc.Type == GridEntityType.GRID_ROCK_BOMB then
+            ge:SetType(GridEntityType.GRID_ROCK)
+            room:DestroyGrid(ge:GetGridIndex(), true)
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_BOMB, 0, ge.Position, Vector(0, 0), nil)
+            numBridged = numBridged + 1
+        end
+    end
+    if numBridged > 0 then
+        SfxManager:Play(SoundEffect.SOUND_ROCK_CRUMBLE)
+    end
+end
 
  function WarpZone:postRender()
 	local player = Isaac.GetPlayer(0)
