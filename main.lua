@@ -1057,6 +1057,9 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
     local cakeBingeBonus = 0
 
     local tank_qty =  entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK)
+    
+    if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BINGE_EATER) then
+        cakeBingeBonus = entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE)
 
     if Cache == CacheFlag.CACHE_FIREDELAY then
         local maxFireDelay = math.min(5, entityplayer.MaxFireDelay)
@@ -1064,10 +1067,9 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK) then
             entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - tank_qty
         end
-        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BINGE_EATER) then
-            cakeBingeBonus = entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE) * 2
+
         end
-        entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - cakeBingeBonus
+        entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - (cakeBingeBonus * 2)
     end
 
     if Cache == CacheFlag.CACHE_DAMAGE then
@@ -1088,6 +1090,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
 
     if Cache == CacheFlag.CACHE_SPEED then
         entityplayer.MoveSpeed = entityplayer.MoveSpeed - (tank_qty * .3)
+        entityplayer.MoveSpeed = entityplayer.MoveSpeed - (cakeBingeBonus * .03)
     end
 
     if Cache == CacheFlag.CACHE_SHOTSPEED then
@@ -1105,7 +1108,7 @@ function WarpZone:checkTear(entitytear)
         local chance = player.Luck * 5 + 10
         local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_RUSTY_SPOON)
         if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
-            chance = chance + 15
+            chance = chance + 20
         end
         local chance_num = rng:RandomInt(100)
         if chance_num < chance then
@@ -1121,6 +1124,25 @@ function WarpZone:checkTear(entitytear)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_INIT, WarpZone.checkTear)
+
+
+function WarpZone:checkLaser(entitylaser)
+    local laser = entitylaser:ToLaser()
+    local player = Isaac.GetPlayer(0)
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) then
+        local chance = player.Luck * 5 + 10
+        local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_RUSTY_SPOON)
+        if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
+            chance = chance + 20
+        end
+        local chance_num = rng:RandomInt(100)
+        if chance_num < chance then
+            laser:GetData().Laser_Rusty = true
+            laser:GetData().LaserBleedIt = true
+        end
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_LASER_INIT, WarpZone.checkLaser)
 
 
 function WarpZone:updateTear(entitytear)
@@ -1152,6 +1174,21 @@ function WarpZone:updateTear(entitytear)
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, WarpZone.updateTear)
 
+
+function WarpZone:updateLaser(entitytear)
+    local tear = entitytear:ToTear()
+    if tear:GetData() then 
+        if tear:GetData().Laser_Rusty == true then
+            tear:GetData().Laser_Rusty = false
+            tear:AddTearFlags(TearFlags.TEAR_HOMING)
+            local sprite_tear = tear:GetSprite()
+            sprite_tear.Color = rustColor
+        end
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_LASER_UPDATE, WarpZone.updateLaser)
+
+
 function WarpZone:hitEnemy(entitytear, collider, low)
     local player = Isaac.GetPlayer(0)
 
@@ -1160,12 +1197,20 @@ function WarpZone:hitEnemy(entitytear, collider, low)
     if collider:IsEnemy() and tear:GetData().BleedIt == true then
         collider:AddEntityFlags(EntityFlag.FLAG_BLEED_OUT)
     end
-
-    
-
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, WarpZone.hitEnemy)
 
+
+function WarpZone:LaserEnemyHit(entity, amount, damageflags, source, countdownframes)
+    if entity:IsVulnerableEnemy() then
+        local player_ =  Isaac.GetPlayer(0)
+        local source_entity = source.Entity
+        if source_entity and source_entity:GetData() and source_entity:GetData().LaserBleedIt == nil then
+            source_entity:AddEntityFlags(EntityFlag.FLAG_BLEED_OUT)
+        end
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.LaserEnemyHit)
 
 function WarpZone:OnFrame(entityplayer)
     local player = Isaac.GetPlayer(0)
