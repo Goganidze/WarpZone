@@ -4,7 +4,7 @@
     <passive id="3"	gfx="Collectibles_3_Birthday_Cake.png" name="Birthday Cake" description="Happy me!" maxhearts="2" hearts="4" tags="food nolostbr nocantrip lazarusshared" quality = "2"/>
     <passive id="4"	gfx="Collectibles_4_Rusty_Spoon.png" name="Rusty Spoon" description="You like touching them..." cache="tearcolor" tags="offensive" quality="3"/>
     <passive id="5"	gfx="Collectibles_5_Newgrounds_Tank.png" name="Newgrounds Tank" description="Become a tank!" maxhearts="2" hearts="4" cache="firedelay damage speed range shotspeed luck" tags="offensive" quality="3"/>
-    <passive id="6"	gfx="Collectibles_6_GreedButt.png" name="Greed Butt" description="Don't touch it" quality="1"/>
+    <passive id="6"	gfx="Collectibles_6_GreedButt.png" name="Greed Butt" description="Don't touch it" quality="1" tags = "nolostbr"/>
     <active	id="7" gfx="Collectibles_7_Focus_frame4.png" name="   Focus   " description="Take their SOUL" maxcharges = "20" chargetype = "special" quality="2"/>
     <active	id="8" gfx="Collectibles_7_Focus_frame3.png" name="  Focus  " description="Take their SOUL" maxcharges = "20" chargetype = "special" quality="2"/>
     <active	id="9" gfx="Collectibles_7_Focus_frame2.png" name=" Focus " description="Take their SOUL" maxcharges = "20" chargetype = "special" quality="2"/>
