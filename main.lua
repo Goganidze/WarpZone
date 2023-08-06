@@ -1097,6 +1097,12 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         entityplayer.ShotSpeed = entityplayer.ShotSpeed + (tank_qty * .16)
     end
 
+    if Cache == CacheFlag.CACHE_COLOR then
+        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) then
+            entityplayer.LaserColor = rustColor
+        end
+    end
+
 end
 WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, WarpZone.EvaluateCache)
 
@@ -1138,9 +1144,10 @@ function WarpZone:checkLaser(entitylaser)
         local chance_num = rng:RandomInt(100)
         if chance_num < chance then
             laser:GetData().Laser_Rusty = true
-            laser:GetData().LaserBleedIt = true
+            player:GetData().LaserBleedIt = true
         end
     end
+    laser:GetData().HomingType = true
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_LASER_INIT, WarpZone.checkLaser)
 
@@ -1176,13 +1183,11 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, WarpZone.updateTear)
 
 
 function WarpZone:updateLaser(entitytear)
-    local tear = entitytear:ToTear()
-    if tear:GetData() then 
-        if tear:GetData().Laser_Rusty == true then
-            tear:GetData().Laser_Rusty = false
-            tear:AddTearFlags(TearFlags.TEAR_HOMING)
-            local sprite_tear = tear:GetSprite()
-            sprite_tear.Color = rustColor
+    local laser = entitytear:ToLaser()
+    if laser:GetData() then
+        if laser:GetData().Laser_Rusty == true then
+            laser:GetData().Laser_Rusty = false
+            laser:AddTearFlags(TearFlags.TEAR_HOMING)
         end
     end
 end
@@ -1203,10 +1208,10 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, WarpZone.hitEnemy)
 
 function WarpZone:LaserEnemyHit(entity, amount, damageflags, source, countdownframes)
     if entity:IsVulnerableEnemy() then
-        local player_ =  Isaac.GetPlayer(0)
         local source_entity = source.Entity
-        if source_entity and source_entity:GetData() and source_entity:GetData().LaserBleedIt == nil then
-            source_entity:AddEntityFlags(EntityFlag.FLAG_BLEED_OUT)
+        if source_entity and source_entity:GetData() and source_entity:GetData().LaserBleedIt == true then
+            source_entity:GetData().LaserBleedIt = false
+            entity:AddEntityFlags(EntityFlag.FLAG_BLEED_OUT)
         end
     end
 end
@@ -1286,7 +1291,6 @@ function WarpZone:OnEntityDeath(npc)
     local player = Isaac.GetPlayer(0)
     if npc:IsEnemy() and npc:IsChampion() and player:HasCollectible(CollectibleType.COLLECTIBLE_STRANGE_MARBLE) then
         local championColor = npc:GetChampionColorIdx()
-        print(championColor)
         local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_STRANGE_MARBLE)
         ChampionsToLoot[championColor](EntityRef(npc), rng, EntityRef(player))
     end
