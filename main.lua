@@ -479,6 +479,7 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.OnUpdate)
 function WarpZone:TriggerEffect(position)
     local room = Game():GetRoom()
     local numBridged = 0
+    local resonate = false
 	for i=1, room:GetGridSize() do
         local ge = room:GetGridEntity(i)
         if ge and ge.Desc.Type == GridEntityType.GRID_PIT then
@@ -490,15 +491,20 @@ function WarpZone:TriggerEffect(position)
         elseif ge and (ge.Desc.Type == GridEntityType.GRID_ROCKT or ge.Desc.Type == GridEntityType.GRID_ROCKSS or ge.Desc.Type == GridEntityType.GRID_ROCK_GOLD) then
             room:DestroyGrid(ge:GetGridIndex(), true)
             numBridged = numBridged + 1
+            resonate = true
         elseif ge and ge.Desc.Type == GridEntityType.GRID_ROCK_BOMB then
             ge:SetType(GridEntityType.GRID_ROCK)
             room:DestroyGrid(ge:GetGridIndex(), true)
             Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_BOMB, 0, ge.Position, Vector(0, 0), nil)
+            resonate = true
             numBridged = numBridged + 1
         end
     end
     if numBridged > 0 then
         SfxManager:Play(SoundEffect.SOUND_ROCK_CRUMBLE)
+    end
+    if resonate then
+        Game():ShakeScreen(2)
     end
 end
 
@@ -699,6 +705,7 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
                 player:EvaluateItems()
                 SfxManager:Play(SoundEffect.SOUND_THUMBS_DOWN)
                 SfxManager:Play(SoundEffect.SOUND_BOSS_BUG_HISS)
+                player:AnimateSad()
             end
         end
     end
