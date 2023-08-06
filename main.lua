@@ -671,7 +671,7 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
 
     if player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
         roomsClearedSinceTake = roomsClearedSinceTake + 1
-        local roomsToSuck = math.max(8 - (2 * player:GetCollectibleNum(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK)), 1)
+        local roomsToSuck = math.max(10 - (2 * player:GetCollectibleNum(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK)), 1)
         if roomsClearedSinceTake % roomsToSuck == 0 then
             local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK)
             local shift = 0
@@ -1074,7 +1074,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         entityplayer.Damage = entityplayer.Damage + (0.5 * tank_qty)
 
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
-            entityplayer.Damage = entityplayer.Damage + (itemsSucked * 0.5)
+            entityplayer.Damage = entityplayer.Damage + (itemsSucked * 0.75)
         end
     end
 
