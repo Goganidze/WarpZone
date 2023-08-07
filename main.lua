@@ -72,7 +72,7 @@ CollectibleType.COLLECTIBLE_SPELUNKERS_PACK = Isaac.GetItemIdByName("Spelunker's
 --external item descriptions
 if EID then
 	EID:addCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL, "#The player has a 50% chance of receiving a fading nickel when a room is cleared.#Damage causes the player to lose half their money, dropping some of it on the ground as fading coins.#When the player is holding money, damage is always 1 full heart.", "Golden Idol", "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_PASTKILLER, "#Removes the first 3 items from your inventory, including quest items like Dad's Key.#3 sets of 3 choice pedestals appear.#The new items are from the same pools as the ones you lost.", "Gun that can Kill the Past", "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_PASTKILLER, "#Removes the first 3 items from your inventory, including quest items like the Key Pieces.#3 sets of 3 choice pedestals appear.#The new items are from the same pools as the ones you lost.", "Gun that can Kill the Past", "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE, "#+1 HP#A random consumable and pickups of each type now spawn at the start of a floor.#When the player holds Binge Eater, -.03 Speed and +.5 Tears.", "Birthday Cake", "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON, "#10% chance to fire a homing tear that inflicts bleed#100% chance at 18 Luck", "Rusty Spoon", "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK, "#.3 Speed Down#.27 Tears Up#.5 Damage Up#.04 Range Up#.16 Shot Speed Up#1 Luck Up#On taking a hit, the player has a 10% chance to shield from damage.", "Newgrounds Tank", "en_us")
@@ -723,6 +723,7 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
                      Vector(0,0),
                     nil)
         coin.Timeout = 90
+        coin:GetSprite():SetFrame(1)
         if room then
             local coin2 = Isaac.Spawn(EntityType.ENTITY_PICKUP, 
                      PickupVariant.PICKUP_COIN,
@@ -731,6 +732,7 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
                      Vector(0,0),
                     nil)
             coin2.Timeout = 90
+            coin:GetSprite():SetFrame(1)
         end
     end
 
@@ -1220,8 +1222,7 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_LASER_INIT, WarpZone.checkLaser)
 
 function WarpZone:updateTear(entitytear)
     local tear = entitytear:ToTear()
-    if tear:GetData() then 
-        
+    if tear:GetData() then
         if tear:GetData().FocusShot == true then
             tear:GetData().FocusShot = false
             tear:AddTearFlags(TearFlags.TEAR_PIERCING)
