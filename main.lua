@@ -49,7 +49,7 @@ local timeSinceTheSpacebarWasLastPressed = 0
 --nightmare tick
 local roomsClearedSinceTake = -1
 local itemsSucked = 0
-
+local tickColor = Color(.2, .05, .05, 1, 0, 0, 0)
 
 
 --item defintions
@@ -69,6 +69,7 @@ CollectibleType.COLLECTIBLE_IS_YOU = Isaac.GetItemIdByName("Is You")
 CollectibleType.COLLECTIBLE_NIGHTMARE_TICK = Isaac.GetItemIdByName("Nightmare Tick")
 CollectibleType.COLLECTIBLE_SPELUNKERS_PACK = Isaac.GetItemIdByName("Spelunker's Pack")
 
+--external item descriptions
 if EID then
 	EID:addCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL, "#The player has a 50% chance of receiving a fading nickel when a room is cleared.#Damage causes the player to lose half their money, dropping some of it on the ground as fading coins.#When the player is holding money, damage is always 1 full heart.", "Golden Idol", "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_PASTKILLER, "#Removes the first 3 items from your inventory, including quest items like Dad's Key.#3 sets of 3 choice pedestals appear.#The new items are from the same pools as the ones you lost.", "Gun that can Kill the Past", "en_us")
@@ -470,7 +471,7 @@ local ChampionsToLoot = {
 
  --callbacks
 
- function WarpZone:OnUpdate()
+function WarpZone:OnUpdate()
 	local room = game:GetRoom()
 	local player = Isaac.GetPlayer(0)
 
@@ -495,6 +496,42 @@ local ChampionsToLoot = {
 		end
 
 	end
+
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) == true or player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true  then
+        
+        local lasers = Isaac.FindByType(EntityType.ENTITY_LASER)
+        for _, laser in ipairs(lasers) do
+            local data = laser:GetData()
+            if data.Laser_Rusty == true then
+                data.Laser_Rusty = false
+                laser.Color = rustColor
+            elseif player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true then
+                laser.Color = tickColor
+            end
+        end
+        
+        local laserEndpoints = Isaac.FindByType(EntityType.ENTITY_EFFECT, EffectVariant.LASER_IMPACT)
+        for _, laserEndpoint in ipairs(laserEndpoints) do
+            local data = laserEndpoint:GetData()
+            if data.Laser_Rusty == true then
+                data.Laser_Rusty = false
+                laserEndpoint.Color = rustColor
+            elseif player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true then
+                laserEndpoint.Color = tickColor
+            end
+        end
+        
+        local brimballs = Isaac.FindByType(EntityType.ENTITY_EFFECT, EffectVariant.BRIMSTONE_BALL)
+        for _, brimball in ipairs(brimballs) do
+            local data = brimball:GetData()
+            if data.Laser_Rusty == true then
+                data.Laser_Rusty = false
+                brimball.Color = rustColor
+            elseif player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true then
+                brimball.Color = tickColor
+            end
+        end
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.OnUpdate)
 
@@ -1127,11 +1164,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         entityplayer.ShotSpeed = entityplayer.ShotSpeed + (tank_qty * .16)
     end
 
-    if Cache == CacheFlag.CACHE_COLOR then
-        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) then
-            entityplayer.LaserColor = rustColor
-        end
-    end
+
 
 end
 WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, WarpZone.EvaluateCache)
@@ -1151,6 +1184,8 @@ function WarpZone:checkTear(entitytear)
             tear:GetData().Is_Rusty = true
             tear:GetData().BleedIt = true
         end
+    elseif player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
+        tear:GetData().NightmareColor = true
     end
     if CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() and primeShot then
         SfxManager:Play(SoundEffect.SOUND_EXPLOSION_WEAK, 3)
@@ -1165,7 +1200,9 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_INIT, WarpZone.checkTear)
 function WarpZone:checkLaser(entitylaser)
     local laser = entitylaser:ToLaser()
     local player = Isaac.GetPlayer(0)
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) then
+    local var = laser.Variant
+    local subt = laser.SubType
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) and not ((var == 1 and subt == 3) or var == 5 or var == 12) then
         local chance = player.Luck * 5 + 10
         local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_RUSTY_SPOON)
         if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
@@ -1177,7 +1214,6 @@ function WarpZone:checkLaser(entitylaser)
             player:GetData().LaserBleedIt = true
         end
     end
-    laser:GetData().HomingType = true
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_LASER_INIT, WarpZone.checkLaser)
 
@@ -1185,12 +1221,8 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_LASER_INIT, WarpZone.checkLaser)
 function WarpZone:updateTear(entitytear)
     local tear = entitytear:ToTear()
     if tear:GetData() then 
-        if tear:GetData().Is_Rusty == true then
-            tear:GetData().Is_Rusty = false
-            tear:AddTearFlags(TearFlags.TEAR_HOMING)
-            local sprite_tear = tear:GetSprite()
-            sprite_tear.Color = rustColor
-        elseif tear:GetData().FocusShot == true then
+        
+        if tear:GetData().FocusShot == true then
             tear:GetData().FocusShot = false
             tear:AddTearFlags(TearFlags.TEAR_PIERCING)
             tear:AddTearFlags(TearFlags.TEAR_SPECTRAL)
@@ -1207,21 +1239,21 @@ function WarpZone:updateTear(entitytear)
             tear.CollisionDamage = tear.CollisionDamage + 185
             tear:ResetSpriteScale()
         end
+        
+        if tear:GetData().Is_Rusty == true then
+            tear:GetData().Is_Rusty = false
+            tear:AddTearFlags(TearFlags.TEAR_HOMING)
+            local sprite_tear = tear:GetSprite()
+            sprite_tear.Color = rustColor
+        elseif tear:GetData().NightmareColor then
+            local sprite_tear = tear:GetSprite()
+            sprite_tear.Color = tickColor
+        end
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, WarpZone.updateTear)
 
 
-function WarpZone:updateLaser(entitytear)
-    local laser = entitytear:ToLaser()
-    if laser:GetData() then
-        if laser:GetData().Laser_Rusty == true then
-            laser:GetData().Laser_Rusty = false
-            laser:AddTearFlags(TearFlags.TEAR_HOMING)
-        end
-    end
-end
-WarpZone:AddCallback(ModCallbacks.MC_POST_LASER_UPDATE, WarpZone.updateLaser)
 
 
 function WarpZone:hitEnemy(entitytear, collider, low)
