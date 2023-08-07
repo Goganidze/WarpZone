@@ -13,6 +13,8 @@ local itemsTaken = {}
 local poolsTaken = {}
 
 
+
+
 -----------------------------------
 --golden idol
 local inDamage = false
@@ -66,6 +68,26 @@ CollectibleType.COLLECTIBLE_STRANGE_MARBLE = Isaac.GetItemIdByName("Strange Marb
 CollectibleType.COLLECTIBLE_IS_YOU = Isaac.GetItemIdByName("Is You")
 CollectibleType.COLLECTIBLE_NIGHTMARE_TICK = Isaac.GetItemIdByName("Nightmare Tick")
 CollectibleType.COLLECTIBLE_SPELUNKERS_PACK = Isaac.GetItemIdByName("Spelunker's Pack")
+
+if EID then
+	EID:addCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL, "#The player has a 50% chance of receiving a fading nickel when a room is cleared.#Damage causes the player to lose half their money, dropping some of it on the ground as fading coins.#When the player is holding money, damage is always 1 full heart.", "Golden Idol", "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_PASTKILLER, "#Removes the first 3 items from your inventory, including quest items like Dad's Key.#3 sets of 3 choice pedestals appear.#The new items are from the same pools as the ones you lost.", "Gun that can Kill the Past", "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE, "#+1 HP#A random consumable and pickups of each type now spawn at the start of a floor.#When the player holds Binge Eater, -.03 Speed and +.5 Tears.", "Birthday Cake", "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON, "#10% chance to fire a homing tear that inflicts bleed#100% chance at 18 Luck", "Rusty Spoon", "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK, "#.3 Speed Down#.27 Tears Up#.5 Damage Up#.04 Range Up#.16 Shot Speed Up#1 Luck Up#On taking a hit, the player has a 10% chance to shield from damage.", "Newgrounds Tank", "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_GREED_BUTT, "#When hit by an enemy or projectile from behind, you fart, launching a coin out of your butt.#There is a 4% chance that you drop a gold poop instead.", "Greed Butt", "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_FOCUS, "#When below full red hearts, heal 1 red heart.#When at full health, launch a large piercing tear.#This item only gains charge by inflicting damage.", "Focus", "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_FOCUS_2, "#When below full red hearts, heal 1 red heart.#When at full health, launch a large piercing tear.#This item only gains charge by inflicting damage.", "Focus", "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_FOCUS_3, "#When below full red hearts, heal 1 red heart.#When at full health, launch a large piercing tear.#This item only gains charge by inflicting damage.", "Focus", "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_FOCUS_4, "#When below full red hearts, heal 1 red heart.#When at full health, launch a large piercing tear.#This item only gains charge by inflicting damage.", "Focus", "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_DOORWAY, "#All doors are opened, and stay open for the rest of the floor.#Secret rooms, Angel/Devil rooms, The Mega Satan door, Boss Rush and Hush are included.#Challenge Rooms are open to enter, however the door closes when activating the challenge.#The Ultra Secret Room is unlocked, and red rooms are now open to the edge of the map, revealing the error room.", "The Doorway", "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_STRANGE_MARBLE, "#All enemies have a 10% chance to become champions.#Champions always drop loot, and often have a chance to drop extra.", "Strange Marble", "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_IS_YOU, "#Point the reticle at an obstacle to use an active item effect that corresponds to it.#For example, pointing it at a normal rock lets you use Mom's Bracelet", "Is You",  "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK, "#Every 8 room clears, one passive item is removed from your inventory.#.75 Damage Up for each item removed this way", "Nightmare Tick",  "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_SPELUNKERS_PACK, "#+12 bombs#Pits within your bombs' blast radius are filled in.#When your bomb explodes, the resonant force breaks tinted and super secret rocks throughout the room. #Bomb rocks in the room will break apart, dropping a bomb pickup.", "Spelunker's Pack",  "en_us")
+
+end
+
 
 local SfxManager = SFXManager()
 
@@ -1067,6 +1089,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
     
     if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BINGE_EATER) then
         cakeBingeBonus = entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE)
+    end
 
     if Cache == CacheFlag.CACHE_FIREDELAY then
         local maxFireDelay = math.min(5, entityplayer.MaxFireDelay)
@@ -1074,10 +1097,10 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK) then
             entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - tank_qty
         end
-
-        end
         entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - (cakeBingeBonus * 2)
     end
+        
+    
 
     if Cache == CacheFlag.CACHE_DAMAGE then
         entityplayer.Damage = entityplayer.Damage + (0.5 * tank_qty)
