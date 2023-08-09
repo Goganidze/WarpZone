@@ -117,6 +117,42 @@ local function tableContains(table_, value, removeValue)
     return contains
 end
 
+
+function WarpZone:GetPtrHashEntity(entity)
+    if entity then
+        if entity.Entity then
+            entity = entity.Entity
+        end
+        for _, matchEntity in pairs(Isaac.FindByType(entity.Type, entity.Variant, entity.SubType, false, false)) do
+            if GetPtrHash(entity) == GetPtrHash(matchEntity) then
+                return matchEntity
+            end
+        end
+    end
+    return nil
+end
+
+function WarpZone:GetPlayerFromTear(tear)
+    for i=1, 2 do
+        local check = nil
+        if i == 1 then
+            check = tear.Parent
+        elseif i == 2 then
+            check = tear.SpawnerEntity
+        end
+        if check then
+            if check.Type == EntityType.ENTITY_PLAYER then
+                return WarpZone:GetPtrHashEntity(check):ToPlayer()
+            elseif check.Type == EntityType.ENTITY_FAMILIAR and (check.Variant == FamiliarVariant.INCUBUS or check.Variant == FamiliarVariant.TWISTED_BABY) then
+                local data = tear:GetData()
+                data.IsIncubusTear = true
+                return check:ToFamiliar().Player:ToPlayer()
+            end
+        end
+    end
+    return nil
+end
+
 local function findGridEntityResponse(position)
     local room = Game():GetRoom()
     local bestTask
@@ -1174,8 +1210,8 @@ WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, WarpZone.EvaluateCache)
 
 function WarpZone:checkTear(entitytear)
     local tear = entitytear:ToTear()
-    local player = Isaac.GetPlayer(0)
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) then
+    local player = WarpZone:GetPlayerFromTear(entitytear)
+    if player and player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) then
         local chance = player.Luck * 5 + 10
         local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_RUSTY_SPOON)
         if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
@@ -1186,7 +1222,7 @@ function WarpZone:checkTear(entitytear)
             tear:GetData().Is_Rusty = true
             tear:GetData().BleedIt = true
         end
-    elseif player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
+    elseif player and player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
         tear:GetData().NightmareColor = true
     end
     if CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() and primeShot then
@@ -1267,6 +1303,23 @@ function WarpZone:hitEnemy(entitytear, collider, low)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, WarpZone.hitEnemy)
+
+
+function WarpZone:OnKnifeCollide(knife, collider, low)
+    local player = Isaac.GetPlayer(0)
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) and collider:IsVulnerableEnemy() then
+        local chance = player.Luck * 5 + 10
+        local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_RUSTY_SPOON)
+        if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
+            chance = chance + 20
+        end
+        local chance_num = rng:RandomInt(100)
+        if chance_num < chance then
+            collider:AddEntityFlags(EntityFlag.FLAG_BLEED_OUT)
+        end
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_PRE_KNIFE_COLLISION, WarpZone.OnKnifeCollide)
 
 
 function WarpZone:LaserEnemyHit(entity, amount, damageflags, source, countdownframes)

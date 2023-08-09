@@ -1,5 +1,5 @@
 <AnimatedActor>
-	<Info CreatedBy="robot" CreatedOn="8/8/2023 7:02:42 PM" Version="119" Fps="30"/>
+	<Info CreatedBy="robot" CreatedOn="8/8/2023 7:10:45 PM" Version="120" Fps="30"/>
 	<Content>
 		<Spritesheets>
 			<Spritesheet Path="costumes\tankmanhead_costume.png" Id="0"/>

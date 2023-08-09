@@ -5,5 +5,4 @@
     <costume id = "12" anm2path = "strangemarble.anm2" type = "passive" />
     <costume id = "14" anm2path = "nightmaretick.anm2" type = "passive" />
     <costume id = "5" anm2path = "NewgroundsTank.anm2" type = "passive" />
-    <costume id = "5" anm2path = "NewgroundsTankBody.anm2" type = "passive" />
 </costumes>
