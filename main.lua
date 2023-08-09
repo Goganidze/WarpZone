@@ -52,7 +52,7 @@ local itemsSucked = 0
 local tickColor = Color(.2, .05, .05, 1, 0, 0, 0)
 
 --diogenes
-
+local dioDamageOn = false
 
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
@@ -690,6 +690,10 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
         end
     end
 
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE) and damageflags & DamageFlag.DAMAGE_NO_PENALTIES ~= DamageFlag.DAMAGE_NO_PENALTIES then
+        player:UseCard(Card.CARD_FOOL, 257)
+    end
+
     if player:HasCollectible(CollectibleType.COLLECTIBLE_GREED_BUTT) and source ~= nil then
         local source_entity = source.Entity
         if source_entity ~= nil and (source_entity:IsEnemy() or (source_entity.Type == EntityType.ENTITY_PROJECTILE and source_entity.Variant ~= ProjectileVariant.PROJECTILE_FIRE)) then
@@ -916,6 +920,11 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, WarpZone.LevelStart)
 function WarpZone:NewRoom()
     local player = Isaac.GetPlayer(0)
     local room = Game():GetRoom()
+    
+    dioDamageOn = false
+    player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
+    player:EvaluateItems()
+
     if Game():GetLevel():GetStage() == DoorwayFloor and (Game():GetLevel():GetCurrentRoomIndex() ~=84 or Game():GetLevel():GetStage()~= 1 or not room:IsFirstVisit()) then
         if room:GetType() == RoomType.ROOM_BOSS then
             room:TrySpawnDevilRoomDoor(false, true)
@@ -1204,6 +1213,11 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
             entityplayer.Damage = entityplayer.Damage + (itemsSucked * 0.75)
         end
+
+        if dioDamageOn == true then
+            entityplayer.Damage = entityplayer.Damage * 1.5
+        end
+
     end
 
     if Cache == CacheFlag.CACHE_RANGE then
@@ -1450,14 +1464,36 @@ function WarpZone:SheathDiogenes(collectible, rng, entityplayer, useflags, activ
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.SheathDiogenes, CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE)
 
+local function runUpdates(tab) --This is from Fiend Folio
+    for i = #tab, 1, -1 do
+        local f = tab[i]
+        f.Delay = f.Delay - 1
+        if f.Delay <= 0 then
+            f.Func()
+            table.remove(tab, i)
+        end
+    end
+end
 
+WarpZone.delayedFuncs = {}
+function WarpZone:scheduleForUpdate(foo, delay, callback)
+    callback = callback or ModCallbacks.MC_POST_UPDATE
+    if not WarpZone.delayedFuncs[callback] then
+        WarpZone.delayedFuncs[callback] = {}
+        WarpZone:AddCallback(callback, function()
+            runUpdates(WarpZone.delayedFuncs[callback])
+        end)
+    end
+
+    table.insert(WarpZone.delayedFuncs[callback], { Func = foo, Delay = delay })
+end
 
 function WarpZone:FireClub(player, direction)
 	if not player:GetEffects():HasCollectibleEffect(CollectibleType.COLLECTIBLE_BERSERK) and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN_B then
 		player:UseActiveItem(CollectibleType.COLLECTIBLE_NOTCHED_AXE)
-		--WarpZone:scheduleForUpdate(function()
-			--player:UseActiveItem(CollectibleType.COLLECTIBLE_NOTCHED_AXE)
-		--end, 0)
+		WarpZone:scheduleForUpdate(function()
+			player:UseActiveItem(CollectibleType.COLLECTIBLE_NOTCHED_AXE)
+		end, 0)
 	end
 	if direction then
 		player:GetData().InputHook = WarpZone.directiontoshootdirection[direction]
@@ -1494,7 +1530,7 @@ end, InputHook.GET_ACTION_VALUE)
 WarpZone:AddCallback(ModCallbacks.MC_POST_KNIFE_INIT, function(_, knife)
 	if knife.Variant == 9 then
 		if knife.SubType == 4 then
-			local player = WarpZone:getPlayerFromKnife(knife)
+			local player =  Isaac.GetPlayer(0)
 			if WarpZone.scanforclub then
 				if player:GetData().InputHook and knife.Position:Distance(player.Position) < 20 then
 					knife:GetData().CustomClub = true
@@ -1514,7 +1550,11 @@ end)
 
 WarpZone:AddCallback(ModCallbacks.MC_POST_FIRE_TEAR, function(_, tear)
 	local player = WarpZone:GetPlayerFromTear(tear)
-    if player and player:HasCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE) and false then
+    
+    if player and player:HasCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE) then
+        dioDamageOn = true
+        player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
+        player:EvaluateItems()
         tear:Remove()
         WarpZone:FireClub(player, player:GetFireDirection())
     end
