@@ -51,6 +51,8 @@ local roomsClearedSinceTake = -1
 local itemsSucked = 0
 local tickColor = Color(.2, .05, .05, 1, 0, 0, 0)
 
+--diogenes
+
 
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
@@ -68,6 +70,9 @@ CollectibleType.COLLECTIBLE_STRANGE_MARBLE = Isaac.GetItemIdByName("Strange Marb
 CollectibleType.COLLECTIBLE_IS_YOU = Isaac.GetItemIdByName("Is You")
 CollectibleType.COLLECTIBLE_NIGHTMARE_TICK = Isaac.GetItemIdByName("Nightmare Tick")
 CollectibleType.COLLECTIBLE_SPELUNKERS_PACK = Isaac.GetItemIdByName("Spelunker's Pack")
+CollectibleType.COLLECTIBLE_DIOGENES_POT = Isaac.GetItemIdByName("Diogenes's Pot")
+CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE = Isaac.GetItemIdByName(" Diogenes's Pot ")
+
 
 --external item descriptions
 if EID then
@@ -1428,3 +1433,89 @@ function WarpZone:OnEntityDeath(npc)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_NPC_DEATH, WarpZone.OnEntityDeath)
+
+function WarpZone:UseDiogenes(collectible, rng, entityplayer, useflags, activeslot, customvardata)
+
+    entityplayer:AddCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE, 0, false, activeslot)
+    SfxManager:Play(SoundEffect.SOUND_URN_OPEN)
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseDiogenes, CollectibleType.COLLECTIBLE_DIOGENES_POT)
+
+
+
+function WarpZone:SheathDiogenes(collectible, rng, entityplayer, useflags, activeslot, customvardata)
+    entityplayer:AddCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT, 0, false, activeslot)
+    SfxManager:Play(SoundEffect.SOUND_URN_CLOSE)
+
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.SheathDiogenes, CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE)
+
+
+
+function WarpZone:FireClub(player, direction)
+	if not player:GetEffects():HasCollectibleEffect(CollectibleType.COLLECTIBLE_BERSERK) and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN_B then
+		player:UseActiveItem(CollectibleType.COLLECTIBLE_NOTCHED_AXE)
+		--WarpZone:scheduleForUpdate(function()
+			--player:UseActiveItem(CollectibleType.COLLECTIBLE_NOTCHED_AXE)
+		--end, 0)
+	end
+	if direction then
+		player:GetData().InputHook = WarpZone.directiontoshootdirection[direction]
+	else
+		player:GetData().InputHook = -1
+	end
+	player:SetShootingCooldown(0)
+	WarpZone.scanforclub = true
+end
+
+WarpZone.directiontoshootdirection = {
+	[Direction.LEFT] = ButtonAction.ACTION_SHOOTLEFT,
+	[Direction.UP] = ButtonAction.ACTION_SHOOTUP,
+	[Direction.RIGHT] = ButtonAction.ACTION_SHOOTRIGHT,
+	[Direction.DOWN] = ButtonAction.ACTION_SHOOTDOWN
+}
+
+WarpZone:AddCallback(ModCallbacks.MC_INPUT_ACTION, function(_, entity, hook, action)
+	if WarpZone.scanforclub then
+		if entity and entity:GetData().InputHook and action == entity:GetData().InputHook and entity:ToPlayer() then
+			return true
+		end
+	end
+end, InputHook.IS_ACTION_PRESSED)
+
+WarpZone:AddCallback(ModCallbacks.MC_INPUT_ACTION, function(_, entity, hook, action)
+	if WarpZone.scanforclub then
+		if entity and entity:GetData().InputHook and action == entity:GetData().InputHook and entity:ToPlayer() then
+			return 2
+		end
+	end
+end, InputHook.GET_ACTION_VALUE)
+
+WarpZone:AddCallback(ModCallbacks.MC_POST_KNIFE_INIT, function(_, knife)
+	if knife.Variant == 9 then
+		if knife.SubType == 4 then
+			local player = WarpZone:getPlayerFromKnife(knife)
+			if WarpZone.scanforclub then
+				if player:GetData().InputHook and knife.Position:Distance(player.Position) < 20 then
+					knife:GetData().CustomClub = true
+					player:GetData().GrabbedClub = knife
+					WarpZone.scanforclub = false
+					player:GetData().InputHook = nil
+					knife.Variant = 1 --Setting the variant to 1 (bone club) prevents it from breaking rocks
+				end
+			elseif player:GetData().GrabbedClub and player:GetData().GrabbedClub:Exists() then
+				knife.Variant = 1
+			end
+		elseif WarpZone.scanforclub then
+			knife.Visible = false
+		end
+	end
+end)
+
+WarpZone:AddCallback(ModCallbacks.MC_POST_FIRE_TEAR, function(_, tear)
+	local player = WarpZone:GetPlayerFromTear(tear)
+    if player and player:HasCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE) and false then
+        tear:Remove()
+        WarpZone:FireClub(player, player:GetFireDirection())
+    end
+end)
