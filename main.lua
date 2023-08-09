@@ -86,6 +86,22 @@ if EID then
     EID:addCollectible(CollectibleType.COLLECTIBLE_IS_YOU, "#Point the reticle at an obstacle to use an active item effect that corresponds to it.#For example, pointing it at a normal rock lets you use Mom's Bracelet", "Is You",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK, "#Every 8 room clears, one passive item is removed from your inventory.#.75 Damage Up for each item removed this way", "Nightmare Tick",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_SPELUNKERS_PACK, "#+12 bombs#Pits within your bombs' blast radius are filled in.#When your bomb explodes, the resonant force breaks tinted and super secret rocks throughout the room. #Bomb rocks in the room will break apart, dropping a bomb pickup.", "Spelunker's Pack",  "en_us")
+    
+    EID:addCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL, "#Зачистка комнаты имеет 50% шанс оставить никель, пропадающий через 2 секунды.#При получении урона игрок теряет половину своих монет, и бросает на пол эти монеты (они пропадают через 1 секунду).#Если у игрока есть монеты, урон будет в полное сердце.", "Золотой Идол", "ru")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_PASTKILLER, "#Удаляет первые три предмета,полученных в забеге (Может удалить сюжетные предметы).#Создает по три пьедестала с предметами из того же пула за каждый потерянный предмет, из 3х предметов можно взять только 1.#The new items are from the same pools as the ones you lost.", "Пушка, Убивающая Прошлое", "ru")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE, "#+1 Контейнер Сердца #Случайная карта/пилюля/руна, случайная монета, бомба и ключ появляются в начале каждого этажа.#Предмет еды, С Кутежником дает -.03 скорости и +.5 скорострельности.", "Именинный Торт", "ru")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON, "#10% шанс выстрелить самонаводящейся слезой, накладывающей кровотечение#100% шанс при 18 удачи", "Ржавая Ложка", "ru")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK, "#-.3 Скорости#+.27 Скорострельности#+.5 Урона#+.04 Дальности#+.16 Скорости слезы#+1 Удачи#При получении урона, 10% шанс предотвратить его.", "Танк Newgrounds", "ru")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_GREED_BUTT, "#При получении урона в зад, персонаж пукает и выпускает монетку.#4% шанс создать золотую кучку вместо пука с монетой.", "Алчная Жопа!", "ru")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_FOCUS, "#Если у вас не полное здоровье, вылечи 1 красное сердце.#При полном здоровье, выпусти большую слезу, наносящую большой урон, проходящую сквозь врагов.#Этот предмет заряжается нанесением урона.", "Фокус", "ru")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_FOCUS_2, "#Если у вас не полное здоровье, вылечи 1 красное сердце.#При полном здоровье, выпусти большую слезу, наносящую большой урон, проходящую сквозь врагов.#Этот предмет заряжается нанесением урона", "Фокус", "ru")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_FOCUS_3, "#Если у вас не полное здоровье, вылечи 1 красное сердце.#При полном здоровье, выпусти большую слезу, наносящую большой урон, проходящую сквозь врагов.#Этот предмет заряжается нанесением урона", "Фокус", "ru")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_FOCUS_4, "#Если у вас не полное здоровье, вылечи 1 красное сердце.#При полном здоровье, выпусти большую слезу, наносящую большой урон, проходящую сквозь врагов.#Этот предмет заряжается нанесением урона", "Фокус", "ru")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_DOORWAY, "#Все двери открываются, и остаются открытыми до конца этажа.#Открываются Секретные комнаты, комнаты Ангела/Дьявола, Дверь Мега Сатаны, Двери Испытания Боссов и Молчания (Если они на этом этаже).#Комнаты испытания открыты, но дверь закрывается на время прохождения испытания.#Открывает Ультра Секретную комнату и проход к ней, так же открывает проход к комнате Ошибки, открывая красные комнаты через Ультра секретную комнату до края карты.", "Проход", "ru")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_STRANGE_MARBLE, "#Все враги с 10% шансом могут стать чемпионами.#Чемпионы всегда оставляют награду, и могут оставить дополнительную.", "Странный Марбл", "ru")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_IS_YOU, "#Создает крестик под персонажем, который надо направлять на препятствия (Камни, Блоки и т.д.).#После этого, нужно еще раз активировать предмет для срабатывания эффекта. У каждого обьекта свой эффект.", "Это Ты",  "ru")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK, "#Каждые 8 зачисток комнат, Один предмет пропадает из инвентаря.#+.75 Урона за пропавший предмет", "Кошмарный Клещ",  "ru")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_SPELUNKERS_PACK, "#+12 бомб#Все ямы в радиусе взрыва заполняются.#При взрыве бомбы, Все меченые и двойные меченые камни взорвутся не смотря на то что они вне радиуса взрыва. #Камни с бомбами сломаются и оставят бомбу на их месте.", "Рюкзак Спелеолога",  "ru")
 
 end
 
@@ -1225,7 +1241,7 @@ function WarpZone:checkTear(entitytear)
     elseif player and player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
         tear:GetData().NightmareColor = true
     end
-    if CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() and primeShot then
+    if player and CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() and primeShot then
         SfxManager:Play(SoundEffect.SOUND_EXPLOSION_WEAK, 3)
         primeShot = false
         tear:GetData().FocusShot = true
