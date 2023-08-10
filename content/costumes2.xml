@@ -3,6 +3,6 @@
     <costume id = "3" anm2path = "BirthdayCakeCostume.anm2" type = "passive" />
     <costume id = "4" anm2path = "rustyspoons.anm2" type = "passive" skinColor = "4" />
     <costume id = "12" anm2path = "strangemarble.anm2" type = "passive" />
-    <costume id = "14" anm2path = "nightmaretick.anm2" type = "passive" />
+    <costume id = "14" anm2path = "NightmareTickCostume.anm2" type = "passive" />
     <costume id = "5" anm2path = "NewgroundsTank.anm2" type = "passive" />
 </costumes>

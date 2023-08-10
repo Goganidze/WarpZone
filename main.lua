@@ -83,6 +83,17 @@ local george_room_type = {
 --possession
 local numPossessed = 0
 
+--lollipop
+local Lollipop = {
+	VARIANT = Isaac.GetEntityVariantByName("Lollipop"), 
+	ORBIT_DISTANCE = Vector(40.0, 40.0), 
+	ORBIT_CENTER_OFFSET = Vector(0.0, 0.0),
+	ORBIT_LAYER = 124, 
+	ORBIT_SPEED = 0.02,
+	CHARM_CHANCE = 5, 
+	CHARM_DURATION = 30 
+}
+
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
@@ -103,6 +114,7 @@ CollectibleType.COLLECTIBLE_DIOGENES_POT = Isaac.GetItemIdByName("Diogenes's Pot
 CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE = Isaac.GetItemIdByName(" Diogenes's Pot ")
 CollectibleType.COLLECTIBLE_GEORGE = Isaac.GetItemIdByName("George")
 CollectibleType.COLLECTIBLE_POSSESSION = Isaac.GetItemIdByName("Possession")
+CollectibleType.COLLECTIBLE_LOLLIPOP = Isaac.GetItemIdByName("Lollipop")
 
 --external item descriptions
 if EID then
@@ -1335,7 +1347,8 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
     if Cache == CacheFlag.CACHE_SHOTSPEED then
         entityplayer.ShotSpeed = entityplayer.ShotSpeed + (tank_qty * .16)
     end
-
+    
+  
 
 
 end
@@ -1563,6 +1576,7 @@ function WarpZone:SheathDiogenes(collectible, rng, entityplayer, useflags, activ
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.SheathDiogenes, CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE)
 
+
 local function runUpdates(tab) --This is from Fiend Folio
     for i = #tab, 1, -1 do
         local f = tab[i]
@@ -1658,3 +1672,52 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_FIRE_TEAR, function(_, tear)
         WarpZone:FireClub(player, player:GetFireDirection())
     end
 end)
+
+
+
+
+local function init_lollipop(_, orbital)
+	orbital.OrbitDistance = Lollipop.ORBIT_DISTANCE
+	orbital.OrbitSpeed = Lollipop.ORBIT_SPEED
+	orbital:AddToOrbit(Lollipop.ORBIT_LAYER)
+end
+
+WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, init_lollipop, Lollipop.VARIANT)
+
+local function update_orbital(_, orbital)
+
+	orbital.OrbitDistance = Lollipop.ORBIT_DISTANCE 
+	orbital.OrbitSpeed = Lollipop.ORBIT_SPEED
+	
+	local center_pos = (orbital.Player.Position + orbital.Player.Velocity) + Lollipop.ORBIT_CENTER_OFFSET
+	local orbit_pos = orbital:GetOrbitPosition(center_pos)
+	orbital.Velocity = orbit_pos - orbital.Position
+end
+
+WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, update_orbital, Lollipop.VARIANT)
+
+
+local function pre_orbital_collision(_, orbital, collider, low)
+	if collider:IsVulnerableEnemy() then
+        local enemy_obj = collider:ToNPC()
+        if enemy_obj.HitPoints < enemy_obj.MaxHitPoints then
+            collider.AddHealth(7)
+        end
+        if math.random(Lollipop.CHARM_CHANCE) == 1 then
+            collider:AddCharmed(EntityRef(orbital), Lollipop.CHARM_DURATION, true)
+        end
+	end
+end
+
+WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, pre_orbital_collision, Lollipop.VARIANT)
+
+
+local function update_cache(_, player, cache_flag)
+	if cache_flag == CacheFlag.CACHE_FAMILIARS then
+		local pop_pickups = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_LOLLIPOP)
+		local pop_rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_LOLLIPOP)
+		player:CheckFamiliar(Lollipop.VARIANT, pop_pickups, pop_rng)
+	end
+end
+
+WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, update_cache)
