@@ -80,6 +80,9 @@ local george_room_type = {
     RoomType.ROOM_LIBRARY
 }
 
+--possession
+local numPossessed = 0
+
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
@@ -99,7 +102,7 @@ CollectibleType.COLLECTIBLE_SPELUNKERS_PACK = Isaac.GetItemIdByName("Spelunker's
 CollectibleType.COLLECTIBLE_DIOGENES_POT = Isaac.GetItemIdByName("Diogenes's Pot")
 CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE = Isaac.GetItemIdByName(" Diogenes's Pot ")
 CollectibleType.COLLECTIBLE_GEORGE = Isaac.GetItemIdByName("George")
-
+CollectibleType.COLLECTIBLE_POSSESSION = Isaac.GetItemIdByName("Possession")
 
 --external item descriptions
 if EID then
@@ -712,6 +715,20 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
         return
     end
     
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_POSSESSION) then
+        local entities = Isaac.GetRoomEntities()
+        numPossessed = 0
+        
+        for i, entity_pos in ipairs(entities) do
+            local spawner = entity_pos.SpawnerEntity
+            if  entity_pos:HasEntityFlags(EntityFlag.FLAG_CHARM) and (entity_pos:GetData().InPossession or (spawner and spawner:GetData().InPossession)) then
+                entity_pos:ClearEntityFlags(EntityFlag.FLAG_CHARM)
+                entity_pos:ClearEntityFlags(EntityFlag.FLAG_FRIENDLY)
+                entity_pos:GetData().InPossession = false
+            end
+        end
+    end
+
     if player:HasCollectible(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK) then
         local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK)
         if rng:RandomInt(10) == 1 and  damageflags & DamageFlag.DAMAGE_NO_PENALTIES ~= DamageFlag.DAMAGE_NO_PENALTIES then
@@ -876,6 +893,8 @@ function WarpZone:OnGameStart(isSave)
         DoorwayFloor = saveData[4]
         roomsClearedSinceTake = saveData[5]
         itemsSucked = saveData[6]
+        dioDamageOn = saveData[7]
+        numPossessed = saveData[8]
     end
 
     if not isSave then
@@ -886,6 +905,8 @@ function WarpZone:OnGameStart(isSave)
         DoorwayFloor = -1
         roomsClearedSinceTake = -1
         itemsSucked = 0
+        dioDamageOn = false
+        numPossessed = 0
     end
 
 end
@@ -899,6 +920,8 @@ function WarpZone:preGameExit()
     saveData[4] = DoorwayFloor
     saveData[5] = roomsClearedSinceTake
     saveData[6] = itemsSucked
+    saveData[7] = dioDamageOn
+    saveData[8] = numPossessed
     local jsonString = json.encode(saveData)
     WarpZone:SaveData(jsonString)
   end
@@ -1021,6 +1044,22 @@ function WarpZone:NewRoom()
                 end
             end
         end
+    end
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_POSSESSION) and room:IsFirstVisit() then
+        local entities = Isaac.GetRoomEntities()
+        local charmed = false
+        local tempnumPossessed = 0
+        for i, entity_pos in ipairs(entities) do
+            if entity_pos:GetData().InPossession == true then
+                tempnumPossessed = tempnumPossessed + 1
+            end
+            if not charmed and numPossessed < 15 and entity_pos:IsVulnerableEnemy() and not entity_pos:IsBoss() and not entity_pos:HasEntityFlags(EntityFlag.FLAG_CHARM) then
+                entity_pos:AddCharmed(EntityRef(player), -1)
+                entity_pos:GetData().InPossession = true
+                charmed = true
+            end
+        end
+        numPossessed = tempnumPossessed
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, WarpZone.NewRoom)

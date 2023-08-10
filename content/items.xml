@@ -17,5 +17,6 @@
     <active id="16" gfx="Collectibles_16_Diogenes_Pot_frame1.png" name="Diogenes's Pot" description="Tear it down, start again" quality="2" maxcharges = "0" />
     <active id="17" gfx="Collectibles_16_Diogenes_Pot_frame2.png" name=" Diogenes's Pot " description="Tear it down, start again" quality="2"  maxcharges = "0" />
     <passive id="18" gfx="Collectibles_18_George.png" name="George" description="Look further" quality="1" cache="range" />
+    <passive id="19" gfx="Collectibles_19_Possession.png" name="Possession" description="Follow me!" quality="3" />
 
 </items>

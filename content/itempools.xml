@@ -5,6 +5,10 @@
         <Item Name="Rusty Spoon" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Focus" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Is You" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="George" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Possession" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Diogenes's Pot" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Spelunker's Pack" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="curse">
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -19,6 +23,8 @@
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
 		<Item Name="Gun that can kill the Past" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Rusty Spoon" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="George" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Diogenes's Pot" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="greedCurse">
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -31,6 +37,12 @@
     <Pool Name="shop">
         <Item Name="Greed Butt" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="The Doorway" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="George" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+    </Pool>
+    <Pool Name="greedShop">
+        <Item Name="George" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Diogenes's Pot" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Spelunker's Pack" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="boss">
         <Item Name="Birthday Cake" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -46,14 +58,19 @@
     </Pool>
     <Pool Name="angel">
         <Item Name="Focus" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Possession" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
     <Pool Name="greedAngel">
         <Item Name="Focus" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Possession" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
     <Pool Name="ultraSecret">
         <Item Name="Nightmare Tick" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
     <Pool Name="redChest">
         <Item Name="Nightmare Tick" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+    </Pool>
+    <Pool Name="bombBum">
+        <Item Name="Spelunker's Pack" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 </ItemPools>
