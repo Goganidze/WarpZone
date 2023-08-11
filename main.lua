@@ -86,12 +86,12 @@ local numPossessed = 0
 --lollipop
 local Lollipop = {
 	VARIANT = Isaac.GetEntityVariantByName("Lollipop"), 
-	ORBIT_DISTANCE = Vector(40.0, 40.0), 
+	ORBIT_DISTANCE = Vector(30.0, 30.0),
 	ORBIT_CENTER_OFFSET = Vector(0.0, 0.0),
-	ORBIT_LAYER = 124, 
+	ORBIT_LAYER = 124,
 	ORBIT_SPEED = 0.02,
-	CHARM_CHANCE = 5, 
-	CHARM_DURATION = 30 
+	CHARM_CHANCE = 10,
+	CHARM_DURATION = 450
 }
 
 --item defintions
@@ -1700,9 +1700,9 @@ WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, update_orbital, Lollipop.V
 local function pre_orbital_collision(_, orbital, collider, low)
 	if collider:IsVulnerableEnemy() then
         local enemy_obj = collider:ToNPC()
-        if enemy_obj.HitPoints < enemy_obj.MaxHitPoints then
-            collider.AddHealth(7)
-        end
+        --if enemy_obj.HitPoints < enemy_obj.MaxHitPoints then
+        --    collider:AddHealth(1)
+        --end
         if math.random(Lollipop.CHARM_CHANCE) == 1 then
             collider:AddCharmed(EntityRef(orbital), Lollipop.CHARM_DURATION, true)
         end

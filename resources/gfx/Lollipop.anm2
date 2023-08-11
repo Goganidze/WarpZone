@@ -1,8 +1,8 @@
 <AnimatedActor>
-	<Info CreatedBy="Strawrat" CreatedOn="8/10/2023 12:13:11 AM" Version="4" Fps="30"/>
+	<Info CreatedBy="Strawrat" CreatedOn="8/10/2023 7:49:57 PM" Version="5" Fps="30"/>
 	<Content>
 		<Spritesheets>
-			<Spritesheet Path="familiar\familiar_planetoid_earth.png" Id="0"/>
+			<Spritesheet Path="familiar\lollipop_familiar.png" Id="0"/>
 		</Spritesheets>
 		<Layers>
 			<Layer Name="Body" Id="0" SpritesheetId="0"/>
