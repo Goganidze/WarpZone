@@ -18,6 +18,10 @@
     <active id="17" gfx="Collectibles_16_Diogenes_Pot_frame2.png" name=" Diogenes's Pot " description="Tear it down, start again" quality="2"  maxcharges = "0" />
     <passive id="18" gfx="Collectibles_18_George.png" name="George" description="Look further" quality="3" cache="range" />
     <passive id="19" gfx="Collectibles_19_Possession.png" name="Possession" description="Follow me!" quality="3" />
-    <familiar id="20" gfx="Collectibles_20_Lollipop.png" name="Lollipop" description="Don't forget to share!" quality="1" />
+    <familiar id="20" gfx="Collectibles_20_Lollipop.png" name="Lollipop" description="Don't forget to share!" quality="2" />
+    <passive id="21" gfx="Collectibles_21_Water_Bottle_frame1.png" name="Water Bottle" cache = "firedelay" description="Stay hydrated!" quality="2" />
+    <passive id="22" gfx="Collectibles_21_Water_Bottle_frame2.png" name=" Water Bottle " cache = "firedelay" description="Tears + tear size up" quality="2" />
+    <passive id="23" gfx="Collectibles_21_Water_Bottle_frame3.png" name="  Water Bottle  " cache = "firedelay" description="It's half empty..." quality="1" />
+    <passive id="24" gfx="Collectibles_21_Water_Bottle_frame4.png" name="   Water Bottle   " cache = "firedelay" description="You're tearing me apart..." quality="0" />
     
 </items>

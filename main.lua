@@ -90,7 +90,7 @@ local Lollipop = {
 	ORBIT_CENTER_OFFSET = Vector(0.0, 0.0),
 	ORBIT_LAYER = 124,
 	ORBIT_SPEED = 0.02,
-	CHARM_CHANCE = 10,
+	CHARM_CHANCE = 7,
 	CHARM_DURATION = 450
 }
 
@@ -115,14 +115,17 @@ CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE = Isaac.GetItemIdByName(" Diogenes
 CollectibleType.COLLECTIBLE_GEORGE = Isaac.GetItemIdByName("George")
 CollectibleType.COLLECTIBLE_POSSESSION = Isaac.GetItemIdByName("Possession")
 CollectibleType.COLLECTIBLE_LOLLIPOP = Isaac.GetItemIdByName("Lollipop")
-
+CollectibleType.COLLECTIBLE_WATER_FULL = Isaac.GetItemIdByName("Water Bottle")
+CollectibleType.COLLECTIBLE_WATER_MID = Isaac.GetItemIdByName(" Water Bottle ")
+CollectibleType.COLLECTIBLE_WATER_LOW = Isaac.GetItemIdByName("  Water Bottle  ")
+CollectibleType.COLLECTIBLE_WATER_EMPTY = Isaac.GetItemIdByName("   Water Bottle   ")
 --external item descriptions
 if EID then
 	EID:addCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL, "#The player has a 50% chance of receiving a fading nickel when a room is cleared#Damage causes the player to lose half their money, dropping some of it on the ground as fading coins.#When the player is holding money, damage is always 1 full heart", "Golden Idol", "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_PASTKILLER, "#Removes the first 3 items from your inventory, including quest items like the Key Pieces#3 sets of 3 choice pedestals appear#The new items are from the same pools as the ones you lost", "Gun that can Kill the Past", "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE, "#+1 HP#A random consumable and pickups of each type now spawn at the start of a floor#When the player holds Binge Eater, -.03 Speed and +.5 Tears", "Birthday Cake", "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON, "#10% chance to fire a homing tear that inflicts bleed#100% chance at 18 Luck", "Rusty Spoon", "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK, "#.3 Speed Down#.27 Tears Up#.5 Damage Up#1 Range Up#.16 Shot Speed Up#1 Luck Up#On taking a hit, the player has a 10% chance to shield from damage", "Newgrounds Tank", "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK, "#0.3 Speed Down#0.27 Tears Up#0.5 Damage Up#1 Range Up#0.16 Shot Speed Up#1 Luck Up#On taking a hit, the player has a 10% chance to shield from damage", "Newgrounds Tank", "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_GREED_BUTT, "#When hit by an enemy or projectile from behind, you fart, launching a coin out of your butt#There is a 4% chance that you drop a gold poop instead", "Greed Butt", "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_FOCUS, "#When below full red hearts, heal 1 red heart#When at full health, launch a large piercing tear#This item only gains charge by inflicting damage", "Focus", "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_FOCUS_2, "#When below full red hearts, heal 1 red heart#When at full health, launch a large piercing tear#This item only gains charge by inflicting damage", "Focus", "en_us")
@@ -137,6 +140,11 @@ if EID then
     EID:addCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE, "#Toggles a melee hammer strike on and off#When equipped, you receive a 1.5x damage multiplier#Getting hit while equipped teleports you to the starting room", "Diogenes's Pot",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_GEORGE, "#2.4 Range Up#When entering most special rooms, a red room will unlock across from you", "George",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_POSSESSION, "#Each room, one random non-boss enemy will be permanently charmed#These enemies carry over between rooms#Only 15 enemies can be charmed at a time#Taking damage (excluding sacrifice rooms, etc) removes the charm from all affected enemies, making them hostile again", "Possession",  "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_LOLLIPOP, "#Spawns a lollipop orbital. It does no damage, but it charms enemies on contact", "Lollipop",  "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_WATER_EMPTY, "#I did not hit her#It is bullshit#I did not hit her#I did not", "Water Bottle",  "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_WATER_LOW, "#0.22 Tears Up#Tear Size Up", "Water Bottle",  "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_WATER_MID, "#0.37 Tears Up#Tear Size Up", "Water Bottle",  "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_WATER_FULL, "#0.43 Tears Up#Tear Size Up", "Water Bottle",  "en_us")
     
 
     EID:addCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL, "#Зачистка комнаты имеет 50% шанс оставить никель, пропадающий через 2 секунды.#При получении урона игрок теряет половину своих монет, и бросает на пол эти монеты (они пропадают через 1 секунду).#Если у игрока есть монеты, урон будет в полное сердце.", "Золотой Идол", "ru")
@@ -1305,11 +1313,11 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
     end
 
     if Cache == CacheFlag.CACHE_FIREDELAY then
-        local maxFireDelay = math.min(5, entityplayer.MaxFireDelay)
-
+        local waterAmount = (entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_WATER_FULL) * 2) + (entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_WATER_MID) * 1.5) + (entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_WATER_LOW) * .75)
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK) then
             entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - tank_qty
         end
+        entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - waterAmount
         entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - (cakeBingeBonus * 2)
     end
         
@@ -1405,8 +1413,11 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_LASER_INIT, WarpZone.checkLaser)
 
 function WarpZone:updateTear(entitytear)
     local tear = entitytear:ToTear()
+    local focusshot = false
+    local player = WarpZone:GetPlayerFromTear(tear)
     if tear:GetData() then
-        if tear:GetData().FocusShot == true then
+        focusshot = tear:GetData().FocusShot == true
+        if focusshot then
             tear:GetData().FocusShot = false
             tear:AddTearFlags(TearFlags.TEAR_PIERCING)
             tear:AddTearFlags(TearFlags.TEAR_SPECTRAL)
@@ -1432,6 +1443,17 @@ function WarpZone:updateTear(entitytear)
         elseif tear:GetData().NightmareColor then
             local sprite_tear = tear:GetSprite()
             sprite_tear.Color = tickColor
+        end
+    end
+    local waterAmount = 1
+    if player then
+        waterAmount = waterAmount + 0.3 * ((player:GetCollectibleNum(CollectibleType.COLLECTIBLE_WATER_FULL) * 3) + (player:GetCollectibleNum(CollectibleType.COLLECTIBLE_WATER_MID) * 2) + (player:GetCollectibleNum(CollectibleType.COLLECTIBLE_WATER_LOW) * 1))
+    end
+    if not focusshot then
+        if tear:GetData().resized == nil then
+            tear.Scale = tear.Scale * waterAmount
+            tear:ResetSpriteScale()
+            tear:GetData().resized = true
         end
     end
 end

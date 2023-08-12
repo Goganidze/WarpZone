@@ -46,6 +46,10 @@
     </Pool>
 	<Pool Name="boss">
         <Item Name="Birthday Cake" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Water Bottle" Weight=".25" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name=" Water Bottle " Weight=".25" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="  Water Bottle  " Weight=".25" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="   Water Bottle   " Weight=".25" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="greedBoss">
         <Item Name="Birthday Cake" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
