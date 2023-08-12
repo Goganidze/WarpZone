@@ -1331,7 +1331,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         end
 
         if dioDamageOn == true then
-            entityplayer.Damage = entityplayer.Damage * 2
+            entityplayer.Damage = entityplayer.Damage * 3
         end
 
     end
