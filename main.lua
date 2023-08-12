@@ -136,6 +136,7 @@ if EID then
     EID:addCollectible(CollectibleType.COLLECTIBLE_IS_YOU, "#Point the reticle at an obstacle to use an active item effect that corresponds to it#For example, pointing it at a normal rock lets you use Mom's Bracelet", "Is You",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK, "#Every 8 room clears, one passive item is removed from your inventory#.75 Damage Up for each item removed this way", "Nightmare Tick",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_SPELUNKERS_PACK, "#+12 bombs#Pits within your bombs' blast radius are filled in#When your bomb explodes, the resonant force breaks tinted and super secret rocks throughout the room #Bomb rocks in the room will break apart, dropping a bomb pickup", "Spelunker's Pack",  "en_us")
+
     EID:addCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT, "#Toggles a melee hammer strike on and off#When equipped, you receive a 1.5x damage multiplier#Getting hit while equipped teleports you to the starting room", "Diogenes's Pot",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE, "#Toggles a melee hammer strike on and off#When equipped, you receive a 1.5x damage multiplier#Getting hit while equipped teleports you to the starting room", "Diogenes's Pot",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_GEORGE, "#2.4 Range Up#When entering most special rooms, a red room will unlock across from you", "George",  "en_us")
@@ -995,7 +996,6 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, WarpZone.LevelStart)
 function WarpZone:NewRoom()
     local player = Isaac.GetPlayer(0)
     local room = Game():GetRoom()
-    
     dioDamageOn = false
     player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
     player:EvaluateItems()
@@ -1594,7 +1594,6 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseDiogenes, Collectible
 function WarpZone:SheathDiogenes(collectible, rng, entityplayer, useflags, activeslot, customvardata)
     entityplayer:AddCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT, 0, false, activeslot)
     SfxManager:Play(SoundEffect.SOUND_URN_CLOSE)
-
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.SheathDiogenes, CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE)
 
@@ -1673,6 +1672,8 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_KNIFE_INIT, function(_, knife)
 					WarpZone.scanforclub = false
 					player:GetData().InputHook = nil
 					knife.Variant = 1 --Setting the variant to 1 (bone club) prevents it from breaking rocks
+                    --knife.Scale = knife.Scale * 2
+                    --print(knife.Scale)
 				end
 			elseif player:GetData().GrabbedClub and player:GetData().GrabbedClub:Exists() then
 				knife.Variant = 1
@@ -1686,12 +1687,16 @@ end)
 WarpZone:AddCallback(ModCallbacks.MC_POST_FIRE_TEAR, function(_, tear)
 	local player = WarpZone:GetPlayerFromTear(tear)
     
-    if player and player:HasCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE) then
-        dioDamageOn = true
+    if player then
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE) then
+            dioDamageOn = true
+            tear:Remove()
+            WarpZone:FireClub(player, player:GetFireDirection())
+        else
+            dioDamageOn = false
+        end
         player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
         player:EvaluateItems()
-        tear:Remove()
-        WarpZone:FireClub(player, player:GetFireDirection())
     end
 end)
 
