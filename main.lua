@@ -1682,7 +1682,6 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_KNIFE_INIT, function(_, knife)
 					player:GetData().InputHook = nil
 					knife.Variant = 1 --Setting the variant to 1 (bone club) prevents it from breaking rocks
                     --knife.Scale = knife.Scale * 2
-                    --print(knife.Scale)
 				end
 			elseif player:GetData().GrabbedClub and player:GetData().GrabbedClub:Exists() then
 				knife.Variant = 1
