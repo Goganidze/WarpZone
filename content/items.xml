@@ -23,5 +23,6 @@
     <passive id="22" gfx="Collectibles_21_Water_Bottle_frame2.png" name=" Water Bottle " cache = "firedelay" description="Tears + tear size up" quality="2" />
     <passive id="23" gfx="Collectibles_21_Water_Bottle_frame3.png" name="  Water Bottle  " cache = "firedelay" description="It's half empty..." quality="1" />
     <passive id="24" gfx="Collectibles_21_Water_Bottle_frame4.png" name="   Water Bottle   " cache = "firedelay" description="You're tearing me apart..." quality="0" />
-    
+
+    <trinket name="Ring of the Snake" description="Starting hand +2" gfx="Trinket_01_RingSnake.png" />
 </items>
