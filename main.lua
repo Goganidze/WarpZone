@@ -93,6 +93,7 @@ local Lollipop = {
 	CHARM_CHANCE = 7,
 	CHARM_DURATION = 450
 }
+local roomsSinceBreak = 0
 
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
@@ -901,6 +902,14 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
             end
         end
     end
+
+    if roomsSinceBreak > 0 then
+        roomsSinceBreak = roomsSinceBreak - 1
+        if roomsSinceBreak == 0 then
+            player:RespawnFamiliars()
+        end
+    end
+
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, WarpZone.spawnCleanAward)
 
@@ -1733,7 +1742,34 @@ local function pre_orbital_collision(_, orbital, collider, low)
         if math.random(Lollipop.CHARM_CHANCE) == 1 then
             collider:AddCharmed(EntityRef(orbital), Lollipop.CHARM_DURATION, true)
         end
-	end
+	elseif collider:ToProjectile() ~= nil then
+        if orbital:GetData().PopHP == nil then
+            orbital:GetData().PopHP = 6
+        else
+            orbital:GetData().PopHP = orbital:GetData().PopHP-1
+        end
+
+        
+        if orbital:GetData().PopHP == 0 then
+            local orbitalPosition = orbital.Position
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_HEART, 0, orbitalPosition, Vector(0, 0), orbital)
+            orbital:Remove()
+            SfxManager:Play(SoundEffect.SOUND_ROCK_CRUMBLE)
+            roomsSinceBreak = 12
+        elseif orbital:GetData().PopHP < 2 then
+            local sprite = orbital:GetSprite()
+            sprite:Load("gfx/Lollipop_cracked_2.anm2",false)
+			sprite:LoadGraphics()
+            sprite:Play("Float", true)
+        elseif orbital:GetData().PopHP < 4 then
+            local sprite = orbital:GetSprite()
+            sprite:Load("gfx/Lollipop_cracked.anm2",false)
+			sprite:LoadGraphics()
+            sprite:Play("Float", true)
+        end
+
+        collider:Die()
+    end
 end
 
 WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, pre_orbital_collision, Lollipop.VARIANT)
