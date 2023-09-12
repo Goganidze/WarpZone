@@ -1,12 +1,12 @@
 <AnimatedActor>
-	<Info CreatedBy="Unknown" CreatedOn="2023-08-10 1:56:48 PM" Version="5" Fps="30"/>
+	<Info CreatedBy="Unknown" CreatedOn="2023-08-14 4:40:57 PM" Version="5" Fps="30"/>
 	<Content>
 		<Spritesheets>
 			<Spritesheet Path="costumes\tankmanbody_costume.png" Id="0"/>
 			<Spritesheet Path="costumes\tankmanhead_costume.png" Id="1"/>
 		</Spritesheets>
 		<Layers>
-			<Layer Name="body0" Id="0" SpritesheetId="0"/>
+			<Layer Name="body" Id="0" SpritesheetId="0"/>
 			<Layer Name="head" Id="1" SpritesheetId="1"/>
 		</Layers>
 		<Nulls/>
