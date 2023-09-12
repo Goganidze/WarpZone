@@ -95,6 +95,14 @@ local Lollipop = {
 }
 local roomsSinceBreak = 0
 
+--aubrey
+local BegVariant = Isaac.GetEntityVariantByName("Weapon Beggar")
+local floorBeggar = -1
+local BASE_PAYOUT_CHANCE = 0.065
+local STEP_PAYOUT_CHANCE = 0.035
+local KEEPER_BONUS = 0.5
+
+
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
@@ -120,7 +128,7 @@ CollectibleType.COLLECTIBLE_WATER_FULL = Isaac.GetItemIdByName("Water Bottle")
 CollectibleType.COLLECTIBLE_WATER_MID = Isaac.GetItemIdByName(" Water Bottle ")
 CollectibleType.COLLECTIBLE_WATER_LOW = Isaac.GetItemIdByName("  Water Bottle  ")
 CollectibleType.COLLECTIBLE_WATER_EMPTY = Isaac.GetItemIdByName("   Water Bottle   ")
-
+CollectibleType.COLLECTIBLE_AUBREY = Isaac.GetItemIdByName("Aubrey")
 TrinketType.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
 
 --external item descriptions
@@ -931,6 +939,7 @@ function WarpZone:OnGameStart(isSave)
         itemsSucked = saveData[6]
         dioDamageOn = saveData[7]
         numPossessed = saveData[8]
+        floorBeggar = saveData[9]
     end
 
     if not isSave then
@@ -943,6 +952,7 @@ function WarpZone:OnGameStart(isSave)
         itemsSucked = 0
         dioDamageOn = false
         numPossessed = 0
+        floorBeggar = -1
     end
 
 end
@@ -958,6 +968,7 @@ function WarpZone:preGameExit()
     saveData[6] = itemsSucked
     saveData[7] = dioDamageOn
     saveData[8] = numPossessed
+    saveData[9] = floorBeggar
     local jsonString = json.encode(saveData)
     WarpZone:SaveData(jsonString)
   end
@@ -968,13 +979,14 @@ function WarpZone:preGameExit()
 function WarpZone:DebugText()
     local player = Isaac.GetPlayer(0)
     local coords = player.Position
-    --Isaac.RenderText(debug_str, 100, 60, 1, 1, 1, 255)
+    debug_str = tostring(coords)
+    Isaac.RenderText(debug_str, 100, 60, 1, 1, 1, 255)
 
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
 
 function WarpZone:LevelStart()
-    local currentStage = Game():GetLevel():GetStage()
+    floorBeggar = -1
     local player = Isaac.GetPlayer(0)
     if totalFocusDamage > 0 and (CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() or
     CollectibleType.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
@@ -1097,6 +1109,7 @@ function WarpZone:NewRoom()
             end
         end
     end
+    
     if player:HasCollectible(CollectibleType.COLLECTIBLE_POSSESSION) and room:IsFirstVisit() then
         local entities = Isaac.GetRoomEntities()
         local charmed = false
@@ -1112,6 +1125,18 @@ function WarpZone:NewRoom()
             end
         end
         numPossessed = tempnumPossessed
+    end
+
+    if floorBeggar < 0 and room:GetType() == RoomType.ROOM_SHOP and player:HasCollectible(CollectibleType.COLLECTIBLE_AUBREY) then
+        floorBeggar = 0
+        Isaac.Spawn(
+            EntityType.ENTITY_SLOT,
+            BegVariant,
+            0,
+            Vector(450, 160),
+            Vector(0,0),
+            nil
+        )
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, WarpZone.NewRoom)
@@ -1805,3 +1830,124 @@ local function update_cache(_, player, cache_flag)
 end
 
 WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, update_cache)
+
+local function playerToNum(player)
+	for num = 0, Game():GetNumPlayers()-1 do
+		if GetPtrHash(player) == GetPtrHash(Isaac.GetPlayer(num)) then return num end
+	end
+end
+
+local function pityLevel(beggar)
+	if beggar:GetData()["Pity Counter"] then return beggar:GetData()["Pity Counter"] end
+	return 0
+end
+
+
+local function beggarDropOdds(beggar, isKeeper)
+	local rand = beggar:GetDropRNG():RandomFloat()
+	local success = false
+	-- if Game().Difficulty == Difficulty.DIFFICULTY_HARD then ticks = ticks - 6 end
+	if isKeeper then
+		success = rand < (BASE_PAYOUT_CHANCE + pityLevel(beggar) * STEP_PAYOUT_CHANCE) * (1+KEEPER_BONUS)
+	else
+		success = rand < BASE_PAYOUT_CHANCE + pityLevel(beggar) * STEP_PAYOUT_CHANCE
+	end
+	if success then
+		beggar:GetData()["Pity Counter"] = nil
+		return true
+	else
+		if not beggar:GetData()["Pity Counter"] then beggar:GetData()["Pity Counter"] = 0 end
+        beggar:GetData()["Pity Counter"] = beggar:GetData()["Pity Counter"] + 1
+		return false
+	end
+end
+
+function WarpZone:donation(player, beggar, low)
+	if beggar.Type == EntityType.ENTITY_SLOT and beggar.Variant == BegVariant then
+		if beggar:GetSprite():IsPlaying("Idle") and player:GetNumCoins() > 0 then
+			player:AddCoins(-1)
+			SFXManager():Play(SoundEffect.SOUND_SCAMPER, 1.0, 0, false, 1.0)
+			if beggarDropOdds(beggar, player:GetPlayerType() == PlayerType.PLAYER_KEEPER or player:GetPlayerType() == PlayerType.PLAYER_KEEPER_B) then
+				beggar:GetSprite():Play("PayPrize")
+				beggar:GetData()["Playing Player"] = playerToNum(player)
+				if player:GetPlayerType() == PlayerType.PLAYER_THESOUL_B then
+					beggar:GetData()["Playing Player"] = playerToNum(player:GetMainTwin())
+				end
+			else
+				beggar:GetSprite():Play("PayNothing")
+			end
+		end
+	end
+end
+WarpZone:AddCallback(ModCallbacks.MC_PRE_PLAYER_COLLISION, WarpZone.donation)
+
+
+local function killBeggar(ent)
+	if ent.Type == EntityType.ENTITY_SLOT and ent.Variant == BegVariant then
+		ent:Kill()
+		ent:Remove()
+		Game():GetLevel():SetStateFlag(LevelStateFlag.STATE_BUM_KILLED, true)
+	end
+end
+
+function WarpZone:BeggarUpdate()
+	local beggars = Isaac.FindByType(EntityType.ENTITY_SLOT, BegVariant)
+    
+	for _,beggar in pairs(beggars) do
+		if beggar:GetSprite():IsFinished("PayNothing") then beggar:GetSprite():Play("Idle")	end
+		if beggar:GetSprite():IsFinished("PayPrize") then beggar:GetSprite():Play("Prize") end
+		if beggar:GetSprite():IsFinished("Prize") then
+            floorBeggar = floorBeggar + 1
+			if floorBeggar >= 3 then
+				beggar:GetSprite():Play("Teleport")
+			else
+				beggar:GetSprite():Play("Idle")
+				beggar:GetData()["Playing Player"] = nil
+			end
+		end
+		if beggar:GetSprite():IsFinished("Teleport") then
+			beggar:Remove()
+		end
+
+        if beggar:GetSprite():IsEventTriggered("Prize") then
+			local prizepos = Game():GetRoom():FindFreePickupSpawnPosition(beggar.Position)
+            local pickup_num
+
+            for i = 1, 10000 do
+                pickup_num = myRNG:RandomInt(733)
+                if Isaac.GetItemConfig():GetCollectible(pickup_num) and Isaac.GetItemConfig():GetCollectible(pickup_num).Type == ItemType.ITEM_ACTIVE  and not (pickup_num >= 550 and pickup_num <= 552) and pickup_num ~= 714 and pickup_num ~= 715 then
+                    break
+                end
+            end
+            
+            local item_spawn = Isaac.Spawn(EntityType.ENTITY_PICKUP,
+                        PickupVariant.PICKUP_COLLECTIBLE,
+                        pickup_num,
+                        prizepos,
+                        Vector(0,0),
+                        nil):ToPickup()
+			
+            --item_spawn.AutoUpdatePrice = false
+            --item_spawn.Price = 10
+            --item_spawn.OptionsPickupIndex = 1776
+            --item_spawn.ShopItemId = 5 + floorBeggar
+			SFXManager():Play(SoundEffect.SOUND_SLOTSPAWN, 1.0, 0, false, 1.0)
+			
+		end
+		if beggar:GetSprite():IsEventTriggered("Disappear") then
+			beggar.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+		end
+	end
+	local explosions = Isaac.FindByType(EntityType.ENTITY_EFFECT, EffectVariant.BOMB_EXPLOSION)
+	for _,plosion in pairs(explosions) do
+		local frame = plosion:GetSprite():GetFrame()
+		if frame < 3 then -- I'm afraid of 60 vs 30 breaking an exact check
+			local size = plosion.SpriteScale.X -- default is 1, can be increased
+			local nearby = Isaac.FindInRadius(plosion.Position, 75*size)
+			for _,v in pairs(nearby) do
+				killBeggar(v)
+			end
+		end
+	end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.BeggarUpdate)

@@ -6,6 +6,7 @@
         <Item Name="Focus" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Is You" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="George" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Aubrey" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Possession" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Diogenes's Pot" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Spelunker's Pack" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -24,6 +25,7 @@
 		<Item Name="Gun that can kill the Past" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Rusty Spoon" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="George" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Aubrey" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Diogenes's Pot" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="greedCurse">
@@ -38,9 +40,11 @@
         <Item Name="Greed Butt" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="The Doorway" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="George" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Aubrey" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
     <Pool Name="greedShop">
         <Item Name="George" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Aubrey" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Diogenes's Pot" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Spelunker's Pack" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
