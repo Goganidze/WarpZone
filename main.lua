@@ -1930,7 +1930,7 @@ function WarpZone:BeggarUpdate()
             --item_spawn.AutoUpdatePrice = false
             --item_spawn.Price = 10
             --item_spawn.OptionsPickupIndex = 1776
-            --item_spawn.ShopItemId = 5 + floorBeggar
+
 			SFXManager():Play(SoundEffect.SOUND_SLOTSPAWN, 1.0, 0, false, 1.0)
 			
 		end
