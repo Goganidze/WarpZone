@@ -1979,38 +1979,44 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.BeggarUpdate)
 function WarpZone:UseRLHand(collectible, rng, entityplayer, useflags, activeslot, customvardata)
     local entities = Isaac.GetRoomEntities()
     local left_rng = entityplayer:GetCollectibleRNG(CollectibleType.COLLECTIBLE_REAL_LEFT)
-    local nochest = false
+    local ischest = false
 
     for i, entity_pos in ipairs(entities) do
         local rand_num = left_rng:RandomInt(100) 
         if entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_MIMICCHEST then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_HAUNTEDCHEST, 0)
+            ischest = true
         elseif entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_HAUNTEDCHEST then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_CHEST, 0)
+            ischest = true
         elseif entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_CHEST then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_REDCHEST, 0)
+            ischest = true
         elseif entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_REDCHEST and rand_num > 50 then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_LOCKEDCHEST, 0)
+            ischest = true
         elseif entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_REDCHEST then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_BOMBCHEST, 0)
+            ischest = true
         elseif entity_pos.Type == EntityType.ENTITY_PICKUP and (entity_pos.Variant == PickupVariant.PICKUP_BOMBCHEST or entity_pos.Variant == PickupVariant.PICKUP_LOCKEDCHEST) and rand_num > 50 then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_WOODENCHEST, 0)
+            ischest = true
         elseif entity_pos.Type == EntityType.ENTITY_PICKUP and (entity_pos.Variant == PickupVariant.PICKUP_BOMBCHEST or entity_pos.Variant == PickupVariant.PICKUP_LOCKEDCHEST) then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_OLDCHEST, 0)
+            ischest = true
         elseif entity_pos.Type == EntityType.ENTITY_PICKUP and (entity_pos.Variant == PickupVariant.PICKUP_OLDCHEST or entity_pos.Variant == PickupVariant.PICKUP_WOODENCHEST) then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_ETERNALCHEST, 0)
+            ischest = true
         elseif entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_ETERNALCHEST then
-                entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_MEGACHEST, 0)
-        else
-            nochest = true
+            entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_MEGACHEST, 0)
+            ischest = true
         end
-
-        if nochest then
-            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_REDCHEST, ChestSubType.CHEST_CLOSED, Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()), Vector(0, 0), nil)
-        end
-        SfxManager:Play(SoundEffect.SOUND_CHEST_DROP, 2)
-
     end
+
+    if not ischest then
+        Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_REDCHEST, ChestSubType.CHEST_CLOSED, Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()), Vector(0, 0), nil)
+    end
+    SfxManager:Play(SoundEffect.SOUND_CHEST_DROP, 2)
 
     return {
         Discharge = true,
