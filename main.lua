@@ -1977,7 +1977,6 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.BeggarUpdate)
 
 
 function WarpZone:UseRLHand(collectible, rng, entityplayer, useflags, activeslot, customvardata)
-    
     local entities = Isaac.GetRoomEntities()
     local left_rng = entityplayer:GetCollectibleRNG(CollectibleType.COLLECTIBLE_REAL_LEFT)
     local nochest = false
@@ -2006,9 +2005,10 @@ function WarpZone:UseRLHand(collectible, rng, entityplayer, useflags, activeslot
             nochest = true
         end
 
-        if not nochest then
-            SfxManager:Play(SoundEffect.SOUND_CHEST_DROP, 2)
+        if nochest then
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_REDCHEST, ChestSubType.CHEST_CLOSED, Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()), Vector(0, 0), nil)
         end
+        SfxManager:Play(SoundEffect.SOUND_CHEST_DROP, 2)
 
     end
 
