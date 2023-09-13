@@ -2001,7 +2001,7 @@ function WarpZone:UseRLHand(collectible, rng, entityplayer, useflags, activeslot
         elseif entity_pos.Type == EntityType.ENTITY_PICKUP and (entity_pos.Variant == PickupVariant.PICKUP_OLDCHEST or entity_pos.Variant == PickupVariant.PICKUP_WOODENCHEST) then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_ETERNALCHEST, 0)
         elseif entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_ETERNALCHEST then
-                entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_BIGCHEST, 0)
+                entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_MEGACHEST, 0)
         else
             nochest = true
         end
