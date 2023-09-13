@@ -133,6 +133,8 @@ CollectibleType.COLLECTIBLE_WATER_EMPTY = Isaac.GetItemIdByName("   Water Bottle
 CollectibleType.COLLECTIBLE_AUBREY = Isaac.GetItemIdByName("Aubrey")
 CollectibleType.COLLECTIBLE_TONY = Isaac.GetItemIdByName("Tony")
 CollectibleType.COLLECTIBLE_REAL_LEFT = Isaac.GetItemIdByName("The Real Left Hand")
+CollectibleType.COLLECTIBLE_HITOPS = Isaac.GetItemIdByName("Hitops")
+CollectibleType.COLLECTIBLE_TEST_ACTIVE = Isaac.GetItemIdByName("Test Active")
 
 TrinketType.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
 
@@ -991,7 +993,7 @@ function WarpZone:DebugText()
     local player = Isaac.GetPlayer(0)
     local coords = player.Position
     debug_str = tostring(coords)
-    --Isaac.RenderText(debug_str, 100, 60, 1, 1, 1, 255)
+    Isaac.RenderText(debug_str, 100, 60, 1, 1, 1, 255)
 
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
@@ -2025,3 +2027,23 @@ function WarpZone:UseRLHand(collectible, rng, entityplayer, useflags, activeslot
     }
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseRLHand, CollectibleType.COLLECTIBLE_REAL_LEFT)
+
+function WarpZone:FindEffects(collectible, rng, entityplayer, useflags, activeslot, customvardata)
+    local entities = Isaac.GetRoomEntities()
+    local debbug = ""
+    for i, entity_pos in ipairs(entities) do
+        if entity_pos.Type == EntityType.ENTITY_EFFECT 
+        and entity_pos.Variant ~= 87 
+        and entity_pos.Variant ~= 121 then
+            debbug = tostring(entity_pos.Variant) .. "-" .. tostring(entity_pos.Position.X) .. ", " .. tostring(entity_pos.Position.Y)
+            print(debbug)
+        end
+    end
+
+    return {
+        Discharge = false,
+        Remove = false,
+        ShowAnim = true
+    }
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.FindEffects, CollectibleType.COLLECTIBLE_TEST_ACTIVE)

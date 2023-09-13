@@ -26,6 +26,8 @@
     <passive id="25" gfx="Collectibles_22_Aubrey.png" name="Aubrey" description="More weapons" quality="3" />
     <passive id="26" gfx="Collectibles_23_Tony.png" name="Tony" description="No more weapons + DMG up" quality="3" cache = "damage"/>
     <active id="27" gfx="Collectibles_24_The_Real_Left_Hand.png" name="The Real Left Hand" description="This needs a nerf..." quality="3" maxcharges = "6"/>
+    <passive id="28" gfx="Collectibles_25_Hitops.png" name="Hitops" description="Keep 'em clean!" quality="2" cache = "speed range luck"/>
+    <active id="29" gfx="Collectibles_26_Test_Active.png" name="Test Active" description="Diddle me lucky charms..." quality="0" maxcharges = "0"/>
 
     <trinket name="Ring of the Snake" description="Starting hand +2" gfx="Trinket_01_RingSnake.png" />
 </items>
