@@ -102,6 +102,8 @@ local BASE_PAYOUT_CHANCE = 0.065
 local STEP_PAYOUT_CHANCE = 0.035
 local KEEPER_BONUS = 0.5
 
+--tony
+local tonyBuff = 1.6
 
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
@@ -129,6 +131,7 @@ CollectibleType.COLLECTIBLE_WATER_MID = Isaac.GetItemIdByName(" Water Bottle ")
 CollectibleType.COLLECTIBLE_WATER_LOW = Isaac.GetItemIdByName("  Water Bottle  ")
 CollectibleType.COLLECTIBLE_WATER_EMPTY = Isaac.GetItemIdByName("   Water Bottle   ")
 CollectibleType.COLLECTIBLE_AUBREY = Isaac.GetItemIdByName("Aubrey")
+CollectibleType.COLLECTIBLE_TONY = Isaac.GetItemIdByName("Tony")
 TrinketType.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
 
 --external item descriptions
@@ -160,7 +163,10 @@ if EID then
     EID:addCollectible(CollectibleType.COLLECTIBLE_WATER_LOW, "#0.22 Tears Up#Tear Size Up", "Water Bottle",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_WATER_MID, "#0.37 Tears Up#Tear Size Up", "Water Bottle",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_WATER_FULL, "#0.43 Tears Up#Tear Size Up", "Water Bottle",  "en_us")
-    
+    EID:addCollectible(CollectibleType.COLLECTIBLE_AUBREY, "#Once per floor, when entering a shop, a weapon beggar will spawn.#Weapon beggars take coins, and spawn only active items from every pool.#3 active items are spawned from one weapon beggar before it leaves.", "Aubrey",  "en_us")
+
+    EID:addCollectible(CollectibleType.COLLECTIBLE_TONY, "#1.6 Damage Multiplier#+1 Damage Up#When a damage increasing item is taken, the buff and multiplier are both reduced by 1/3.#This item's minimum damage multiplier is 1, it cannot decrease damage.", "Tony",  "en_us")
+
 
     EID:addCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL, "#Зачистка комнаты имеет 50% шанс оставить никель, пропадающий через 2 секунды.#При получении урона игрок теряет половину своих монет, и бросает на пол эти монеты (они пропадают через 1 секунду).#Если у игрока есть монеты, урон будет в полное сердце.", "Золотой Идол", "ru")
     EID:addCollectible(CollectibleType.COLLECTIBLE_PASTKILLER, "#Удаляет первые три предмета,полученных в забеге (Может удалить сюжетные предметы).#Создает по три пьедестала с предметами из того же пула за каждый потерянный предмет, из 3х предметов можно взять только 1.#The new items are from the same pools as the ones you lost.", "Пушка, Убивающая Прошлое", "ru")
@@ -940,6 +946,7 @@ function WarpZone:OnGameStart(isSave)
         dioDamageOn = saveData[7]
         numPossessed = saveData[8]
         floorBeggar = saveData[9]
+        tonyBuff = saveData[10]
     end
 
     if not isSave then
@@ -953,6 +960,7 @@ function WarpZone:OnGameStart(isSave)
         dioDamageOn = false
         numPossessed = 0
         floorBeggar = -1
+        tonyBuff = 1
     end
 
 end
@@ -1345,6 +1353,14 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
         return nil
     end
 
+    if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant == PickupVariant.PICKUP_COLLECTIBLE) and player:HasCollectible(CollectibleType.COLLECTIBLE_TONY) then
+        local dmg_config = Isaac.GetItemConfig():GetCollectible(entity.SubType)
+        if tonyBuff > 1 and entity:GetData().collected ~= true and (dmg_config.CacheFlags & CacheFlag.CACHE_DAMAGE == CacheFlag.CACHE_DAMAGE) then
+            entity:GetData().collected = true
+            tonyBuff = tonyBuff - 0.2
+        end
+    end
+
     if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant == PickupVariant.PICKUP_COLLECTIBLE) and entity:ToPickup():GetData().Logged ~= true then
         local config = Isaac.GetItemConfig():GetCollectible(entity.SubType)
         entity:ToPickup():GetData().Logged = true
@@ -1385,11 +1401,14 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
             entityplayer.Damage = entityplayer.Damage + (itemsSucked * 0.75)
         end
-
+        
+        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_TONY) then
+            entityplayer.Damage = (entityplayer.Damage * tonyBuff) + (tonyBuff * 1.666)
+        end
+        
         if dioDamageOn == true then
             entityplayer.Damage = entityplayer.Damage * 3
         end
-
     end
 
     if Cache == CacheFlag.CACHE_RANGE then
