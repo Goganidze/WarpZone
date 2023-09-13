@@ -103,7 +103,7 @@ local STEP_PAYOUT_CHANCE = 0.035
 local KEEPER_BONUS = 0.5
 
 --tony
-local tonyBuff = 1.6
+local tonyBuff = 1.7
 
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
@@ -132,6 +132,8 @@ CollectibleType.COLLECTIBLE_WATER_LOW = Isaac.GetItemIdByName("  Water Bottle  "
 CollectibleType.COLLECTIBLE_WATER_EMPTY = Isaac.GetItemIdByName("   Water Bottle   ")
 CollectibleType.COLLECTIBLE_AUBREY = Isaac.GetItemIdByName("Aubrey")
 CollectibleType.COLLECTIBLE_TONY = Isaac.GetItemIdByName("Tony")
+CollectibleType.COLLECTIBLE_REAL_LEFT = Isaac.GetItemIdByName("The Real Left Hand")
+
 TrinketType.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
 
 --external item descriptions
@@ -165,7 +167,8 @@ if EID then
     EID:addCollectible(CollectibleType.COLLECTIBLE_WATER_FULL, "#0.43 Tears Up#Tear Size Up", "Water Bottle",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_AUBREY, "#Once per floor, when entering a shop, a weapon beggar will spawn.#Weapon beggars take coins, and spawn only active items from every pool.#3 active items are spawned from one weapon beggar before it leaves.", "Aubrey",  "en_us")
 
-    EID:addCollectible(CollectibleType.COLLECTIBLE_TONY, "#1.6 Damage Multiplier#+1 Damage Up#When a damage increasing item is taken, the buff and multiplier are both reduced by 1/3.#This item's minimum damage multiplier is 1, it cannot decrease damage.", "Tony",  "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_TONY, "#1.7 Damage Multiplier#+1 Damage Up#When any item is taken, the buff and multiplier are both reduced by 0.1#This item's minimum damage multiplier is 1, it cannot decrease damage", "Tony",  "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_REAL_LEFT, "#On use, rerolls all chests in the room into a better counterpart#Chest Order: Mimic -> Haunted -> Grey -> Red -> Golden or Stone -> Wooden or Old -> Eternal -> Mega", "The Real Left Hand",  "en_us")
 
 
     EID:addCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL, "#Зачистка комнаты имеет 50% шанс оставить никель, пропадающий через 2 секунды.#При получении урона игрок теряет половину своих монет, и бросает на пол эти монеты (они пропадают через 1 секунду).#Если у игрока есть монеты, урон будет в полное сердце.", "Золотой Идол", "ru")
@@ -960,7 +963,7 @@ function WarpZone:OnGameStart(isSave)
         dioDamageOn = false
         numPossessed = 0
         floorBeggar = -1
-        tonyBuff = 1
+        tonyBuff = 1.7
     end
 
 end
@@ -1355,9 +1358,11 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
 
     if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant == PickupVariant.PICKUP_COLLECTIBLE) and player:HasCollectible(CollectibleType.COLLECTIBLE_TONY) then
         local dmg_config = Isaac.GetItemConfig():GetCollectible(entity.SubType)
-        if tonyBuff > 1 and entity:GetData().collected ~= true and (dmg_config.CacheFlags & CacheFlag.CACHE_DAMAGE == CacheFlag.CACHE_DAMAGE) then
+        if entity.SubType ~= 0 and tonyBuff > 1 and entity:GetData().collected ~= true then -- and (dmg_config.CacheFlags & CacheFlag.CACHE_DAMAGE == CacheFlag.CACHE_DAMAGE)
             entity:GetData().collected = true
-            tonyBuff = tonyBuff - 0.2
+            tonyBuff = tonyBuff - 0.1
+            player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
+            player:EvaluateItems()
         end
     end
 
@@ -1403,7 +1408,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         end
         
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_TONY) then
-            entityplayer.Damage = (entityplayer.Damage * tonyBuff) + (tonyBuff * 1.666)
+            entityplayer.Damage = (entityplayer.Damage * tonyBuff) + (tonyBuff * 1.428)
         end
         
         if dioDamageOn == true then
@@ -1800,7 +1805,6 @@ WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, update_orbital, Lollipop.V
 
 local function pre_orbital_collision(_, orbital, collider, low)
 	if collider:IsVulnerableEnemy() then
-        local enemy_obj = collider:ToNPC()
         --if enemy_obj.HitPoints < enemy_obj.MaxHitPoints then
         --    collider:AddHealth(1)
         --end
@@ -1970,3 +1974,48 @@ function WarpZone:BeggarUpdate()
 	end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.BeggarUpdate)
+
+
+function WarpZone:UseRLHand(collectible, rng, entityplayer, useflags, activeslot, customvardata)
+    
+    local entities = Isaac.GetRoomEntities()
+    local left_rng = entityplayer:GetCollectibleRNG(CollectibleType.COLLECTIBLE_REAL_LEFT)
+    local nochest = false
+
+    for i, entity_pos in ipairs(entities) do
+        local rand_num = left_rng:RandomInt(100) 
+        if entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_MIMICCHEST then
+            entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_HAUNTEDCHEST, 0)
+        elseif entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_HAUNTEDCHEST then
+            entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_CHEST, 0)
+        elseif entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_CHEST then
+            entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_REDCHEST, 0)
+        elseif entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_REDCHEST and rand_num > 50 then
+            entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_LOCKEDCHEST, 0)
+        elseif entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_REDCHEST then
+            entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_BOMBCHEST, 0)
+        elseif entity_pos.Type == EntityType.ENTITY_PICKUP and (entity_pos.Variant == PickupVariant.PICKUP_BOMBCHEST or entity_pos.Variant == PickupVariant.PICKUP_LOCKEDCHEST) and rand_num > 50 then
+            entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_WOODENCHEST, 0)
+        elseif entity_pos.Type == EntityType.ENTITY_PICKUP and (entity_pos.Variant == PickupVariant.PICKUP_BOMBCHEST or entity_pos.Variant == PickupVariant.PICKUP_LOCKEDCHEST) then
+            entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_OLDCHEST, 0)
+        elseif entity_pos.Type == EntityType.ENTITY_PICKUP and (entity_pos.Variant == PickupVariant.PICKUP_OLDCHEST or entity_pos.Variant == PickupVariant.PICKUP_WOODENCHEST) then
+            entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_ETERNALCHEST, 0)
+        elseif entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_ETERNALCHEST then
+                entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_BIGCHEST, 0)
+        else
+            nochest = true
+        end
+
+        if not nochest then
+            SfxManager:Play(SoundEffect.SOUND_CHEST_DROP, 2)
+        end
+
+    end
+
+    return {
+        Discharge = true,
+        Remove = false,
+        ShowAnim = true
+    }
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseRLHand, CollectibleType.COLLECTIBLE_REAL_LEFT)
