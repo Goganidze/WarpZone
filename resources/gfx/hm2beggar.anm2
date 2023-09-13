@@ -1,8 +1,8 @@
 <AnimatedActor>
-	<Info CreatedBy="Unknown" CreatedOn="9/5/2023 9:39:22 PM" Version="23" Fps="30"/>
+	<Info CreatedBy="Unknown" CreatedOn="9/13/2023 5:10:23 PM" Version="24" Fps="30"/>
 	<Content>
 		<Spritesheets>
-			<Spritesheet Path="items\slots\hm2beggarplaceholder.png" Id="0"/>
+			<Spritesheet Path="items\slots\hm2beggar.png" Id="0"/>
 		</Spritesheets>
 		<Layers>
 			<Layer Name="Sign" Id="0" SpritesheetId="0"/>
