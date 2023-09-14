@@ -105,6 +105,7 @@ local KEEPER_BONUS = 0.5
 --tony
 local tonyBuff = 1.7
 
+
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
@@ -171,6 +172,7 @@ if EID then
 
     EID:addCollectible(CollectibleType.COLLECTIBLE_TONY, "#1.7 Damage Multiplier#+1 Damage Up#When any item is taken, the buff and multiplier are both reduced by 0.1#This item's minimum damage multiplier is 1, it cannot decrease damage", "Tony",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_REAL_LEFT, "#On use, rerolls all chests in the room into a better counterpart#Chest Order: Mimic -> Haunted -> Grey -> Red -> Golden or Stone -> Wooden or Old -> Eternal -> Mega", "The Real Left Hand",  "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_HITOPS, "#0.2 Speed Up#This speed up can exceed the speed cap", "Hitops",  "en_us")
 
 
     EID:addCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL, "#Зачистка комнаты имеет 50% шанс оставить никель, пропадающий через 2 секунды.#При получении урона игрок теряет половину своих монет, и бросает на пол эти монеты (они пропадают через 1 секунду).#Если у игрока есть монеты, урон будет в полное сердце.", "Золотой Идол", "ru")
@@ -1432,6 +1434,9 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
     if Cache == CacheFlag.CACHE_SPEED then
         entityplayer.MoveSpeed = entityplayer.MoveSpeed - (tank_qty * .3)
         entityplayer.MoveSpeed = entityplayer.MoveSpeed - (cakeBingeBonus * .03)
+        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_HITOPS) then
+            entityplayer.MoveSpeed = entityplayer.MoveSpeed + .3
+        end
     end
 
     if Cache == CacheFlag.CACHE_SHOTSPEED then
@@ -2027,23 +2032,3 @@ function WarpZone:UseRLHand(collectible, rng, entityplayer, useflags, activeslot
     }
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseRLHand, CollectibleType.COLLECTIBLE_REAL_LEFT)
-
-function WarpZone:FindEffects(collectible, rng, entityplayer, useflags, activeslot, customvardata)
-    local entities = Isaac.GetRoomEntities()
-    local debbug = ""
-    for i, entity_pos in ipairs(entities) do
-        if entity_pos.Type == EntityType.ENTITY_EFFECT 
-        and entity_pos.Variant ~= 87 
-        and entity_pos.Variant ~= 121 then
-            debbug = tostring(entity_pos.Variant) .. "-" .. tostring(entity_pos.Position.X) .. ", " .. tostring(entity_pos.Position.Y)
-            print(debbug)
-        end
-    end
-
-    return {
-        Discharge = false,
-        Remove = false,
-        ShowAnim = true
-    }
-end
-WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.FindEffects, CollectibleType.COLLECTIBLE_TEST_ACTIVE)
