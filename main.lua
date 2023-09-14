@@ -1435,19 +1435,27 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         entityplayer.MoveSpeed = entityplayer.MoveSpeed - (tank_qty * .3)
         entityplayer.MoveSpeed = entityplayer.MoveSpeed - (cakeBingeBonus * .03)
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_HITOPS) then
-            entityplayer.MoveSpeed = entityplayer.MoveSpeed + .3
+            entityplayer:GetData().breakCap = false
         end
     end
 
     if Cache == CacheFlag.CACHE_SHOTSPEED then
         entityplayer.ShotSpeed = entityplayer.ShotSpeed + (tank_qty * .16)
     end
-    
-  
-
 
 end
 WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, WarpZone.EvaluateCache)
+
+
+function WarpZone:postPlayerUpdate(player)
+    local data = player:GetData()
+
+    if(data.breakCap==false) then
+        player.MoveSpeed = math.min(player.MoveSpeed+player:GetCollectibleNum(CollectibleType.COLLECTIBLE_HITOPS)*0.3, 3)
+        data.breakCap = nil
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpdate, 0)
 
 
 function WarpZone:checkTear(entitytear)
