@@ -879,7 +879,7 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
                      CoinSubType.COIN_NICKEL,
                      Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
                      Vector(0,0),
-                    nil)
+                    nil):ToPickup()
         coin.Timeout = 90
         coin:GetSprite():SetFrame(1)
         if room then
@@ -888,7 +888,7 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
                      CoinSubType.COIN_NICKEL,
                      Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
                      Vector(0,0),
-                    nil)
+                    nil):ToPickup()
             coin2.Timeout = 90
             coin:GetSprite():SetFrame(1)
         end
