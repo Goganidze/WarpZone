@@ -744,7 +744,9 @@ function WarpZone:postRender()
 	local actions = player:GetLastActionTriggers()
 
     if player:HasTrinket(TrinketType.TRINKET_HUNKY_BOYS) and Input.IsActionTriggered(ButtonAction.ACTION_DROP, 0) then
-        player:DropTrinket(player.Position)
+        --player:DropTrinket(player.Position)
+        player:TryRemoveTrinket(TrinketType.TRINKET_HUNKY_BOYS)
+        Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, TrinketType.TRINKET_HUNKY_BOYS, player.Position, Vector(0, 0), nil)
         
     end
 
