@@ -1491,7 +1491,7 @@ function WarpZone:postPlayerUpdate(player)
     local data = player:GetData()
 
     if(data.breakCap==false) then
-        player.MoveSpeed = math.min(player.MoveSpeed+player:GetCollectibleNum(CollectibleType.COLLECTIBLE_HITOPS)*0.3, 3)
+        player.MoveSpeed = math.min(player.MoveSpeed+player:GetCollectibleNum(CollectibleType.COLLECTIBLE_HITOPS)*0.2, 3)
         data.breakCap = nil
     end
 end
