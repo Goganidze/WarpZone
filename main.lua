@@ -658,7 +658,7 @@ function WarpZone:OnUpdate()
                 if entity.Target ~= nil then
                     entity.Target = nil
                 end
-            elseif entity:IsEnemy() and not entity:IsBoss() and random > 5 then
+            elseif entity:IsEnemy()  and random > 5 then --and not entity:IsBoss()
                 for i, target in ipairs(targetPos) do
                     if (math.abs((target.Position - entity.Position):LengthSquared()) < math.abs((player.Position - entity.Position):LengthSquared())) or random > 15 then
                         entity.Target = target
