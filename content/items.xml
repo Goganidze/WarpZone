@@ -30,4 +30,5 @@
     <active id="29" gfx="Collectibles_26_Test_Active.png" name="Test Active" description="Diddle me lucky charms..." quality="0" maxcharges = "0"/>
 
     <trinket name="Ring of the Snake" description="Starting hand +2" gfx="Trinket_01_RingSnake.png" />
+    <trinket name="Hunky Boys" description="You don't care for them...but do they?" gfx="Trinket_02_HunkyBoys.png" />
 </items>

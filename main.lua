@@ -138,6 +138,7 @@ CollectibleType.COLLECTIBLE_HITOPS = Isaac.GetItemIdByName("Hitops")
 CollectibleType.COLLECTIBLE_TEST_ACTIVE = Isaac.GetItemIdByName("Test Active")
 
 TrinketType.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
+TrinketType.TRINKET_HUNKY_BOYS = Isaac.GetTrinketIdByName("Hunky Boys")
 
 --external item descriptions
 if EID then
@@ -173,6 +174,8 @@ if EID then
     EID:addCollectible(CollectibleType.COLLECTIBLE_TONY, "#1.7 Damage Multiplier#+1 Damage Up#When any item is taken, the buff and multiplier are both reduced by 0.1#This item's minimum damage multiplier is 1, it cannot decrease damage", "Tony",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_REAL_LEFT, "#On use, rerolls all chests in the room into a better counterpart#Chest Order: Mimic -> Haunted -> Grey -> Red -> Golden or Stone -> Wooden or Old -> Eternal -> Mega", "The Real Left Hand",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_HITOPS, "#0.2 Speed Up#This speed up can exceed the speed cap", "Hitops",  "en_us")
+
+    EID:addTrinket(TrinketType.TRINKET_HUNKY_BOYS, "#While held, pressing the Drop Trinket button immediately drops your trinket; you don't need to hold it#When on the ground, enemies will target the trinket for a short time.", "Hunky Boys", "en_us")
 
 
     EID:addCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL, "#Зачистка комнаты имеет 50% шанс оставить никель, пропадающий через 2 секунды.#При получении урона игрок теряет половину своих монет, и бросает на пол эти монеты (они пропадают через 1 секунду).#Если у игрока есть монеты, урон будет в полное сердце.", "Золотой Идол", "ru")
@@ -614,7 +617,7 @@ local ChampionsToLoot = {
 function WarpZone:OnUpdate()
 	local room = game:GetRoom()
 	local player = Isaac.GetPlayer(0)
-
+    local numFrames = Game():GetFrameCount()
 	if player:HasCollectible(CollectibleType.COLLECTIBLE_SPELUNKERS_PACK) == true then
 		local entities = Isaac.GetRoomEntities()
 
@@ -636,7 +639,36 @@ function WarpZone:OnUpdate()
 		end
 
 	end
-
+    
+    if numFrames % 60 == 0 then
+        local entities = Isaac.GetRoomEntities()
+        local targetPos = {}
+        local random = myRNG:RandomInt(20)
+        for i, entity in ipairs(entities) do
+            if entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == PickupVariant.PICKUP_TRINKET and entity.SubType == TrinketType.TRINKET_HUNKY_BOYS then
+                if entity:GetEntityFlags() & EntityFlag.FLAG_BAITED ~= EntityFlag.FLAG_BAITED then
+                    table.insert(targetPos, entity)
+                end
+            end
+        end
+        for i, entity in ipairs(entities) do
+            if entity:GetData().distracted and entity:GetData().distracted >= 1 then
+                entity:GetData().distracted = entity:GetData().distracted - 1
+            elseif entity:GetData().distracted and entity:GetData().distracted <=0 then
+                if entity.Target ~= nil then
+                    entity.Target = nil
+                end
+            elseif entity:IsEnemy() and not entity:IsBoss() and random > 5 then
+                for i, target in ipairs(targetPos) do
+                    if (math.abs((target.Position - entity.Position):LengthSquared()) < math.abs((player.Position - entity.Position):LengthSquared())) or random > 15 then
+                        entity.Target = target
+                        entity:GetData().distracted = 3
+                    end
+                end
+            end
+        end
+    end
+    
     if player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) == true or player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true  then
         
         local lasers = Isaac.FindByType(EntityType.ENTITY_LASER)
@@ -707,9 +739,15 @@ function WarpZone:TriggerEffect(position)
     end
 end
 
- function WarpZone:postRender()
+function WarpZone:postRender()
 	local player = Isaac.GetPlayer(0)
 	local actions = player:GetLastActionTriggers()
+
+    if player:HasTrinket(TrinketType.TRINKET_HUNKY_BOYS) and Input.IsActionTriggered(ButtonAction.ACTION_DROP, 0) then
+        player:DropTrinket(player.Position)
+        
+    end
+
 	if actions & ActionTriggers.ACTIONTRIGGER_ITEMACTIVATED > 0 then
 		timeSinceTheSpacebarWasLastPressed = 0
 	else
