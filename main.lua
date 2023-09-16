@@ -175,7 +175,7 @@ if EID then
     EID:addCollectible(CollectibleType.COLLECTIBLE_REAL_LEFT, "#On use, rerolls all chests in the room into a better counterpart#Chest Order: Mimic -> Haunted -> Grey -> Red -> Golden or Stone -> Wooden or Old -> Eternal -> Mega", "The Real Left Hand",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_HITOPS, "#0.2 Speed Up#This speed up can exceed the speed cap", "Hitops",  "en_us")
 
-    EID:addTrinket(TrinketType.TRINKET_HUNKY_BOYS, "#While held, pressing the Drop Trinket button immediately drops your trinket; you don't need to hold it#When on the ground, enemies will target the trinket for a short time.", "Hunky Boys", "en_us")
+    EID:addTrinket(TrinketType.TRINKET_HUNKY_BOYS, "#While held, pressing the Drop Trinket button immediately drops this trinket; you don't need to hold the button#When on the ground, enemies will target the trinket for a short time.", "Hunky Boys", "en_us")
 
 
     EID:addCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL, "#Зачистка комнаты имеет 50% шанс оставить никель, пропадающий через 2 секунды.#При получении урона игрок теряет половину своих монет, и бросает на пол эти монеты (они пропадают через 1 секунду).#Если у игрока есть монеты, урон будет в полное сердце.", "Золотой Идол", "ru")
