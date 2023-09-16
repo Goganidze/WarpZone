@@ -1035,7 +1035,7 @@ function WarpZone:DebugText()
     local player = Isaac.GetPlayer(0)
     local coords = player.Position
     debug_str = tostring(coords)
-    Isaac.RenderText(debug_str, 100, 60, 1, 1, 1, 255)
+    --Isaac.RenderText(debug_str, 100, 60, 1, 1, 1, 255)
 
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
