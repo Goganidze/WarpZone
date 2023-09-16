@@ -105,6 +105,13 @@ local KEEPER_BONUS = 0.5
 --tony
 local tonyBuff = 1.7
 
+--pop pop 
+local arrowTime = {}
+arrowTime.Up = 0
+arrowTime.Down = 0
+arrowTime.Left = 0
+arrowTime.Right = 0
+arrowTime.Delay = 0
 
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
@@ -135,7 +142,9 @@ CollectibleType.COLLECTIBLE_AUBREY = Isaac.GetItemIdByName("Aubrey")
 CollectibleType.COLLECTIBLE_TONY = Isaac.GetItemIdByName("Tony")
 CollectibleType.COLLECTIBLE_REAL_LEFT = Isaac.GetItemIdByName("The Real Left Hand")
 CollectibleType.COLLECTIBLE_HITOPS = Isaac.GetItemIdByName("Hitops")
+CollectibleType.COLLECTIBLE_POPPOP = Isaac.GetItemIdByName("Pop Pop")
 CollectibleType.COLLECTIBLE_TEST_ACTIVE = Isaac.GetItemIdByName("Test Active")
+
 
 TrinketType.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
 TrinketType.TRINKET_HUNKY_BOYS = Isaac.GetTrinketIdByName("Hunky Boys")
@@ -742,19 +751,54 @@ end
 function WarpZone:postRender()
 	local player = Isaac.GetPlayer(0)
 	local actions = player:GetLastActionTriggers()
+    if not Game():IsPaused() then
+        if player:HasTrinket(TrinketType.TRINKET_HUNKY_BOYS) and Input.IsActionTriggered(ButtonAction.ACTION_DROP, 0) then
+            --player:DropTrinket(player.Position)
+            player:TryRemoveTrinket(TrinketType.TRINKET_HUNKY_BOYS)
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, TrinketType.TRINKET_HUNKY_BOYS, player.Position, Vector(0, 0), nil)
+            
+        end
 
-    if player:HasTrinket(TrinketType.TRINKET_HUNKY_BOYS) and Input.IsActionTriggered(ButtonAction.ACTION_DROP, 0) then
-        --player:DropTrinket(player.Position)
-        player:TryRemoveTrinket(TrinketType.TRINKET_HUNKY_BOYS)
-        Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, TrinketType.TRINKET_HUNKY_BOYS, player.Position, Vector(0, 0), nil)
-        
+        if actions & ActionTriggers.ACTIONTRIGGER_ITEMACTIVATED > 0 then
+            timeSinceTheSpacebarWasLastPressed = 0
+        else
+            timeSinceTheSpacebarWasLastPressed = timeSinceTheSpacebarWasLastPressed + 1
+        end
+
+        if arrowTime.Delay <= 0 then
+            if Input.IsActionTriggered(ButtonAction.ACTION_SHOOTUP, 0) then
+                if arrowTime.Up > 0 then
+                    arrowTime.Delay = 300
+                else
+                    arrowTime.Up = 30
+                end
+            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTDOWN, 0) then
+                if arrowTime.Down > 0 then
+                    arrowTime.Delay = 300
+                else
+                    arrowTime.Down = 30
+                end
+            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTLEFT, 0) then
+                if arrowTime.Left > 0 then
+                    arrowTime.Delay = 300
+                else
+                    arrowTime.Left = 30
+                end
+            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTRIGHT, 0) then
+                if arrowTime.Right > 0 then
+                    arrowTime.Delay = 300
+                else
+                    arrowTime.Right = 30
+                end
+            end
+        end
+        arrowTime.Up = arrowTime.Up - 1
+        arrowTime.Down = arrowTime.Down - 1
+        arrowTime.Left = arrowTime.Left - 1
+        arrowTime.Right = arrowTime.Right - 1
+        arrowTime.Delay = arrowTime.Delay - 1
     end
 
-	if actions & ActionTriggers.ACTIONTRIGGER_ITEMACTIVATED > 0 then
-		timeSinceTheSpacebarWasLastPressed = 0
-	else
-		timeSinceTheSpacebarWasLastPressed = timeSinceTheSpacebarWasLastPressed + 1
-	end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.postRender)
 
