@@ -111,7 +111,10 @@ arrowTime.Up = 0
 arrowTime.Down = 0
 arrowTime.Left = 0
 arrowTime.Right = 0
+arrowTime.threeFrames = 0
 arrowTime.Delay = 0
+local delayOn = false
+local totalFrameDelay = 200
 
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
@@ -496,6 +499,17 @@ local function findFreeTile(pos)
     end
 end
 
+local function firePopTear(player, test)
+    local effects = player:GetEffects()
+    effects:AddCollectibleEffect(CollectibleType.COLLECTIBLE_20_20, false)
+    local direction = player:GetAimDirection() * 15
+    local tear = player:FireTear(player.Position, direction, false, false, true, nil, 1)
+    tear.Scale = tear.Scale * 1.75
+    tear.CollisionDamage = tear.CollisionDamage * 3
+    SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT, 2)
+    effects:RemoveCollectibleEffect(CollectibleType.COLLECTIBLE_20_20)
+end
+
 --if this ever makes it to workshop credit to catinsurance, holy shit
 local ChampionsToLoot = {
         [ChampionColor.RED] = function (ref, rng)
@@ -713,6 +727,14 @@ function WarpZone:OnUpdate()
             end
         end
     end
+
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
+        if arrowTime.threeFrames == 1 then
+            firePopTear(player, "2")
+        end
+        arrowTime.threeFrames = arrowTime.threeFrames-1
+    end
+
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.OnUpdate)
 
@@ -766,27 +788,35 @@ function WarpZone:postRender()
         end
 
         if arrowTime.Delay <= 0 then
-            if Input.IsActionTriggered(ButtonAction.ACTION_SHOOTUP, 0) then
+            if Input.IsActionTriggered(ButtonAction.ACTION_SHOOTUP, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
                 if arrowTime.Up > 0 then
-                    arrowTime.Delay = 300
+                    arrowTime.Delay = totalFrameDelay
+                    firePopTear(player, "1")
+                    arrowTime.threeFrames = 3
                 else
                     arrowTime.Up = 30
                 end
-            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTDOWN, 0) then
+            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTDOWN, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
                 if arrowTime.Down > 0 then
-                    arrowTime.Delay = 300
+                    arrowTime.Delay = totalFrameDelay
+                    firePopTear(player, "1")
+                    arrowTime.threeFrames = 3
                 else
                     arrowTime.Down = 30
                 end
-            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTLEFT, 0) then
+            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTLEFT, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
                 if arrowTime.Left > 0 then
-                    arrowTime.Delay = 300
+                    arrowTime.Delay = totalFrameDelay
+                    firePopTear(player, "1")
+                    arrowTime.threeFrames = 3
                 else
                     arrowTime.Left = 30
                 end
-            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTRIGHT, 0) then
+            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTRIGHT, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
                 if arrowTime.Right > 0 then
-                    arrowTime.Delay = 300
+                    arrowTime.Delay = totalFrameDelay
+                    firePopTear(player, "1")
+                    arrowTime.threeFrames = 3
                 else
                     arrowTime.Right = 30
                 end
@@ -797,6 +827,10 @@ function WarpZone:postRender()
         arrowTime.Left = arrowTime.Left - 1
         arrowTime.Right = arrowTime.Right - 1
         arrowTime.Delay = arrowTime.Delay - 1
+        if arrowTime.Delay == 0 or arrowTime.Delay == totalFrameDelay-1 then
+            player:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
+            player:EvaluateItems()
+        end
     end
 
 end
@@ -1484,6 +1518,10 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         end
         entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - waterAmount
         entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - (cakeBingeBonus * 2)
+
+        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) and arrowTime.Delay > 0 then
+            entityplayer.MaxFireDelay = entityplayer.MaxFireDelay + 30
+        end
     end
         
     
