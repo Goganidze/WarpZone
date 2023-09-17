@@ -155,6 +155,8 @@ CollectibleType.COLLECTIBLE_TEST_ACTIVE = Isaac.GetItemIdByName("Test Active")
 TrinketType.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
 TrinketType.TRINKET_HUNKY_BOYS = Isaac.GetTrinketIdByName("Hunky Boys")
 
+SoundEffect.SOUND_POP_POP = Isaac.GetSoundIdByName("PopPop_sound")
+
 --external item descriptions
 if EID then
 	EID:addCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL, "#The player has a 50% chance of receiving a fading nickel when a room is cleared#Damage causes the player to lose half their money, dropping some of it on the ground as fading coins.#When the player is holding money, damage is always 1 full heart", "Golden Idol", "en_us")
@@ -503,7 +505,7 @@ local function findFreeTile(pos)
     end
 end
 
-local function firePopTear(player)
+local function firePopTear(player, playYV)
     --local direction = player:GetAimDirection() * 15
     local direction = player:GetLastDirection() * 15
     local tear = player:FireTear(player.Position, direction, false, false, true, nil, 1)
@@ -513,6 +515,10 @@ local function firePopTear(player)
     else
         tear.CollisionDamage = tear.CollisionDamage * 3
     end
+    if playYV then
+        SfxManager:Play(SoundEffect.SOUND_POP_POP, 2)
+    end
+
     SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT, 2)
 end
 
@@ -736,7 +742,7 @@ function WarpZone:OnUpdate()
 
     if player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
         if arrowTime.threeFrames == 1 then
-            firePopTear(player)
+            firePopTear(player, false)
         end
         arrowTime.threeFrames = arrowTime.threeFrames-1
     end
@@ -797,7 +803,7 @@ function WarpZone:postRender()
             if Input.IsActionTriggered(ButtonAction.ACTION_SHOOTUP, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
                 if arrowTime.Up > 0 then
                     arrowTime.Delay = totalFrameDelay
-                    firePopTear(player)
+                    firePopTear(player, true)
                     arrowTime.threeFrames = 3
                 else
                     arrowTime.Up = 30
@@ -805,7 +811,7 @@ function WarpZone:postRender()
             elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTDOWN, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
                 if arrowTime.Down > 0 then
                     arrowTime.Delay = totalFrameDelay
-                    firePopTear(player)
+                    firePopTear(player, true)
                     arrowTime.threeFrames = 3
                 else
                     arrowTime.Down = 30
@@ -813,7 +819,7 @@ function WarpZone:postRender()
             elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTLEFT, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
                 if arrowTime.Left > 0 then
                     arrowTime.Delay = totalFrameDelay
-                    firePopTear(player)
+                    firePopTear(player, true)
                     arrowTime.threeFrames = 3
                 else
                     arrowTime.Left = 30
@@ -821,7 +827,7 @@ function WarpZone:postRender()
             elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTRIGHT, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
                 if arrowTime.Right > 0 then
                     arrowTime.Delay = totalFrameDelay
-                    firePopTear(player)
+                    firePopTear(player, true)
                     arrowTime.threeFrames = 3
                 else
                     arrowTime.Right = 30
