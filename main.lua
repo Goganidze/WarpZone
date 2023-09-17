@@ -516,7 +516,7 @@ local function firePopTear(player, playYV)
         tear.CollisionDamage = tear.CollisionDamage * 3
     end
     if playYV then
-        SfxManager:Play(SoundEffect.SOUND_POP_POP, 2)
+        SfxManager:Play(SoundEffect.SOUND_POP_POP, 1)
     end
 
     SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT, 2)
