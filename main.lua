@@ -504,7 +504,8 @@ local function findFreeTile(pos)
 end
 
 local function firePopTear(player)
-    local direction = player:GetAimDirection() * 15
+    --local direction = player:GetAimDirection() * 15
+    local direction = player:GetLastDirection() * 15
     local tear = player:FireTear(player.Position, direction, false, false, true, nil, 1)
     tear.Scale = tear.Scale * 1.75
     if player:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) then
