@@ -113,8 +113,10 @@ arrowTime.Left = 0
 arrowTime.Right = 0
 arrowTime.threeFrames = 0
 arrowTime.Delay = 0
-local delayOn = false
 local totalFrameDelay = 200
+
+--football
+local ballCheck = true
 
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
@@ -146,6 +148,7 @@ CollectibleType.COLLECTIBLE_TONY = Isaac.GetItemIdByName("Tony")
 CollectibleType.COLLECTIBLE_REAL_LEFT = Isaac.GetItemIdByName("The Real Left Hand")
 CollectibleType.COLLECTIBLE_HITOPS = Isaac.GetItemIdByName("Hitops")
 CollectibleType.COLLECTIBLE_POPPOP = Isaac.GetItemIdByName("Pop Pop")
+CollectibleType.COLLECTIBLE_FOOTBALL = Isaac.GetItemIdByName("Football")
 CollectibleType.COLLECTIBLE_TEST_ACTIVE = Isaac.GetItemIdByName("Test Active")
 
 
@@ -504,7 +507,11 @@ local function firePopTear(player)
     local direction = player:GetAimDirection() * 15
     local tear = player:FireTear(player.Position, direction, false, false, true, nil, 1)
     tear.Scale = tear.Scale * 1.75
-    tear.CollisionDamage = tear.CollisionDamage * 3
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) then
+        tear.CollisionDamage = tear.CollisionDamage * 5
+    else
+        tear.CollisionDamage = tear.CollisionDamage * 3
+    end
     SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT, 2)
 end
 
@@ -1269,6 +1276,9 @@ function WarpZone:NewRoom()
             nil
         )
     end
+
+    ballCheck = false
+
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, WarpZone.NewRoom)
 
@@ -1518,7 +1528,12 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - (cakeBingeBonus * 2)
 
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) and arrowTime.Delay > 0 then
-            entityplayer.MaxFireDelay = entityplayer.MaxFireDelay + 30
+            if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) then
+                entityplayer.MaxFireDelay = entityplayer.MaxFireDelay + 40
+            else
+                entityplayer.MaxFireDelay = entityplayer.MaxFireDelay + 30
+            end
+            
         end
     end
         
@@ -1770,6 +1785,45 @@ function WarpZone:OnFrame(entityplayer)
                 if stop then --and ai.player:GetSprite():IsPlaying("LiftItem")
                     player:AnimateCollectible(CollectibleType.COLLECTIBLE_IS_YOU, "HideItem", "Empty")
                 end
+        end
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_FOOTBALL) and not ballCheck and room:GetFrameCount() > 0 then
+            local numberBalls = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_FOOTBALL)
+            local numberCubes = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_CUBE_BABY)
+            local entities = Isaac.GetRoomEntities()
+            for i, entity_pos in ipairs(entities) do
+                if entity_pos.Type == EntityType.ENTITY_FAMILIAR and entity_pos.Variant == FamiliarVariant.CUBE_BABY and numberBalls > 0 then
+                    local sprite = entity_pos:GetSprite()
+                    --sprite:Load("gfx/football_swap.anm2",false)
+                    sprite:ReplaceSpritesheet(0, "gfx/familiar/football_reskin.png")
+                    sprite:LoadGraphics()
+                    entity_pos:GetData().Football = true
+                    numberBalls = numberBalls - 1
+                elseif entity_pos.Type == EntityType.ENTITY_FAMILIAR and entity_pos.Variant == FamiliarVariant.CUBE_BABY then
+                    entity_pos:GetData().Football = false
+                    if numberCubes > 0 then
+                        local sprite = entity_pos:GetSprite()
+                        sprite:ReplaceSpritesheet(0, "gfx/familiar/familiar_cube_baby.png")
+                        sprite:LoadGraphics()
+                        numberCubes = numberCubes - 1
+                    end
+                end
+            end
+            if numberBalls > 0 then
+                for i=1, numberBalls do
+                    local create_entity = Isaac.Spawn(EntityType.ENTITY_FAMILIAR, FamiliarVariant.CUBE_BABY, 0, Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()), Vector(0,0), nil)
+                    local sprite = create_entity:GetSprite()
+                    sprite:ReplaceSpritesheet(0, "gfx/familiar/football_reskin.png")
+                    --sprite:Load("gfx/football_swap.anm2",false)
+                    sprite:LoadGraphics()
+                    create_entity:GetData().Football = true
+                end
+            end
+            if numberCubes > 0 then
+                for i=1, numberCubes do
+                    local create_entity = Isaac.Spawn(EntityType.ENTITY_FAMILIAR, FamiliarVariant.CUBE_BABY, 0, Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()), Vector(0,0), nil)
+                end
+            end
+            ballCheck = true
         end
     end
 
@@ -2160,3 +2214,14 @@ function WarpZone:UseRLHand(collectible, rng, entityplayer, useflags, activeslot
     }
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseRLHand, CollectibleType.COLLECTIBLE_REAL_LEFT)
+
+
+function WarpZone:FootballCollide(familiar, collider, low)
+    if familiar:GetData().Football == true then
+        return false
+    else
+        return nil
+    end
+
+end
+WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.FootballCollide, FamiliarVariant.CUBE_BABY)
