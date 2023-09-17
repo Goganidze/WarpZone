@@ -499,15 +499,12 @@ local function findFreeTile(pos)
     end
 end
 
-local function firePopTear(player, test)
-    local effects = player:GetEffects()
-    effects:AddCollectibleEffect(CollectibleType.COLLECTIBLE_20_20, false)
+local function firePopTear(player)
     local direction = player:GetAimDirection() * 15
     local tear = player:FireTear(player.Position, direction, false, false, true, nil, 1)
     tear.Scale = tear.Scale * 1.75
     tear.CollisionDamage = tear.CollisionDamage * 3
     SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT, 2)
-    effects:RemoveCollectibleEffect(CollectibleType.COLLECTIBLE_20_20)
 end
 
 --if this ever makes it to workshop credit to catinsurance, holy shit
@@ -730,7 +727,7 @@ function WarpZone:OnUpdate()
 
     if player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
         if arrowTime.threeFrames == 1 then
-            firePopTear(player, "2")
+            firePopTear(player)
         end
         arrowTime.threeFrames = arrowTime.threeFrames-1
     end
@@ -791,7 +788,7 @@ function WarpZone:postRender()
             if Input.IsActionTriggered(ButtonAction.ACTION_SHOOTUP, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
                 if arrowTime.Up > 0 then
                     arrowTime.Delay = totalFrameDelay
-                    firePopTear(player, "1")
+                    firePopTear(player)
                     arrowTime.threeFrames = 3
                 else
                     arrowTime.Up = 30
@@ -799,7 +796,7 @@ function WarpZone:postRender()
             elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTDOWN, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
                 if arrowTime.Down > 0 then
                     arrowTime.Delay = totalFrameDelay
-                    firePopTear(player, "1")
+                    firePopTear(player)
                     arrowTime.threeFrames = 3
                 else
                     arrowTime.Down = 30
@@ -807,7 +804,7 @@ function WarpZone:postRender()
             elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTLEFT, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
                 if arrowTime.Left > 0 then
                     arrowTime.Delay = totalFrameDelay
-                    firePopTear(player, "1")
+                    firePopTear(player)
                     arrowTime.threeFrames = 3
                 else
                     arrowTime.Left = 30
@@ -815,7 +812,7 @@ function WarpZone:postRender()
             elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTRIGHT, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
                 if arrowTime.Right > 0 then
                     arrowTime.Delay = totalFrameDelay
-                    firePopTear(player, "1")
+                    firePopTear(player)
                     arrowTime.threeFrames = 3
                 else
                     arrowTime.Right = 30
