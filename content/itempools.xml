@@ -12,6 +12,7 @@
         <Item Name="Diogenes's Pot" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Spelunker's Pack" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Pop Pop" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Football" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="curse">
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -32,6 +33,7 @@
         <Item Name="Tony" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Diogenes's Pot" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Pop Pop" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Football" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="greedCurse">
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -99,5 +101,11 @@
     </Pool>
     <Pool Name="greedDevil">
         <Item Name="The Real Left Hand" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+    </Pool>
+    <Pool Name="greedGoldenChest">
+        <Item Name="Football" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+    </Pool>
+    <Pool Name="goldenChest">
+        <Item Name="Football" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 </ItemPools>

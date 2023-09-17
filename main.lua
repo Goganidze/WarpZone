@@ -118,6 +118,7 @@ local totalFrameDelay = 200
 --football
 local ballCheck = true
 
+
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
@@ -276,6 +277,20 @@ function WarpZone:GetPlayerFromTear(tear)
         end
     end
     return nil
+end
+
+local function respawnBalls(numberBalls, player)
+    if numberBalls > 0 then
+        for i=1, numberBalls do
+            local create_entity = Isaac.Spawn(EntityType.ENTITY_FAMILIAR, FamiliarVariant.CUBE_BABY, 0, Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()), Vector(0,0), nil)
+            local sprite = create_entity:GetSprite()
+            sprite:ReplaceSpritesheet(0, "gfx/familiar/football_reskin.png")
+            --sprite:Load("gfx/football_swap.anm2",false)
+            sprite:LoadGraphics()
+            create_entity:GetData().Football = true
+            create_entity:ToFamiliar().Player = player:ToPlayer()
+        end
+    end
 end
 
 local function findGridEntityResponse(position)
@@ -1815,16 +1830,7 @@ function WarpZone:OnFrame(entityplayer)
                     end
                 end
             end
-            if numberBalls > 0 then
-                for i=1, numberBalls do
-                    local create_entity = Isaac.Spawn(EntityType.ENTITY_FAMILIAR, FamiliarVariant.CUBE_BABY, 0, Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()), Vector(0,0), nil)
-                    local sprite = create_entity:GetSprite()
-                    sprite:ReplaceSpritesheet(0, "gfx/familiar/football_reskin.png")
-                    --sprite:Load("gfx/football_swap.anm2",false)
-                    sprite:LoadGraphics()
-                    create_entity:GetData().Football = true
-                end
-            end
+            respawnBalls(numberBalls, player)
             if numberCubes > 0 then
                 for i=1, numberCubes do
                     local create_entity = Isaac.Spawn(EntityType.ENTITY_FAMILIAR, FamiliarVariant.CUBE_BABY, 0, Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()), Vector(0,0), nil)
@@ -2045,7 +2051,10 @@ local function update_cache(_, player, cache_flag)
 		local pop_pickups = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_LOLLIPOP)
 		local pop_rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_LOLLIPOP)
 		player:CheckFamiliar(Lollipop.VARIANT, pop_pickups, pop_rng)
-	end
+        
+        local ball_pickups = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_FOOTBALL)
+        respawnBalls(ball_pickups, player)
+    end
 end
 
 WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, update_cache)
@@ -2225,10 +2234,22 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseRLHand, CollectibleTy
 
 function WarpZone:FootballCollide(familiar, collider, low)
     if familiar:GetData().Football == true then
+        local player = familiar.Player
+        if collider:IsVulnerableEnemy() then
+            --collider.Velocity = familiar.Velocity * 2
+            collider:AddVelocity(familiar.Velocity * 2 + Vector(10, 10))
+            --collider.Friction
+            --print(tostring(familiar.Velocity.X * 5) .. "  " .. tostring(familiar.Velocity.Y * 5))
+            local damage = math.abs(familiar.Velocity.X + collider.Velocity.X) * 0.75 + math.abs(familiar.Velocity.Y + collider.Velocity.Y) * 0.75
+            local footrand = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_FOOTBALL)
+            if damage > 10 and footrand.RandomInt(100) > 50 then
+                collider:AddConfusion(EntityRef(familiar), 90, true)
+            end
+            collider:TakeDamage(damage, 0, EntityRef(familiar), 0)
+        end
         return false
     else
         return nil
     end
-
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.FootballCollide, FamiliarVariant.CUBE_BABY)
