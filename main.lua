@@ -2242,7 +2242,7 @@ function WarpZone:FootballCollide(familiar, collider, low)
             --print(tostring(familiar.Velocity.X * 5) .. "  " .. tostring(familiar.Velocity.Y * 5))
             local damage = math.abs(familiar.Velocity.X + collider.Velocity.X) * 0.75 + math.abs(familiar.Velocity.Y + collider.Velocity.Y) * 0.75
             local footrand = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_FOOTBALL)
-            if damage > 10 and footrand.RandomInt(100) > 50 then
+            if damage > 10 and footrand:RandomInt(100) > 50 then
                 collider:AddConfusion(EntityRef(familiar), 90, true)
             end
             collider:TakeDamage(damage, 0, EntityRef(familiar), 0)
