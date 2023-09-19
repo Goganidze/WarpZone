@@ -118,6 +118,30 @@ local totalFrameDelay = 200
 --football
 local ballCheck = true
 
+--tumors
+local PlayerTumors = {}
+local SmallTumor = {
+	VARIANT = Isaac.GetEntityVariantByName("Tumor_Small"),
+	ORBIT_DISTANCE = Vector(30.0, 30.0),
+	ORBIT_LAYER = 127,
+	ORBIT_SPEED = 0.02,
+    ORBIT_CENTER_OFFSET = Vector(0.0, 0.0),
+}
+local MidTumor = {
+	VARIANT = Isaac.GetEntityVariantByName("Tumor_Medium"),
+	ORBIT_DISTANCE = Vector(30.0, 30.0),
+	ORBIT_LAYER = 127,
+	ORBIT_SPEED = 0.02,
+    ORBIT_CENTER_OFFSET = Vector(0.0, 0.0),
+}
+local LargeTumor = {
+	VARIANT = Isaac.GetEntityVariantByName("Tumor_Large"),
+	ORBIT_DISTANCE = Vector(30.0, 30.0),
+	ORBIT_LAYER = 127,
+	ORBIT_SPEED = 0.02,
+    ORBIT_CENTER_OFFSET = Vector(0.0, 0.0),
+}
+local tumorVariant = Isaac.GetEntityVariantByName("Tumor_Pickup")
 
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
@@ -1099,6 +1123,7 @@ function WarpZone:OnGameStart(isSave)
         numPossessed = saveData[8]
         floorBeggar = saveData[9]
         tonyBuff = saveData[10]
+        PlayerTumors = saveData[11]
     end
 
     if not isSave then
@@ -1113,6 +1138,7 @@ function WarpZone:OnGameStart(isSave)
         numPossessed = 0
         floorBeggar = -1
         tonyBuff = 1.7
+        PlayerTumors = {}
     end
 
 end
@@ -1129,6 +1155,7 @@ function WarpZone:preGameExit()
     saveData[7] = dioDamageOn
     saveData[8] = numPossessed
     saveData[9] = floorBeggar
+    saveData[10] = PlayerTumors
     local jsonString = json.encode(saveData)
     WarpZone:SaveData(jsonString)
   end
@@ -1504,12 +1531,25 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseIsYou, CollectibleTyp
 
 function WarpZone:OnPickupCollide(entity, Collider, Low)
     local player = Collider:ToPlayer()
+    
     if player == nil then
         return nil
     end
 
+    if entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == tumorVariant and entity:GetData().Collected ~= true then
+        entity:GetData().Collected = true
+        entity:GetSprite():Play("Collect")
+        if not PlayerTumors[player.ControllerIndex] then PlayerTumors[player.ControllerIndex] = 0 end
+        PlayerTumors[player.ControllerIndex] = PlayerTumors[player.ControllerIndex] + 1
+        player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS)
+        player:EvaluateItems()
+        return true
+    elseif entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == tumorVariant then
+        return true
+    end
+
     if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant == PickupVariant.PICKUP_COLLECTIBLE) and player:HasCollectible(CollectibleType.COLLECTIBLE_TONY) then
-        local dmg_config = Isaac.GetItemConfig():GetCollectible(entity.SubType)
+        --local dmg_config = Isaac.GetItemConfig():GetCollectible(entity.SubType)
         if entity.SubType ~= 0 and tonyBuff > 1 and entity:GetData().collected ~= true then -- and (dmg_config.CacheFlags & CacheFlag.CACHE_DAMAGE == CacheFlag.CACHE_DAMAGE)
             entity:GetData().collected = true
             tonyBuff = tonyBuff - 0.1
@@ -1994,9 +2034,8 @@ WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, init_lollipop, Lollipop.VARI
 
 local function update_orbital(_, orbital)
 
-	orbital.OrbitDistance = Lollipop.ORBIT_DISTANCE 
+	orbital.OrbitDistance = Lollipop.ORBIT_DISTANCE
 	orbital.OrbitSpeed = Lollipop.ORBIT_SPEED
-	
 	local center_pos = (orbital.Player.Position + orbital.Player.Velocity) + Lollipop.ORBIT_CENTER_OFFSET
 	local orbit_pos = orbital:GetOrbitPosition(center_pos)
 	orbital.Velocity = orbit_pos - orbital.Position
@@ -2052,12 +2091,122 @@ local function update_cache(_, player, cache_flag)
 		local pop_rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_LOLLIPOP)
 		player:CheckFamiliar(Lollipop.VARIANT, pop_pickups, pop_rng)
         
+        local tumor_count = PlayerTumors[player.ControllerIndex]
+        if tumor_count and Game():GetFrameCount() > 1 then
+            local smalltumors = 0
+            local midtumors = 0
+            local largetumors = 0
+            if tumor_count >= 5 then
+                largetumors = largetumors + 1
+                tumor_count = tumor_count - 5
+                if tumor_count >= 5 then
+                    largetumors = largetumors + 1
+                end
+            end
+            if tumor_count < 5 and tumor_count > 2 then
+                midtumors = 1
+            elseif tumor_count <= 2 and tumor_count > 0 then
+                smalltumors = 1
+            end
+
+            local myRNG1 = RNG()
+            myRNG1:SetSeed(Random(), 1)
+            local myRNG2 = RNG()
+            myRNG2:SetSeed(Random(), 1)
+            local myRNG3 = RNG()
+            myRNG3:SetSeed(Random(), 1)
+            player:CheckFamiliar(LargeTumor.VARIANT, largetumors, myRNG1)
+            player:CheckFamiliar(MidTumor.VARIANT, midtumors, myRNG2)
+            player:CheckFamiliar(SmallTumor.VARIANT, smalltumors, myRNG3)
+        end
+
         local ball_pickups = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_FOOTBALL)
         respawnBalls(ball_pickups, player)
     end
 end
 
 WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, update_cache)
+
+
+function WarpZone:init_tumor_s(orbital)
+	orbital.OrbitDistance = SmallTumor.ORBIT_DISTANCE
+	orbital.OrbitSpeed = SmallTumor.ORBIT_SPEED
+	orbital:AddToOrbit(SmallTumor.ORBIT_LAYER)
+end
+function WarpZone:init_tumor_m(orbital)
+	orbital.OrbitDistance = MidTumor.ORBIT_DISTANCE
+	orbital.OrbitSpeed = MidTumor.ORBIT_SPEED
+	orbital:AddToOrbit(MidTumor.ORBIT_LAYER)
+end
+function WarpZone:init_tumor_l(orbital)
+	orbital.OrbitDistance = LargeTumor.ORBIT_DISTANCE
+	orbital.OrbitSpeed = LargeTumor.ORBIT_SPEED
+	orbital:AddToOrbit(LargeTumor.ORBIT_LAYER)
+end
+
+WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, WarpZone.init_tumor_s, SmallTumor.VARIANT)
+WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, WarpZone.init_tumor_m, MidTumor.VARIANT)
+WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, WarpZone.init_tumor_l, LargeTumor.VARIANT)
+
+
+
+function WarpZone:update_tumor_s(orbital)
+    orbital.OrbitDistance = SmallTumor.ORBIT_DISTANCE
+	orbital.OrbitSpeed = SmallTumor.ORBIT_SPEED
+	local center_pos = (orbital.Player.Position + orbital.Player.Velocity) + SmallTumor.ORBIT_CENTER_OFFSET
+	local orbit_pos = orbital:GetOrbitPosition(center_pos)
+	orbital.Velocity = orbit_pos - orbital.Position
+end
+
+function WarpZone:update_tumor_m(orbital)
+	orbital.OrbitDistance = MidTumor.ORBIT_DISTANCE
+	orbital.OrbitSpeed = MidTumor.ORBIT_SPEED
+
+	local center_pos = (orbital.Player.Position + orbital.Player.Velocity) + MidTumor.ORBIT_CENTER_OFFSET
+	local orbit_pos = orbital:GetOrbitPosition(center_pos)
+	orbital.Velocity = orbit_pos - orbital.Position
+end
+
+function WarpZone:update_tumor_l(orbital)
+	orbital.OrbitDistance = LargeTumor.ORBIT_DISTANCE
+	orbital.OrbitSpeed = LargeTumor.ORBIT_SPEED
+
+	local center_pos = (orbital.Player.Position + orbital.Player.Velocity) + LargeTumor.ORBIT_CENTER_OFFSET
+	local orbit_pos = orbital:GetOrbitPosition(center_pos)
+	orbital.Velocity = orbit_pos - orbital.Position
+end
+WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_tumor_s, SmallTumor.VARIANT)
+WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_tumor_m, MidTumor.VARIANT)
+WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_tumor_l, LargeTumor.VARIANT)
+
+
+
+function WarpZone:pre_tumor_collision(orbital, collider, low)
+	if collider:IsVulnerableEnemy() then
+        local damage = 1
+        if orbital.Variant == SmallTumor.VARIANT then
+            damage = 1
+        elseif orbital.Variant == MidTumor.VARIANT then
+            damage = 2
+        elseif orbital.Variant == LargeTumor.VARIANT then
+            damage = 4
+            local player = orbital.Player
+            local numTumors = PlayerTumors[player.ControllerIndex]
+            if numTumors then
+                damage = damage + ((numTumors - 10) * 0.2)
+            end
+        end
+        collider:TakeDamage(damage, 0, EntityRef(orbital), 0)
+	elseif collider:ToProjectile() ~= nil then
+        --conditions for blocking shots?
+        collider:Die()
+    end
+end
+
+WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.pre_tumor_collision, SmallTumor.VARIANT)
+WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.pre_tumor_collision, MidTumor.VARIANT)
+WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.pre_tumor_collision, LargeTumor.VARIANT)
+
 
 local function playerToNum(player)
 	for num = 0, Game():GetNumPlayers()-1 do
@@ -2177,6 +2326,14 @@ function WarpZone:BeggarUpdate()
 			end
 		end
 	end
+
+    local tumors = Isaac.FindByType(EntityType.ENTITY_PICKUP, tumorVariant)
+    for _,tumor in pairs(tumors) do
+        if tumor:GetSprite():GetFrame() >= 4 and tumor:GetSprite():GetAnimation() == "Collect" then
+			tumor:Remove()
+		end
+    end
+
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.BeggarUpdate)
 

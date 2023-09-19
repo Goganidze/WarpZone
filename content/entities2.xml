@@ -5,4 +5,16 @@
     <entity anm2path="hm2beggar.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="12" friction="1" id="6" name="Weapon Beggar" numGridCollisionPoints="24" shadowSize="15" stageHP="0" variant="74">
         <gibs amount="6" blood="1" bone="1" eye="1" gut="1" large="0" />
     </entity>
+    <entity anm2path="tumorSmall.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="7" friction="1" id="3" name="Tumor_Small" numGridCollisionPoints="12" shadowSize="6" stageHP="0" variant="127">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
+    </entity>
+    <entity anm2path="tumorMed.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="7" friction="1" id="3" name="Tumor_Medium" numGridCollisionPoints="12" shadowSize="6" stageHP="0" variant="128">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
+    </entity>
+    <entity anm2path="tumorLar.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="7" friction="1" id="3" name="Tumor_Large" numGridCollisionPoints="12" shadowSize="6" stageHP="0" variant="129">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
+    </entity>
+    <entity anm2path="tumor_pickup.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="12" friction="1" id="5" name="Tumor_Pickup" numGridCollisionPoints="12" shadowSize="17" stageHP="0" variant="4787" subtype = "1">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
+    </entity>
 </entities>
