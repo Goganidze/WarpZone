@@ -174,6 +174,7 @@ CollectibleType.COLLECTIBLE_REAL_LEFT = Isaac.GetItemIdByName("The Real Left Han
 CollectibleType.COLLECTIBLE_HITOPS = Isaac.GetItemIdByName("Hitops")
 CollectibleType.COLLECTIBLE_POPPOP = Isaac.GetItemIdByName("Pop Pop")
 CollectibleType.COLLECTIBLE_FOOTBALL = Isaac.GetItemIdByName("Football")
+CollectibleType.COLLECTIBLE_BALL_OF_TUMORS = Isaac.GetItemIdByName("Ball of Tumors")
 CollectibleType.COLLECTIBLE_TEST_ACTIVE = Isaac.GetItemIdByName("Test Active")
 
 
@@ -1543,6 +1544,11 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
         PlayerTumors[player.ControllerIndex] = PlayerTumors[player.ControllerIndex] + 1
         player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS)
         player:EvaluateItems()
+        if Game():GetFrameCount() % 2 == 0 then
+            SfxManager:Play(SoundEffect.SOUND_MEAT_IMPACTS)
+        else
+            SfxManager:Play(SoundEffect.SOUND_MEAT_JUMPS)
+        end
         return true
     elseif entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == tumorVariant then
         return true
@@ -2208,6 +2214,27 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.pre_tumor_
 WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.pre_tumor_collision, LargeTumor.VARIANT)
 
 
+
+function WarpZone:selectPickup(pickup, variant, subtype)
+    local player = Isaac.GetPlayer(0)
+
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_BALL_OF_TUMORS) then
+        local tumorRNG = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_BALL_OF_TUMORS)
+        local rand_num = tumorRNG:RandomInt(100) + 1
+        local collectible_num = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_BALL_OF_TUMORS) * 3
+        
+        if rand_num <= collectible_num and (variant <= 40 or
+        variant == PickupVariant.PICKUP_TAROTCARD or
+        variant == PickupVariant.PICKUP_PILL or
+        variant == PickupVariant.PICKUP_LIL_BATTERY) then
+            return {tumorVariant, 1}
+        end
+    end
+    return nil
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_PICKUP_SELECTION, WarpZone.selectPickup)
+
+
 local function playerToNum(player)
 	for num = 0, Game():GetNumPlayers()-1 do
 		if GetPtrHash(player) == GetPtrHash(Isaac.GetPlayer(num)) then return num end
@@ -2331,7 +2358,9 @@ function WarpZone:BeggarUpdate()
     for _,tumor in pairs(tumors) do
         if tumor:GetSprite():GetFrame() >= 4 and tumor:GetSprite():GetAnimation() == "Collect" then
 			tumor:Remove()
-		end
+		elseif tumor:GetSprite():IsEventTriggered("DropSound") then
+            SfxManager:Play(SoundEffect.SOUND_MEAT_FEET_SLOW0, 2)
+        end
     end
 
 end

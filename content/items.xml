@@ -29,7 +29,7 @@
     <passive id="28" gfx="Collectibles_25_Hitops.png" name="Hitops" description="Speed up" quality="2" cache = "speed"/>
     <passive id="29" gfx="Collectibles_26_Pop_Pop.png" name="Pop Pop" description="Double tap burst" quality="2"/>
     <passive id="30" gfx="Collectibles_27_Football.png" name="Football" description="Let's toss the ball around" quality="1"/>
-    <familiar id="31" gfx="Collectibles_28_Ball_Of_Tumors.png" name="Ball Of Tumors" description="Collect 'em all!" quality="2"/>
+    <familiar id="31" gfx="Collectibles_28_Ball_Of_Tumors.png" name="Ball of Tumors" description="Collect 'em all!" quality="2"/>
     
     <active id="32" gfx="Collectibles_26_Test_Active.png" name="Test Active" description="Diddle me lucky charms..." quality="0" maxcharges = "0"/>
 
