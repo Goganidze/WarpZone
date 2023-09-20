@@ -117,6 +117,7 @@ local totalFrameDelay = 200
 
 --football
 local ballCheck = true
+local effBlank = Isaac.GetEntityVariantByName("Blank_Effect")
 
 --tumors
 local PlayerTumors = {}
@@ -2368,6 +2369,8 @@ function WarpZone:BeggarUpdate()
         end
     end
 
+
+
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.BeggarUpdate)
 
@@ -2431,16 +2434,61 @@ function WarpZone:FootballCollide(familiar, collider, low)
             collider:AddVelocity(familiar.Velocity * 2 + Vector(10, 10))
             --collider.Friction
             --print(tostring(familiar.Velocity.X * 5) .. "  " .. tostring(familiar.Velocity.Y * 5))
-            local damage = math.abs(familiar.Velocity.X + collider.Velocity.X) * 0.75 + math.abs(familiar.Velocity.Y + collider.Velocity.Y) * 0.75
+            local damage = math.abs(familiar.Velocity.X + collider.Velocity.X) * 0.2 + math.abs(familiar.Velocity.Y + collider.Velocity.Y) * 0.2
             local footrand = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_FOOTBALL)
             if damage > 10 and footrand:RandomInt(100) > 50 then
                 collider:AddConfusion(EntityRef(familiar), 90, true)
             end
             collider:TakeDamage(damage, 0, EntityRef(familiar), 0)
+            return false
+        elseif collider:ToPlayer() ~= nil then
+            local coll_player = collider:ToPlayer()
+            coll_player:UseActiveItem(CollectibleType.COLLECTIBLE_MOMS_BRACELET)
+            return false
         end
-        return false
+        return nil
     else
         return nil
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.FootballCollide, FamiliarVariant.CUBE_BABY)
+
+function WarpZone:FindEffects(collectible, rng, entityplayer, useflags, activeslot, customvardata)
+    local entities = Isaac.GetRoomEntities()
+    local debbug = ""
+    for i, entity_pos in ipairs(entities) do
+        if entity_pos.Type == EntityType.ENTITY_EFFECT 
+        and entity_pos.Variant ~= 87 
+        and entity_pos.Variant ~= 121 then
+            debbug = tostring(entity_pos.Variant) .. "-" .. tostring(entity_pos.Position.X) .. ", " .. tostring(entity_pos.Position.Y)
+            print(debbug)
+        end
+    end
+
+    return {
+        Discharge = false,
+        Remove = false,
+        ShowAnim = true
+    }
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.FindEffects, CollectibleType.COLLECTIBLE_TEST_ACTIVE)
+
+
+
+function WarpZone:DisableCreep(entity)
+    if entity.SpawnerType == 0 then
+        entity:Remove()
+    end
+end
+--WarpZone:AddCallback(ModCallbacks.MC_POST_EFFECT_INIT, WarpZone.DisableCreep, EffectVariant.PLAYER_CREEP_HOLYWATER_TRAIL)
+--WarpZone:AddCallback(ModCallbacks.MC_POST_EFFECT_UPDATE, WarpZone.DisableCreep, EffectVariant.DUST_CLOUD)
+
+function WarpZone:DisableCreepPlanB(Type, Variant, SubType, Position, Velocity, Spawner, Seed)
+    --print("check1")
+    if Type == EntityType.ENTITY_EFFECT and Variant == EffectVariant.PLAYER_CREEP_HOLYWATER_TRAIL and Spawner == nil then
+        print("check2")
+        return {1000, effBlank, 1, Seed}
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_PRE_ENTITY_SPAWN, WarpZone.DisableCreepPlanB)
+
