@@ -2431,17 +2431,17 @@ function WarpZone:FootballCollide(familiar, collider, low)
         local player = familiar.Player
         if collider:IsVulnerableEnemy() then
             --collider.Velocity = familiar.Velocity * 2
-            collider:AddVelocity(familiar.Velocity * 2 + Vector(10, 10))
+            --collider:AddVelocity(familiar.Velocity * 2 + Vector(10, 10))
             --collider.Friction
             --print(tostring(familiar.Velocity.X * 5) .. "  " .. tostring(familiar.Velocity.Y * 5))
-            local damage = math.abs(familiar.Velocity.X + collider.Velocity.X) * 0.2 + math.abs(familiar.Velocity.Y + collider.Velocity.Y) * 0.2
+            local damage = math.abs(familiar.Velocity.X + collider.Velocity.X) * 0.75 + math.abs(familiar.Velocity.Y + collider.Velocity.Y) * 0.75
             local footrand = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_FOOTBALL)
             if damage > 10 and footrand:RandomInt(100) > 50 then
                 collider:AddConfusion(EntityRef(familiar), 90, true)
             end
             collider:TakeDamage(damage, 0, EntityRef(familiar), 0)
             return false
-        elseif collider:ToPlayer() ~= nil then
+        elseif collider:ToPlayer() ~= nil and not (Game():GetLevel():GetCurrentRoomIndex() ==84 and Game():GetRoom():IsFirstVisit()) then
             local coll_player = collider:ToPlayer()
             coll_player:UseActiveItem(CollectibleType.COLLECTIBLE_MOMS_BRACELET)
             return false
@@ -2485,8 +2485,7 @@ end
 
 function WarpZone:DisableCreepPlanB(Type, Variant, SubType, Position, Velocity, Spawner, Seed)
     --print("check1")
-    if Type == EntityType.ENTITY_EFFECT and Variant == EffectVariant.PLAYER_CREEP_HOLYWATER_TRAIL and Spawner == nil then
-        print("check2")
+    if Type == EntityType.ENTITY_EFFECT and (Variant == EffectVariant.PLAYER_CREEP_HOLYWATER_TRAIL) and Spawner == nil then
         return {1000, effBlank, 1, Seed}
     end
 end
