@@ -144,7 +144,11 @@ local LargeTumor = {
 }
 local tumorVariant = Isaac.GetEntityVariantByName("Tumor_Pickup")
 
+--bible thump
+local bibleThumpPool = false
+
 --item defintions
+
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
 CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE = Isaac.GetItemIdByName("Birthday Cake")
@@ -181,6 +185,7 @@ CollectibleType.COLLECTIBLE_TEST_ACTIVE = Isaac.GetItemIdByName("Test Active")
 
 TrinketType.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
 TrinketType.TRINKET_HUNKY_BOYS = Isaac.GetTrinketIdByName("Hunky Boys")
+TrinketType.TRINKET_BIBLE_THUMP = Isaac.GetTrinketIdByName("Bible Thump")
 
 SoundEffect.SOUND_POP_POP = Isaac.GetSoundIdByName("PopPop_sound")
 
@@ -221,7 +226,8 @@ if EID then
     EID:addCollectible(CollectibleType.COLLECTIBLE_POPPOP, "Double tap to fire two 3x damage tears in a burst#Tear rate is reduced for a short time after using this effect.", "Pop Pop",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_BALL_OF_TUMORS, "Bombs, hearts, keys and batteries have a small chance of turning into collectible tumors#Collecting tumors powers a tumor orbital, which blocks shots and deals contact damage#With enough tumors, a second orbital will spawn", "Ball of Tumors",  "en_us")
 
-    EID:addTrinket(TrinketType.TRINKET_HUNKY_BOYS, "#While held, pressing the Drop Trinket button immediately drops this trinket; you don't need to hold the button#When on the ground, enemies will target the trinket for a short time.", "Hunky Boys", "en_us")
+    EID:addTrinket(TrinketType.TRINKET_HUNKY_BOYS, "While held, pressing the Drop Trinket button immediately drops this trinket; you don't need to hold the button#When on the ground, enemies will target the trinket for a short time.", "Hunky Boys", "en_us")
+    EID:addTrinket(TrinketType.TRINKET_BIBLE_THUMP, "Once you exit a room with this trinket, The Bible is added to several item pools.#Using The Bible or The Devil? card with this item will deal 40 damage to all enemies in the room, in addition to granting flight.#Using The Bible on Satan will kill him, and you will survive#The golden version of this trinket kills The Lamb as well.", "Bible Thump", "en_us")
 
 
     EID:addCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL, "Зачистка комнаты имеет 50% шанс оставить никель, пропадающий через 2 секунды.#При получении урона игрок теряет половину своих монет, и бросает на пол эти монеты (они пропадают через 1 секунду).#Если у игрока есть монеты, урон будет в полное сердце.", "Золотой Идол", "ru")
@@ -1127,6 +1133,7 @@ function WarpZone:OnGameStart(isSave)
         floorBeggar = saveData[9]
         tonyBuff = saveData[10]
         PlayerTumors = saveData[11]
+        bibleThumpPool = saveData[12]
     end
 
     if not isSave then
@@ -1142,6 +1149,7 @@ function WarpZone:OnGameStart(isSave)
         floorBeggar = -1
         tonyBuff = 1.7
         PlayerTumors = {}
+        bibleThumpPool = false
     end
 
 end
@@ -1158,7 +1166,9 @@ function WarpZone:preGameExit()
     saveData[7] = dioDamageOn
     saveData[8] = numPossessed
     saveData[9] = floorBeggar
-    saveData[10] = PlayerTumors
+    saveData[10] = tonyBuff
+    saveData[11] = PlayerTumors
+    saveData[12] = bibleThumpPool
     local jsonString = json.encode(saveData)
     WarpZone:SaveData(jsonString)
   end
@@ -1330,7 +1340,24 @@ function WarpZone:NewRoom()
     end
 
     ballCheck = false
-
+    
+    if player:HasTrinket(TrinketType.TRINKET_BIBLE_THUMP) and bibleThumpPool == false then
+        bibleThumpPool = true
+        Game():GetItemPool():AddBibleUpgrade(1, ItemPoolType.POOL_TREASURE)
+        Game():GetItemPool():AddBibleUpgrade(1, ItemPoolType.POOL_SHOP)
+        Game():GetItemPool():AddBibleUpgrade(1, ItemPoolType.POOL_DEVIL)
+        Game():GetItemPool():AddBibleUpgrade(1, ItemPoolType.POOL_BOSS)
+        Game():GetItemPool():AddBibleUpgrade(1, ItemPoolType.POOL_GOLDEN_CHEST)
+        Game():GetItemPool():AddBibleUpgrade(1, ItemPoolType.POOL_RED_CHEST)
+        Game():GetItemPool():AddBibleUpgrade(1, ItemPoolType.POOL_SECRET)
+        Game():GetItemPool():AddBibleUpgrade(1, ItemPoolType.POOL_BEGGAR)
+        Game():GetItemPool():AddBibleUpgrade(1, ItemPoolType.POOL_GREED_TREASURE)
+        Game():GetItemPool():AddBibleUpgrade(1, ItemPoolType.POOL_GREED_SHOP)
+        Game():GetItemPool():AddBibleUpgrade(1, ItemPoolType.POOL_GREED_DEVIL)
+        Game():GetItemPool():AddBibleUpgrade(1, ItemPoolType.POOL_GREED_SECRET)
+        Game():GetItemPool():AddBibleUpgrade(1, ItemPoolType.POOL_GREED_BOSS)
+    end
+    
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, WarpZone.NewRoom)
 
@@ -2491,3 +2518,42 @@ function WarpZone:DisableCreepPlanB(Type, Variant, SubType, Position, Velocity, 
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_ENTITY_SPAWN, WarpZone.DisableCreepPlanB)
 
+
+function WarpZone:BibleExtraDamage(collectible, rng, player, useflags, activeslot, customvardata)
+    if player:HasTrinket(TrinketType.TRINKET_BIBLE_THUMP) then
+        player:UseActiveItem(CollectibleType.COLLECTIBLE_NECRONOMICON, false, false, true, false, -1, 0)
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.BibleExtraDamage, CollectibleType.COLLECTIBLE_BIBLE)
+
+
+function WarpZone:BibleKillSatan(collectible, rng, player, useflags, activeslot, customvardata)
+    if player:HasTrinket(TrinketType.TRINKET_BIBLE_THUMP) and Game():GetLevel():GetStage() == LevelStage.STAGE5 
+    and Game():GetRoom():GetType() == RoomType.ROOM_BOSS and Game():GetLevel():GetStageType() == StageType.STAGETYPE_ORIGINAL then
+    
+            local entities_s = Isaac.GetRoomEntities()
+            for i, entity_s in ipairs(entities_s) do
+                if entity_s.Type == EntityType.ENTITY_SATAN then
+                    entity_s:Kill()
+                end
+            end
+        return true
+    elseif player:GetTrinketMultiplier(TrinketType.TRINKET_BIBLE_THUMP) >= 2 and Game():GetLevel():GetStage() == LevelStage.STAGE6 
+    and Game():GetRoom():GetType() == RoomType.ROOM_BOSS and Game():GetLevel():GetStageType() == StageType.STAGETYPE_ORIGINAL then
+        local entities_s = Isaac.GetRoomEntities()
+            for i, entity_s in ipairs(entities_s) do
+                if entity_s.Type == EntityType.ENTITY_THE_LAMB then
+                    entity_s:Kill()
+                end
+            end
+        return true
+    else
+        return nil
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_PRE_USE_ITEM, WarpZone.BibleKillSatan, CollectibleType.COLLECTIBLE_BIBLE)
+
+
+function WarpZone:BibleKillSatanWrapper(card, player, useflags)
+    local whocares = WarpZone:BibleKillSatan(nil, nil, player, nil, nil, nil)
+end
