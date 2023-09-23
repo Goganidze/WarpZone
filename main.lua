@@ -12,7 +12,7 @@ local saveData = {}
 local lastIndex = 5
 
 local defaultData = {}
-defaultData.numArrows = 2
+defaultData.numArrows = 0
 defaultData.playerTumors = 0
 defaultData.tonyBuff = 1.7
 defaultData.dioDamageOn = false
@@ -1182,7 +1182,7 @@ function WarpZone:OnGameStart(isSave)
         bibleThumpPool = false
         for i=0, numPlayers-1, 1 do
             local player = Isaac.GetPlayer(i)
-            for k,v in pairs(defaultData[lastIndex + i]) do
+            for k,v in pairs(defaultData) do
                 player:GetData()[k] = v
             end
         end
@@ -1194,7 +1194,6 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, WarpZone.OnGameStart)
 
 function WarpZone:preGameExit()
     local numPlayers = Game():GetNumPlayers()
-    
     saveData[1] = DoorwayFloor
     saveData[2] = numPossessed
     saveData[3] = floorBeggar
@@ -1224,55 +1223,68 @@ function WarpZone:DebugText()
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
 
+function WarpZone:multiPlayerInit(player)
+    local numPlayers = Game():GetNumPlayers()
+    if Game():GetRoom():GetFrameCount() > 0 and numPlayers > 0 then
+        for k,v in pairs(defaultData) do
+            player:GetData()[k] = v
+        end
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, WarpZone.multiPlayerInit)
+
 function WarpZone:LevelStart()
     floorBeggar = -1
-    local player = Isaac.GetPlayer(0)
-    if player:GetData().totalFocusDamage > 0 and (CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() or
-    CollectibleType.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
-    CollectibleType.COLLECTIBLE_FOCUS_3 == player:GetActiveItem() or
-    CollectibleType.COLLECTIBLE_FOCUS_4 == player:GetActiveItem()) then
-        local one_unit_full_charge = (Game():GetLevel():GetStage() * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
-        local one_unit_full_charge_prev = (math.min(Game():GetLevel():GetStage()-1, 1) * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
-        player:GetData().totalFocusDamage = player:GetData().totalFocusDamage * (one_unit_full_charge/one_unit_full_charge_prev)
-    end
-
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE) then
-        local spawnArray = {PickupVariant.PICKUP_BOMB, PickupVariant.PICKUP_COIN, PickupVariant.PICKUP_HEART, PickupVariant.PICKUP_KEY}
-
-        if RNG():RandomInt(2) == 1 then
-            table.insert(spawnArray, PickupVariant.PICKUP_PILL)
-        else
-            table.insert(spawnArray, PickupVariant.PICKUP_TAROTCARD)
+    local numPlayers = Game():GetNumPlayers()
+    for i=0, numPlayers-1, 1 do
+        local player = Isaac.GetPlayer(i)
+        if player:GetData().totalFocusDamage and player:GetData().totalFocusDamage > 0 and (CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() or
+        CollectibleType.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
+        CollectibleType.COLLECTIBLE_FOCUS_3 == player:GetActiveItem() or
+        CollectibleType.COLLECTIBLE_FOCUS_4 == player:GetActiveItem()) then
+            local one_unit_full_charge = (Game():GetLevel():GetStage() * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
+            local one_unit_full_charge_prev = (math.min(Game():GetLevel():GetStage()-1, 1) * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
+            player:GetData().totalFocusDamage = player:GetData().totalFocusDamage * (one_unit_full_charge/one_unit_full_charge_prev)
         end
 
-        for i, spawn_type in ipairs(spawnArray) do
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE) then
+            local spawnArray = {PickupVariant.PICKUP_BOMB, PickupVariant.PICKUP_COIN, PickupVariant.PICKUP_HEART, PickupVariant.PICKUP_KEY}
+
+            if RNG():RandomInt(2) == 1 then
+                table.insert(spawnArray, PickupVariant.PICKUP_PILL)
+            else
+                table.insert(spawnArray, PickupVariant.PICKUP_TAROTCARD)
+            end
+
+            for i, spawn_type in ipairs(spawnArray) do
+                Isaac.Spawn(EntityType.ENTITY_PICKUP,
+                            spawn_type,
+                            0,
+                            Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
+                            Vector(0,0),
+                            nil)
+            end
+        end
+
+        if player:HasTrinket(TrinketType.TRINKET_RING_SNAKE) then
             Isaac.Spawn(EntityType.ENTITY_PICKUP,
-                        spawn_type,
-                        0,
-                        Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
-                        Vector(0,0),
-                        nil)
+                            PickupVariant.PICKUP_TAROTCARD,
+                            0,
+                            Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
+                            Vector(0,0),
+                            nil)
+
+            Isaac.Spawn(EntityType.ENTITY_PICKUP,
+                            PickupVariant.PICKUP_TAROTCARD,
+                            0,
+                            Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
+                            Vector(0,0),
+                            nil)
         end
-    end
 
-    if player:HasTrinket(TrinketType.TRINKET_RING_SNAKE) then
-        Isaac.Spawn(EntityType.ENTITY_PICKUP,
-                        PickupVariant.PICKUP_TAROTCARD,
-                        0,
-                        Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
-                        Vector(0,0),
-                        nil)
-
-        Isaac.Spawn(EntityType.ENTITY_PICKUP,
-                        PickupVariant.PICKUP_TAROTCARD,
-                        0,
-                        Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
-                        Vector(0,0),
-                        nil)
-    end
-
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) then
-        player:GetData().numArrows = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) * 3
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) then
+            player:GetData().numArrows = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) * 3
+        end
     end
 
 end
