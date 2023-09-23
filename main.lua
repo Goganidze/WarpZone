@@ -1990,7 +1990,7 @@ WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.LaserEnemyHit)
 
 function WarpZone:OnFrame(player)
         local room = Game():GetRoom()
-        if j == 0 and Game():GetLevel():GetStage() == DoorwayFloor and (Game():GetLevel():GetCurrentRoomIndex() ~=84 or Game():GetLevel():GetStage()~= 1) then
+        if Game():GetLevel():GetStage() == DoorwayFloor and (Game():GetLevel():GetCurrentRoomIndex() ~=84 or Game():GetLevel():GetStage()~= 1) then
             for i = 0, 7 do
                 local door = room:GetDoor(i)
                 if door then -- if it isnt nil, then
