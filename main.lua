@@ -1,11 +1,11 @@
 --basic data
 local game = Game()
 local WarpZone  = RegisterMod("WarpZone", 1)
-local debug_str = "Placeholder"
 local json = require("json")
 local myRNG = RNG()
 myRNG:SetSeed(Random(), 1)
 local hud = game:GetHUD()
+local SfxManager = SFXManager()
 ----------------------------------
 --save data
 local saveData = {}
@@ -32,8 +32,6 @@ for i=0, numPlayersG-1, 1 do
 end
 
 -----------------------------------
---golden idol
-local inDamage = false
 
 --pastkiller
 local pickupindex = RNG():RandomInt(10000) + 10000 --this makes it like a 1 in 10,000 chance there's any collision with existing pedestals
@@ -43,13 +41,11 @@ local itemPool = game:GetItemPool()
 --rusty spoon
 local rustColor = Color(.68, .21, .1, 1, 0, 0, 0)
 
-
 --focus
 local FocusChargeMultiplier = 2.5
 local whiteColor = Color(1, 1, 1, 1, 0, 0, 0)
 whiteColor:SetColorize(1, 1, 1, 1)
 whiteColor:SetTint(20, 20, 20, 2)
-local primeShot = false
 
 --doorway
 local DoorwayFloor = -1
@@ -157,14 +153,11 @@ local bibleThumpPool = false
 --Bow and Arrow
 local ArrowHud = Sprite()
 ArrowHud:Load("gfx/bow_hud.anm2", true)
-local ArrowHudLoc = Vector(42, 36)
 local renderedPosition = Vector(25, -10)
 local tokenVariant = Isaac.GetEntityVariantByName("Tear_Token")
+
+
 --item defintions
-
-
-
-
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
 CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE = Isaac.GetItemIdByName("Birthday Cake")
@@ -268,7 +261,7 @@ if EID then
 end
 
 
-local SfxManager = SFXManager()
+
 
 --util functions
 local function RandomFloatRange(greater)
@@ -1045,8 +1038,8 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
         end
     end
 
-    if player:GetNumCoins() > 0 and inDamage == false and player:HasCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
-        inDamage = true
+    if player:GetNumCoins() > 0 and player:GetData().inIdolDamage ~= true and player:HasCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
+        player:GetData().inIdolDamage = true
         if amount == 1 then
             player:TakeDamage(amount, damageflags, source, countdownframes)
         end
@@ -1063,7 +1056,7 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
             coin:GetSprite():SetFrame(math.floor(coinsToDrop - i))
         end
         
-        inDamage = false
+        player:GetData().inIdolDamage = nil
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.OnTakeHit, EntityType.ENTITY_PLAYER)
@@ -1204,7 +1197,7 @@ function WarpZone:preGameExit()
 function WarpZone:DebugText()
     local player = Isaac.GetPlayer(0) --this one is OK
     local coords = player.Position
-    debug_str = tostring(coords)
+    local debug_str = tostring(coords)
     --Isaac.RenderText(debug_str, 100, 60, 1, 1, 1, 255)
 
 end
@@ -1478,7 +1471,7 @@ function WarpZone:UseFocus(collectible, rng, entityplayer, useflags, activeslot,
         SfxManager:Play(SoundEffect.SOUND_DEATH_CARD, 3)
     else
         SfxManager:Play(SoundEffect.SOUND_ANGEL_WING, 2)
-        primeShot = true
+        entityplayer:GetData().primeShot = true
     end
 
     local one_unit_full_charge = (Game():GetLevel():GetStage() * FocusChargeMultiplier * 40) + FocusChargeMultiplier * 60
@@ -1847,9 +1840,9 @@ function WarpZone:checkTear(entitytear)
         tear:GetData().BowArrowPiercing = 2
     end
 
-    if player and CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() and primeShot then
+    if player and CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() and player:GetData().primeShot ~= nil then
         SfxManager:Play(SoundEffect.SOUND_EXPLOSION_WEAK, 3)
-        primeShot = false
+        player:GetData().primeShot = nil
         tear:GetData().FocusShot = true
         tear:GetData().FocusIndicator = true
     end
