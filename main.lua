@@ -718,31 +718,9 @@ local ChampionsToLoot = {
  --callbacks
 
 function WarpZone:OnUpdate()
-	local room = game:GetRoom()
 	local player = Isaac.GetPlayer(0)
     local numFrames = Game():GetFrameCount()
-	if player:HasCollectible(CollectibleType.COLLECTIBLE_SPELUNKERS_PACK) == true then
-		local entities = Isaac.GetRoomEntities()
 
-		for i=1,#entities do
-			--Normal bombs
-			if entities[i].Type == EntityType.ENTITY_BOMBDROP and entities[i].SpawnerType == EntityType.ENTITY_PLAYER then
-				local sprite = entities[i]:GetSprite()
-				--If First frame
-				if entities[i].FrameCount  == 1 then
-					sprite:Load("gfx/bridgebomb.anm2",false)
-					sprite:LoadGraphics()
-				end
-
-				--If exploding
-				if sprite:IsPlaying("Explode") then
-					WarpZone:TriggerEffect(entities[i].Position)
-				end
-			end
-		end
-
-	end
-    
     if numFrames % 60 == 0 then
         local entities = Isaac.GetRoomEntities()
         local targetPos = {}
@@ -772,48 +750,9 @@ function WarpZone:OnUpdate()
         end
     end
     
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) == true or player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true  then
-        
-        local lasers = Isaac.FindByType(EntityType.ENTITY_LASER)
-        for _, laser in ipairs(lasers) do
-            local data = laser:GetData()
-            if data.Laser_Rusty == true then
-                data.Laser_Rusty = false
-                laser.Color = rustColor
-            elseif player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true then
-                laser.Color = tickColor
-            end
-        end
-        
-        local laserEndpoints = Isaac.FindByType(EntityType.ENTITY_EFFECT, EffectVariant.LASER_IMPACT)
-        for _, laserEndpoint in ipairs(laserEndpoints) do
-            local data = laserEndpoint:GetData()
-            if data.Laser_Rusty == true then
-                data.Laser_Rusty = false
-                laserEndpoint.Color = rustColor
-            elseif player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true then
-                laserEndpoint.Color = tickColor
-            end
-        end
-        
-        local brimballs = Isaac.FindByType(EntityType.ENTITY_EFFECT, EffectVariant.BRIMSTONE_BALL)
-        for _, brimball in ipairs(brimballs) do
-            local data = brimball:GetData()
-            if data.Laser_Rusty == true then
-                data.Laser_Rusty = false
-                brimball.Color = rustColor
-            elseif player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true then
-                brimball.Color = tickColor
-            end
-        end
-    end
+    
 
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
-        if arrowTime.threeFrames == 1 then
-            firePopTear(player, false)
-        end
-        arrowTime.threeFrames = arrowTime.threeFrames-1
-    end
+    
 
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.OnUpdate)
@@ -872,7 +811,7 @@ function WarpZone:postRender()
                 if arrowTime.Up > 0 then
                     arrowTime.Delay = totalFrameDelay
                     firePopTear(player, true)
-                    arrowTime.threeFrames = 3
+                    arrowTime.threeFrames = 6
                 else
                     arrowTime.Up = 30
                 end
@@ -880,7 +819,7 @@ function WarpZone:postRender()
                 if arrowTime.Down > 0 then
                     arrowTime.Delay = totalFrameDelay
                     firePopTear(player, true)
-                    arrowTime.threeFrames = 3
+                    arrowTime.threeFrames = 6
                 else
                     arrowTime.Down = 30
                 end
@@ -888,7 +827,7 @@ function WarpZone:postRender()
                 if arrowTime.Left > 0 then
                     arrowTime.Delay = totalFrameDelay
                     firePopTear(player, true)
-                    arrowTime.threeFrames = 3
+                    arrowTime.threeFrames = 6
                 else
                     arrowTime.Left = 30
                 end
@@ -896,7 +835,7 @@ function WarpZone:postRender()
                 if arrowTime.Right > 0 then
                     arrowTime.Delay = totalFrameDelay
                     firePopTear(player, true)
-                    arrowTime.threeFrames = 3
+                    arrowTime.threeFrames = 6
                 else
                     arrowTime.Right = 30
                 end
@@ -917,7 +856,6 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.postRender)
 
 function WarpZone:UIOnRender(player, renderoffset)
-    --local player = Isaac.GetPlayer(0)
     
     if player:HasCollectible(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) then
         local numCollectibles = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_BOW_AND_ARROW)
@@ -937,35 +875,38 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_RENDER, WarpZone.UIOnRender)
 
 function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
     if entity:IsVulnerableEnemy() then
-        local player =  Isaac.GetPlayer(0)
-        local source_entity = source.Entity
+        local numPlayers = Game():GetNumPlayers()
+        for i=0, numPlayers-1, 1 do
+            local player =  Isaac.GetPlayer(i)
+            local source_entity = source.Entity
 
-        if source_entity and source_entity:GetData() and source_entity:GetData().FocusIndicator == nil and
-            (CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() or
-            CollectibleType.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
-            CollectibleType.COLLECTIBLE_FOCUS_3 == player:GetActiveItem() or
-            CollectibleType.COLLECTIBLE_FOCUS_4 == player:GetActiveItem()
-            )
-        then
-            player:GetData().totalFocusDamage = player:GetData().totalFocusDamage + math.min(amount, entity.HitPoints)
-            local chargeMax = (Game():GetLevel():GetStage() * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
-            local chargesToSet = math.floor((20 * player:GetData().totalFocusDamage)/chargeMax)
-            local chargeThreshold = 20
-            if player:HasCollectible(CollectibleType.COLLECTIBLE_BATTERY) then
-                chargeThreshold = 40
-            end
-            local pastCharge = player:GetActiveCharge()
-            local newCharge = math.min(chargeThreshold, chargesToSet)
+            if source_entity and source_entity:GetData() and source_entity:GetData().FocusIndicator == nil and
+                (CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() or
+                CollectibleType.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
+                CollectibleType.COLLECTIBLE_FOCUS_3 == player:GetActiveItem() or
+                CollectibleType.COLLECTIBLE_FOCUS_4 == player:GetActiveItem()
+                )
+            then
+                player:GetData().totalFocusDamage = player:GetData().totalFocusDamage + math.min(amount, entity.HitPoints)
+                local chargeMax = (Game():GetLevel():GetStage() * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
+                local chargesToSet = math.floor((20 * player:GetData().totalFocusDamage)/chargeMax)
+                local chargeThreshold = 20
+                if player:HasCollectible(CollectibleType.COLLECTIBLE_BATTERY) then
+                    chargeThreshold = 40
+                end
+                local pastCharge = player:GetActiveCharge()
+                local newCharge = math.min(chargeThreshold, chargesToSet)
 
-            if pastCharge <= 3  and 3 < newCharge and newCharge <= 10 then
-                player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_2, newCharge, false, ActiveSlot.SLOT_PRIMARY)
-            elseif pastCharge <= 10 and 10 < newCharge and newCharge <= 19 then
-                player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_3, newCharge, false, ActiveSlot.SLOT_PRIMARY)
-            elseif pastCharge <=19 and newCharge and newCharge >= 20 then
-                player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_4, newCharge, false, ActiveSlot.SLOT_PRIMARY)
-                SfxManager:Play(SoundEffect.SOUND_BATTERYCHARGE)
-            else
-                player:SetActiveCharge(newCharge)
+                if pastCharge <= 3  and 3 < newCharge and newCharge <= 10 then
+                    player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_2, newCharge, false, ActiveSlot.SLOT_PRIMARY)
+                elseif pastCharge <= 10 and 10 < newCharge and newCharge <= 19 then
+                    player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_3, newCharge, false, ActiveSlot.SLOT_PRIMARY)
+                elseif pastCharge <=19 and newCharge and newCharge >= 20 then
+                    player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_4, newCharge, false, ActiveSlot.SLOT_PRIMARY)
+                    SfxManager:Play(SoundEffect.SOUND_BATTERYCHARGE)
+                else
+                    player:SetActiveCharge(newCharge)
+                end
             end
         end
     end
@@ -1758,6 +1699,70 @@ function WarpZone:postPlayerUpdate(player)
         player.MoveSpeed = math.min(player.MoveSpeed+player:GetCollectibleNum(CollectibleType.COLLECTIBLE_HITOPS)*0.2, 3)
         data.breakCap = nil
     end
+
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) == true or player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true  then
+        
+        local lasers = Isaac.FindByType(EntityType.ENTITY_LASER)
+        for _, laser in ipairs(lasers) do
+            local data = laser:GetData()
+            if data.Laser_Rusty == true then
+                data.Laser_Rusty = false
+                laser.Color = rustColor
+            elseif player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true then
+                laser.Color = tickColor
+            end
+        end
+        
+        local laserEndpoints = Isaac.FindByType(EntityType.ENTITY_EFFECT, EffectVariant.LASER_IMPACT)
+        for _, laserEndpoint in ipairs(laserEndpoints) do
+            local data = laserEndpoint:GetData()
+            if data.Laser_Rusty == true then
+                data.Laser_Rusty = false
+                laserEndpoint.Color = rustColor
+            elseif player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true then
+                laserEndpoint.Color = tickColor
+            end
+        end
+        
+        local brimballs = Isaac.FindByType(EntityType.ENTITY_EFFECT, EffectVariant.BRIMSTONE_BALL)
+        for _, brimball in ipairs(brimballs) do
+            local data = brimball:GetData()
+            if data.Laser_Rusty == true then
+                data.Laser_Rusty = false
+                brimball.Color = rustColor
+            elseif player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true then
+                brimball.Color = tickColor
+            end
+        end
+    end
+
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_SPELUNKERS_PACK) == true then
+		local entities = Isaac.GetRoomEntities()
+
+		for i=1,#entities do
+			--Normal bombs
+			if entities[i].Type == EntityType.ENTITY_BOMBDROP and entities[i].SpawnerType == EntityType.ENTITY_PLAYER then
+				local sprite = entities[i]:GetSprite()
+				--If First frame
+				if entities[i].FrameCount  == 1 then
+					sprite:Load("gfx/bridgebomb.anm2",false)
+					sprite:LoadGraphics()
+				end
+
+				--If exploding
+				if sprite:IsPlaying("Explode") then
+					WarpZone:TriggerEffect(entities[i].Position)
+				end
+			end
+		end
+	end
+
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
+        if arrowTime.threeFrames == 1 then
+            firePopTear(player, false)
+        end
+        arrowTime.threeFrames = arrowTime.threeFrames-1
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpdate, 0)
 
@@ -1894,8 +1899,6 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, WarpZone.dropArrow)
 
 
 function WarpZone:hitEnemy(entitytear, collider, low)
-    local player = Isaac.GetPlayer(0)
-
     local tear = entitytear:ToTear()
 
     if collider:IsEnemy() and tear:GetData().BleedIt == true then
