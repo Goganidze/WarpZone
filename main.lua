@@ -29,8 +29,8 @@ defaultData.arrowTimeRight = 0
 defaultData.arrowTimeThreeFrames = 0
 defaultData.arrowTimeDelay = 0
 defaultData.ballCheck = true
-
-
+defaultData.blinkTime = 10
+defaultData.timeSinceTheSpacebarWasLastPressed = 0
 
 
 local numPlayersG = Game():GetNumPlayers()
@@ -60,11 +60,6 @@ whiteColor:SetTint(20, 20, 20, 2)
 --doorway
 local DoorwayFloor = -1 --saved
 
---is you
-local reticle
-local blinkTime = 10
-local baba_active = nil
-local timeSinceTheSpacebarWasLastPressed = 0
 
 --nightmare tick
 local tickColor = Color(.2, .05, .05, 1, 0, 0, 0)
@@ -391,7 +386,7 @@ local function respawnBalls(numberBalls, player)
     end
 end
 
-local function findGridEntityResponse(position)
+local function findGridEntityResponse(position, player)
     local room = Game():GetRoom()
     local bestTask
     local floor = Game():GetLevel():GetStage()
@@ -584,7 +579,7 @@ local function findGridEntityResponse(position)
 
     if bestTask and bestTask.distance <= 2500 then
         hud:ShowItemText(bestTask.blurb, "", false)
-        baba_active = bestTask.active
+        player:GetData().baba_active = bestTask.active
         SfxManager:Play(SoundEffect.SOUND_THUMBSUP, 2)
     else
         SfxManager:Play(SoundEffect.SOUND_BOSS2INTRO_ERRORBUZZ, 2)
@@ -839,9 +834,9 @@ function WarpZone:postRender(player)
         end
 
         if actions & ActionTriggers.ACTIONTRIGGER_ITEMACTIVATED > 0 then
-            timeSinceTheSpacebarWasLastPressed = 0
+            player:GetData().timeSinceTheSpacebarWasLastPressed = 0
         else
-            timeSinceTheSpacebarWasLastPressed = timeSinceTheSpacebarWasLastPressed + 1
+            player:GetData().timeSinceTheSpacebarWasLastPressed = player:GetData().timeSinceTheSpacebarWasLastPressed + 1
         end
         
         if player:GetData().arrowTimeDelay <= 0 then
@@ -1150,7 +1145,9 @@ function WarpZone:OnGameStart(isSave)
         for i=0, numPlayers-1, 1 do
             local player = Isaac.GetPlayer(i)
             for k,v in pairs(saveData[lastIndex + i]) do
-                player:GetData()[k] = v
+                if k ~= "reticle" then
+                    player:GetData()[k] = v
+                end
             end
         end
     end
@@ -1585,19 +1582,20 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseDoorway, CollectibleType.COLLECTIBLE_DOORWAY)
 
 function WarpZone:UseIsYou(collectible, rng, entityplayer, useflags, activeslot, customvardata)
-    if baba_active == nil then
-        reticle = Isaac.Spawn(1000, 30, 0, entityplayer.Position, Vector(0, 0), entityplayer)
-        blinkTime = 10
+    print(entityplayer.ControllerIndex)
+    if entityplayer:GetData().baba_active == nil and entityplayer:GetData().reticle == nil then
+        entityplayer:GetData().reticle = Isaac.Spawn(1000, 30, 0, entityplayer.Position, Vector(0, 0), entityplayer)
+        entityplayer:GetData().blinkTime = 10
         entityplayer:AnimateCollectible(CollectibleType.COLLECTIBLE_IS_YOU, "LiftItem", "PlayerPickupSparkle")
         return {
             Discharge = false,
             Remove = false,
             ShowAnim = false
         }
-    else
-        entityplayer:UseActiveItem(baba_active)
+    elseif entityplayer:GetData().baba_active ~= nil then
+        entityplayer:UseActiveItem(entityplayer:GetData().baba_active)
 
-        baba_active = nil
+        entityplayer:GetData().baba_active = nil
         return {
             Discharge = true,
             Remove = false,
@@ -1990,10 +1988,7 @@ function WarpZone:LaserEnemyHit(entity, amount, damageflags, source, countdownfr
 end
 WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.LaserEnemyHit)
 
-function WarpZone:OnFrame(entityplayer)
-    local numPlayers = Game():GetNumPlayers()
-    for j=0, numPlayers-1, 1 do
-        local player =  Isaac.GetPlayer(j)
+function WarpZone:OnFrame(player)
         local room = Game():GetRoom()
         if j == 0 and Game():GetLevel():GetStage() == DoorwayFloor and (Game():GetLevel():GetCurrentRoomIndex() ~=84 or Game():GetLevel():GetStage()~= 1) then
             for i = 0, 7 do
@@ -2011,35 +2006,35 @@ function WarpZone:OnFrame(entityplayer)
                 end
             end
         end
-        if player:HasCollectible(CollectibleType.COLLECTIBLE_IS_YOU) and reticle ~= nil then
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_IS_YOU) and player:GetData().reticle ~= nil then
             local aimDir = player:GetAimDirection()
-            reticle.Velocity = aimDir * 20
+            player:GetData().reticle.Velocity = aimDir * 20
 
-            if reticle.FrameCount % blinkTime < blinkTime/2 then
-                reticle.Color = Color(0, 0, 0, 0.5, -230, 100, 215)
+            if player:GetData().reticle.FrameCount % player:GetData().blinkTime < player:GetData().blinkTime/2 then
+                player:GetData().reticle.Color = Color(0, 0, 0, 0.5, -230, 100, 215)
             else
-                reticle.Color = Color(0, 0, 0, 0.8, -200, 150, 255)
+                player:GetData().reticle.Color = Color(0, 0, 0, 0.8, -200, 150, 255)
             end
 
                 local stop = false
-                if (reticle.FrameCount > 5 and timeSinceTheSpacebarWasLastPressed < 4) or reticle.FrameCount > 75 then
-                    findGridEntityResponse(reticle.Position)
-                    reticle:Remove()
-                    reticle = nil
+                if (player:GetData().reticle.FrameCount > 5 and player:GetData().timeSinceTheSpacebarWasLastPressed < 4) or player:GetData().reticle.FrameCount > 75 then
+                    findGridEntityResponse(player:GetData().reticle.Position, player)
+                    player:GetData().reticle:Remove()
+                    player:GetData().reticle = nil
                     stop = true
                 else
                     -- Prevent the player from shooting
                     player.FireDelay = 1
 
                     -- Make the target blink faster
-                    if reticle.FrameCount > 70 then
-                        blinkTime = 2
-                    elseif reticle.FrameCount > 65 then
-                        blinkTime = 4
-                    elseif reticle.FrameCount > 55 then
-                        blinkTime = 6
-                    elseif reticle.FrameCount > 40 then
-                        blinkTime = 8
+                    if player:GetData().reticle.FrameCount > 70 then
+                        player:GetData().blinkTime = 2
+                    elseif player:GetData().reticle.FrameCount > 65 then
+                        player:GetData().blinkTime = 4
+                    elseif player:GetData().reticle.FrameCount > 55 then
+                        player:GetData().blinkTime = 6
+                    elseif player:GetData().reticle.FrameCount > 40 then
+                        player:GetData().blinkTime = 8
                     end
                 end
                 if stop then --and ai.player:GetSprite():IsPlaying("LiftItem")
@@ -2076,7 +2071,7 @@ function WarpZone:OnFrame(entityplayer)
             end
             player:GetData().ballCheck = true
         end
-    end
+
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, WarpZone.OnFrame)
 
