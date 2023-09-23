@@ -11,9 +11,24 @@ local hud = game:GetHUD()
 local saveData = {}
 local itemsTaken = {}
 local poolsTaken = {}
+local lastIndex = 5
+
+local defaultData = {}
+defaultData.numArrows = 2
+defaultData.playerTumors = 0
+defaultData.tonyBuff = 1.7
+defaultData.dioDamageOn = false
+defaultData.roomsClearedSinceTake = -1
+defaultData.itemsSucked = 0
 
 
-
+local numPlayersG = Game():GetNumPlayers()
+for i=0, numPlayersG-1, 1 do
+    local player = Isaac.GetPlayer(i)
+    for k,v in pairs(defaultData) do
+        player:GetData()[k] = v
+    end
+end
 
 -----------------------------------
 --golden idol
@@ -47,12 +62,8 @@ local baba_active = nil
 local timeSinceTheSpacebarWasLastPressed = 0
 
 --nightmare tick
-local roomsClearedSinceTake = -1
-local itemsSucked = 0
 local tickColor = Color(.2, .05, .05, 1, 0, 0, 0)
 
---diogenes
-local dioDamageOn = false
 
 --george
 local roomKey = {}
@@ -102,8 +113,6 @@ local BASE_PAYOUT_CHANCE = 0.065
 local STEP_PAYOUT_CHANCE = 0.035
 local KEEPER_BONUS = 0.5
 
---tony
-local tonyBuff = 1.7
 
 --pop pop 
 local arrowTime = {}
@@ -120,7 +129,6 @@ local ballCheck = true
 local effBlank = Isaac.GetEntityVariantByName("Blank_Effect")
 
 --tumors
-local PlayerTumors = {}
 local SmallTumor = {
 	VARIANT = Isaac.GetEntityVariantByName("Tumor_Small"),
 	ORBIT_DISTANCE = Vector(30.0, 30.0),
@@ -152,9 +160,11 @@ local ArrowHud = Sprite()
 ArrowHud:Load("gfx/bow_hud.anm2", true)
 local ArrowHudLoc = Vector(42, 36)
 local renderedPosition = Vector(25, -10)
-local numArrows = 2
 local tokenVariant = Isaac.GetEntityVariantByName("Tear_Token")
 --item defintions
+
+
+
 
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
@@ -913,7 +923,7 @@ function WarpZone:UIOnRender(player, renderoffset)
         local numCollectibles = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_BOW_AND_ARROW)
         
         for i = 1, numCollectibles * 3, 1 do
-            if numArrows - i >= 0 then
+            if player:GetData().numArrows - i >= 0 then
                 ArrowHud:SetFrame("Lit", 0)
             else
                 ArrowHud:SetFrame("Unlit", 0)
@@ -1101,9 +1111,9 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
     end
 
     if player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
-        roomsClearedSinceTake = roomsClearedSinceTake + 1
+        player:GetData().roomsClearedSinceTake = player:GetData().roomsClearedSinceTake + 1
         local roomsToSuck = math.max(10 - (2 * player:GetCollectibleNum(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK)), 1)
-        if roomsClearedSinceTake % roomsToSuck == 0 then
+        if player:GetData().roomsClearedSinceTake % roomsToSuck == 0 then
             local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK)
             local shift = 0
             for j, item_tag in ipairs(itemsTaken) do
@@ -1125,7 +1135,7 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
                 local item_del = table.remove(itemsTaken, pos_to_delete)
                 table.remove(poolsTaken, pos_to_delete)
                 player:RemoveCollectible(item_del)
-                itemsSucked = itemsSucked + 1
+                player:GetData().itemsSucked = player:GetData().itemsSucked + 1
                 player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
                 player:EvaluateItems()
                 SfxManager:Play(SoundEffect.SOUND_THUMBS_DOWN)
@@ -1146,40 +1156,35 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, WarpZone.spawnCleanAward)
 
 
-
 function WarpZone:OnGameStart(isSave)
+    local numPlayers = Game():GetNumPlayers()
     if WarpZone:HasData()  and isSave then
         saveData = json.decode(WarpZone:LoadData())
-        itemsTaken = saveData[1]
-        poolsTaken = saveData[2]
-        totalFocusDamage = saveData[3]
-        DoorwayFloor = saveData[4]
-        roomsClearedSinceTake = saveData[5]
-        itemsSucked = saveData[6]
-        dioDamageOn = saveData[7]
-        numPossessed = saveData[8]
-        floorBeggar = saveData[9]
-        tonyBuff = saveData[10]
-        PlayerTumors = saveData[11]
-        bibleThumpPool = saveData[12]
-        numArrows = saveData[13]
+        DoorwayFloor = saveData[1]
+        numPossessed = saveData[2]
+        floorBeggar = saveData[3]
+        bibleThumpPool = saveData[4]
+
+        for i=0, numPlayers-1, 1 do
+            local player = Isaac.GetPlayer(i)
+            for k,v in pairs(saveData[lastIndex + i]) do
+                player:GetData()[k] = v
+            end
+        end
     end
 
     if not isSave then
-        itemsTaken = {}
-        poolsTaken = {}
         saveData = {}
-        totalFocusDamage = 0
         DoorwayFloor = -1
-        roomsClearedSinceTake = -1
-        itemsSucked = 0
-        dioDamageOn = false
         numPossessed = 0
         floorBeggar = -1
-        tonyBuff = 1.7
-        PlayerTumors = {}
         bibleThumpPool = false
-        numArrows = 0
+        for i=0, numPlayers-1, 1 do
+            local player = Isaac.GetPlayer(i)
+            for k,v in pairs(defaultData[lastIndex + i]) do
+                player:GetData()[k] = v
+            end
+        end
     end
 
 end
@@ -1187,19 +1192,21 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, WarpZone.OnGameStart)
 
 
 function WarpZone:preGameExit()
-    saveData[1] = itemsTaken
-    saveData[2] = poolsTaken
-    saveData[3] = totalFocusDamage
-    saveData[4] = DoorwayFloor
-    saveData[5] = roomsClearedSinceTake
-    saveData[6] = itemsSucked
-    saveData[7] = dioDamageOn
-    saveData[8] = numPossessed
-    saveData[9] = floorBeggar
-    saveData[10] = tonyBuff
-    saveData[11] = PlayerTumors
-    saveData[12] = bibleThumpPool
-    saveData[13] = numArrows
+    local numPlayers = Game():GetNumPlayers()
+    
+    saveData[1] = DoorwayFloor
+    saveData[2] = numPossessed
+    saveData[3] = floorBeggar
+    saveData[4] = bibleThumpPool
+    
+    for i=0, numPlayers-1, 1 do
+        local player = Isaac.GetPlayer(i)
+        saveData[i + lastIndex] = {}
+        for k,v in pairs(player:GetData()) do
+            saveData[i + lastIndex][k] = v
+        end
+    end
+
     local jsonString = json.encode(saveData)
     WarpZone:SaveData(jsonString)
   end
@@ -1264,7 +1271,7 @@ function WarpZone:LevelStart()
     end
 
     if player:HasCollectible(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) then
-        numArrows = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) * 3
+        player:GetData().numArrows = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) * 3
     end
 
 end
@@ -1274,7 +1281,7 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, WarpZone.LevelStart)
 function WarpZone:NewRoom()
     local player = Isaac.GetPlayer(0)
     local room = Game():GetRoom()
-    dioDamageOn = false
+    player:GetData().dioDamageOn = false
     player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
     player:EvaluateItems()
 
@@ -1604,8 +1611,8 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
     if entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == tumorVariant and entity:GetData().Collected ~= true then
         entity:GetData().Collected = true
         entity:GetSprite():Play("Collect")
-        if not PlayerTumors[player.ControllerIndex] then PlayerTumors[player.ControllerIndex] = 0 end
-        PlayerTumors[player.ControllerIndex] = PlayerTumors[player.ControllerIndex] + 1
+        if not player:GetData().playerTumors then player:GetData().playerTumors = 0 end
+        player:GetData().playerTumors = player:GetData().playerTumors + 1
         player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS)
         player:EvaluateItems()
         if Game():GetFrameCount() % 2 == 0 then
@@ -1621,7 +1628,7 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
     if entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == tokenVariant and entity:GetData().Collected ~= true then
         entity:GetData().Collected = true
         entity:GetSprite():Play("Collect")
-        numArrows = numArrows + 1
+        player:GetData().numArrows = player:GetData().numArrows + 1
         SfxManager:Play(SoundEffect.SOUND_PENNYPICKUP)
         return true
     elseif entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == tokenVariant then
@@ -1631,9 +1638,9 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
 
     if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant == PickupVariant.PICKUP_COLLECTIBLE) and player:HasCollectible(CollectibleType.COLLECTIBLE_TONY) then
         --local dmg_config = Isaac.GetItemConfig():GetCollectible(entity.SubType)
-        if entity.SubType ~= 0 and tonyBuff > 1 and entity:GetData().collected ~= true then -- and (dmg_config.CacheFlags & CacheFlag.CACHE_DAMAGE == CacheFlag.CACHE_DAMAGE)
+        if entity.SubType ~= 0 and player:GetData().tonyBuff > 1 and entity:GetData().collected ~= true then -- and (dmg_config.CacheFlags & CacheFlag.CACHE_DAMAGE == CacheFlag.CACHE_DAMAGE)
             entity:GetData().collected = true
-            tonyBuff = tonyBuff - 0.1
+            player:GetData().tonyBuff = player:GetData().tonyBuff - 0.1
             player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
             player:EvaluateItems()
         end
@@ -1651,7 +1658,7 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
             Isaac.Spawn(EntityType.ENTITY_PICKUP, tumorVariant, 1, Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()), Vector(0,0), nil)
         end
         if entity.SubType == CollectibleType.COLLECTIBLE_BOW_AND_ARROW then
-            numArrows = numArrows + 3
+            player:GetData().numArrows = player:GetData().numArrows + 3
         end
     end
     return nil
@@ -1692,14 +1699,14 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         entityplayer.Damage = entityplayer.Damage + (0.5 * tank_qty)
 
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
-            entityplayer.Damage = entityplayer.Damage + (itemsSucked * 0.75)
+            entityplayer.Damage = entityplayer.Damage + (entityplayer:GetData().itemsSucked * 0.75)
         end
         
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_TONY) then
-            entityplayer.Damage = (entityplayer.Damage * tonyBuff) + (tonyBuff * 1.428)
+            entityplayer.Damage = (entityplayer.Damage * entityplayer:GetData().tonyBuff) + (entityplayer:GetData().tonyBuff * 1.428)
         end
         
-        if dioDamageOn == true then
+        if entityplayer:GetData().dioDamageOn == true then
             entityplayer.Damage = entityplayer.Damage * 3
         end
     end
@@ -1760,8 +1767,8 @@ function WarpZone:checkTear(entitytear)
         tear:GetData().NightmareColor = true
     end
 
-    if player and player:HasCollectible(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) and numArrows > 0 then
-        numArrows = numArrows - 1
+    if player and player:HasCollectible(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) and player:GetData().numArrows > 0 then
+        player:GetData().numArrows = player:GetData().numArrows - 1
         tear:GetData().BowArrowPiercing = 2
     end
 
@@ -1856,7 +1863,10 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, WarpZone.updateTear)
 function WarpZone:dropArrow(entity)
     if entity:GetData().BowArrowPiercing and entity:GetData().BowArrowPiercing > 0 then
         if game:GetRoom():GetFrameCount() == 0 then
-            numArrows = numArrows + 1
+            local player = entity.SpawnerEntity
+            if player:ToPlayer() ~= nil then
+                player:GetData().numArrows = player:GetData().numArrows + 1
+            end
         else
             Isaac.Spawn(EntityType.ENTITY_PICKUP,
                     tokenVariant,
@@ -2126,11 +2136,11 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_FIRE_TEAR, function(_, tear)
     
     if player then
         if player:HasCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE) then
-            dioDamageOn = true
+            player:GetData().dioDamageOn = true
             tear:Remove()
             WarpZone:FireClub(player, player:GetFireDirection())
         else
-            dioDamageOn = false
+            player:GetData().dioDamageOn = false
         end
         player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
         player:EvaluateItems()
@@ -2207,7 +2217,7 @@ local function update_cache(_, player, cache_flag)
 		local pop_rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_LOLLIPOP)
 		player:CheckFamiliar(Lollipop.VARIANT, pop_pickups, pop_rng)
         
-        local tumor_count = PlayerTumors[player.ControllerIndex]
+        local tumor_count = player:GetData().playerTumors
         if tumor_count and Game():GetFrameCount() > 1 then
             local smalltumors = 0
             local midtumors = 0
@@ -2307,7 +2317,7 @@ function WarpZone:pre_tumor_collision(orbital, collider, low)
         elseif orbital.Variant == LargeTumor.VARIANT then
             damage = 4
             local player = orbital.Player
-            local numTumors = PlayerTumors[player.ControllerIndex]
+            local numTumors = player:GetData().playerTumors
             if numTumors then
                 damage = damage + ((numTumors - 10) * 0.2)
             end
