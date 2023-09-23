@@ -9,8 +9,6 @@ local hud = game:GetHUD()
 ----------------------------------
 --save data
 local saveData = {}
-local itemsTaken = {}
-local poolsTaken = {}
 local lastIndex = 5
 
 local defaultData = {}
@@ -20,6 +18,9 @@ defaultData.tonyBuff = 1.7
 defaultData.dioDamageOn = false
 defaultData.roomsClearedSinceTake = -1
 defaultData.itemsSucked = 0
+defaultData.itemsTaken = {}
+defaultData.poolsTaken = {}
+defaultData.totalFocusDamage = 0
 
 
 local numPlayersG = Game():GetNumPlayers()
@@ -50,7 +51,6 @@ local whiteColor = Color(1, 1, 1, 1, 0, 0, 0)
 whiteColor:SetColorize(1, 1, 1, 1)
 whiteColor:SetTint(20, 20, 20, 2)
 local primeShot = false
-local totalFocusDamage = 0
 
 --doorway
 local DoorwayFloor = -1
@@ -937,35 +937,35 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_RENDER, WarpZone.UIOnRender)
 
 function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
     if entity:IsVulnerableEnemy() then
-        local player_ =  Isaac.GetPlayer(0)
+        local player =  Isaac.GetPlayer(0)
         local source_entity = source.Entity
 
         if source_entity and source_entity:GetData() and source_entity:GetData().FocusIndicator == nil and
-            (CollectibleType.COLLECTIBLE_FOCUS == player_:GetActiveItem() or
-            CollectibleType.COLLECTIBLE_FOCUS_2 == player_:GetActiveItem() or
-            CollectibleType.COLLECTIBLE_FOCUS_3 == player_:GetActiveItem() or
-            CollectibleType.COLLECTIBLE_FOCUS_4 == player_:GetActiveItem()
+            (CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() or
+            CollectibleType.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
+            CollectibleType.COLLECTIBLE_FOCUS_3 == player:GetActiveItem() or
+            CollectibleType.COLLECTIBLE_FOCUS_4 == player:GetActiveItem()
             )
         then
-            totalFocusDamage = totalFocusDamage + math.min(amount, entity.HitPoints)
+            player:GetData().totalFocusDamage = player:GetData().totalFocusDamage + math.min(amount, entity.HitPoints)
             local chargeMax = (Game():GetLevel():GetStage() * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
-            local chargesToSet = math.floor((20 * totalFocusDamage)/chargeMax)
+            local chargesToSet = math.floor((20 * player:GetData().totalFocusDamage)/chargeMax)
             local chargeThreshold = 20
-            if player_:HasCollectible(CollectibleType.COLLECTIBLE_BATTERY) then
+            if player:HasCollectible(CollectibleType.COLLECTIBLE_BATTERY) then
                 chargeThreshold = 40
             end
-            local pastCharge = player_:GetActiveCharge()
+            local pastCharge = player:GetActiveCharge()
             local newCharge = math.min(chargeThreshold, chargesToSet)
 
             if pastCharge <= 3  and 3 < newCharge and newCharge <= 10 then
-                player_:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_2, newCharge, false, ActiveSlot.SLOT_PRIMARY)
+                player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_2, newCharge, false, ActiveSlot.SLOT_PRIMARY)
             elseif pastCharge <= 10 and 10 < newCharge and newCharge <= 19 then
-                player_:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_3, newCharge, false, ActiveSlot.SLOT_PRIMARY)
+                player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_3, newCharge, false, ActiveSlot.SLOT_PRIMARY)
             elseif pastCharge <=19 and newCharge and newCharge >= 20 then
-                player_:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_4, newCharge, false, ActiveSlot.SLOT_PRIMARY)
+                player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_4, newCharge, false, ActiveSlot.SLOT_PRIMARY)
                 SfxManager:Play(SoundEffect.SOUND_BATTERYCHARGE)
             else
-                player_:SetActiveCharge(newCharge)
+                player:SetActiveCharge(newCharge)
             end
         end
     end
@@ -1113,27 +1113,28 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
     if player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
         player:GetData().roomsClearedSinceTake = player:GetData().roomsClearedSinceTake + 1
         local roomsToSuck = math.max(10 - (2 * player:GetCollectibleNum(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK)), 1)
+        local itemsTakenHere = player:GetData().itemsTaken
         if player:GetData().roomsClearedSinceTake % roomsToSuck == 0 then
             local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK)
             local shift = 0
-            for j, item_tag in ipairs(itemsTaken) do
+            for j, item_tag in ipairs(player:GetData().itemsTaken) do
                 if player:HasCollectible(item_tag) == false then
-                    table.remove(itemsTaken, j-shift)
-                    table.remove(poolsTaken, j-shift)
+                    table.remove(player:GetData().itemsTaken, j-shift)
+                    table.remove(player:GetData().poolsTaken, j-shift)
                     shift = shift + 1
                 end
             end
             
-            local pos_to_delete = rng:RandomInt(#itemsTaken) + 1
-            local config = Isaac.GetItemConfig():GetCollectible(itemsTaken[pos_to_delete])
-            if (itemsTaken[pos_to_delete] == CollectibleType.COLLECTIBLE_NIGHTMARE_TICK or (config.Tags & ItemConfig.TAG_QUEST == ItemConfig.TAG_QUEST)) and #itemsTaken > 1 then
-                pos_to_delete = (pos_to_delete % #itemsTaken) + 1
+            local pos_to_delete = rng:RandomInt(#itemsTakenHere) + 1
+            local config = Isaac.GetItemConfig():GetCollectible(player:GetData().itemsTaken[pos_to_delete])
+            if (player:GetData().itemsTaken[pos_to_delete] == CollectibleType.COLLECTIBLE_NIGHTMARE_TICK or (config.Tags & ItemConfig.TAG_QUEST == ItemConfig.TAG_QUEST)) and #itemsTakenHere > 1 then
+                pos_to_delete = (pos_to_delete % #itemsTakenHere) + 1
             end
             
-            config = Isaac.GetItemConfig():GetCollectible(itemsTaken[pos_to_delete])
-            if itemsTaken[pos_to_delete] ~= CollectibleType.COLLECTIBLE_NIGHTMARE_TICK and (config.Tags & ItemConfig.TAG_QUEST ~= ItemConfig.TAG_QUEST) then
-                local item_del = table.remove(itemsTaken, pos_to_delete)
-                table.remove(poolsTaken, pos_to_delete)
+            config = Isaac.GetItemConfig():GetCollectible(player:GetData().itemsTaken[pos_to_delete])
+            if player:GetData().itemsTaken[pos_to_delete] ~= CollectibleType.COLLECTIBLE_NIGHTMARE_TICK and (config.Tags & ItemConfig.TAG_QUEST ~= ItemConfig.TAG_QUEST) then
+                local item_del = table.remove(player:GetData().itemsTaken, pos_to_delete)
+                table.remove(player:GetData().poolsTaken, pos_to_delete)
                 player:RemoveCollectible(item_del)
                 player:GetData().itemsSucked = player:GetData().itemsSucked + 1
                 player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
@@ -1226,13 +1227,13 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
 function WarpZone:LevelStart()
     floorBeggar = -1
     local player = Isaac.GetPlayer(0)
-    if totalFocusDamage > 0 and (CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() or
+    if player:GetData().totalFocusDamage > 0 and (CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() or
     CollectibleType.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
     CollectibleType.COLLECTIBLE_FOCUS_3 == player:GetActiveItem() or
     CollectibleType.COLLECTIBLE_FOCUS_4 == player:GetActiveItem()) then
         local one_unit_full_charge = (Game():GetLevel():GetStage() * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
         local one_unit_full_charge_prev = (math.min(Game():GetLevel():GetStage()-1, 1) * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
-        totalFocusDamage = totalFocusDamage * (one_unit_full_charge/one_unit_full_charge_prev)
+        player:GetData().totalFocusDamage = player:GetData().totalFocusDamage * (one_unit_full_charge/one_unit_full_charge_prev)
     end
 
     if player:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE) then
@@ -1410,15 +1411,15 @@ function WarpZone:usePastkiller(collectible, rng, entityplayer, useflags, active
  
     
     local shift = 0
-    for i, item_tag in ipairs(itemsTaken) do
+    for i, item_tag in ipairs(player:GetData().itemsTaken) do
         if player:HasCollectible(item_tag) == false then
-            table.remove(itemsTaken, i-shift)
-            table.remove(poolsTaken, i-shift)
+            table.remove(player:GetData().itemsTaken, i-shift)
+            table.remove(player:GetData().poolsTaken, i-shift)
             shift = shift + 1
         end
     end
-
-    if #itemsTaken < 3 then
+    local itemsTakenHere = player:GetData().itemsTaken
+    if #itemsTakenHere < 3 then
         return {
             Discharge = false,
             Remove = false,
@@ -1434,8 +1435,8 @@ function WarpZone:usePastkiller(collectible, rng, entityplayer, useflags, active
 
     for j = 1, 3 do
         pickupindex = pickupindex + 1
-        pool = table.remove(poolsTaken, 1)
-        item_removed  = table.remove(itemsTaken, 1)
+        pool = table.remove(player:GetData().poolsTaken, 1)
+        item_removed  = table.remove(player:GetData().itemsTaken, 1)
         player:RemoveCollectible(item_removed)
         for i = 1, 3 do
             local pedestal = Isaac.Spawn(EntityType.ENTITY_PICKUP,
@@ -1475,9 +1476,9 @@ function WarpZone:UseFocus(collectible, rng, entityplayer, useflags, activeslot,
 
     if player:GetActiveCharge() >= 20 then
         adjustedcharge = player:GetActiveCharge() - 20
-        totalFocusDamage = math.floor(one_unit_full_charge * (adjustedcharge/20))
+        player:GetData().totalFocusDamage = math.floor(one_unit_full_charge * (adjustedcharge/20))
     else
-        totalFocusDamage = 0
+        player:GetData().totalFocusDamage = 0
     end
 
     player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS, adjustedcharge, false, activeslot)
@@ -1651,8 +1652,8 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
         entity:ToPickup():GetData().Logged = true
         local pool = Game():GetItemPool():GetLastPool()
         if config.Type ~= ItemType.ITEM_ACTIVE then
-            table.insert(itemsTaken, entity.SubType)
-            table.insert(poolsTaken, pool)
+            table.insert(player:GetData().itemsTaken, entity.SubType)
+            table.insert(player:GetData().poolsTaken, pool)
         end
         if entity.SubType == CollectibleType.COLLECTIBLE_BALL_OF_TUMORS then
             Isaac.Spawn(EntityType.ENTITY_PICKUP, tumorVariant, 1, Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()), Vector(0,0), nil)
