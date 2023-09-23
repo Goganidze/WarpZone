@@ -296,6 +296,39 @@ local function tableContains(table_, value, removeValue)
     return contains
 end
 
+local function doesAnyoneHave(itemtype, trinket)
+    local numPlayers = Game():GetNumPlayers()
+    local hasIt = nil
+    for i=0, numPlayers-1, 1 do
+        local player = Isaac.GetPlayer(i)
+        if trinket == true then
+            if player:HasTrinket(itemtype) then
+                hasIt = player
+            end
+        else
+            if player:HasCollectible(itemtype) then
+                hasIt = player
+            end
+        end
+        
+    end
+    return hasIt
+end
+
+local function getClosestPlayerPosition(entity)
+    local numPlayers = Game():GetNumPlayers()
+    local closeScore = 999999
+    local selectedPlayer = nil
+    
+    for i=0, numPlayers-1, 1 do
+        local player = Isaac.GetPlayer(i)
+        if math.abs((player.Position - entity.Position):LengthSquared()) < closeScore then
+            closeScore = math.abs((player.Position - entity.Position):LengthSquared())
+            selectedPlayer = player
+        end
+    end
+    return selectedPlayer
+end
 
 function WarpZone:GetPtrHashEntity(entity)
     if entity then
@@ -718,9 +751,7 @@ local ChampionsToLoot = {
  --callbacks
 
 function WarpZone:OnUpdate()
-	local player = Isaac.GetPlayer(0)
     local numFrames = Game():GetFrameCount()
-
     if numFrames % 60 == 0 then
         local entities = Isaac.GetRoomEntities()
         local targetPos = {}
@@ -741,7 +772,8 @@ function WarpZone:OnUpdate()
                 end
             elseif entity:IsEnemy()  and random > 5 then --and not entity:IsBoss()
                 for i, target in ipairs(targetPos) do
-                    if (math.abs((target.Position - entity.Position):LengthSquared()) < math.abs((player.Position - entity.Position):LengthSquared())) or random > 15 then
+                    local player = getClosestPlayerPosition(entity)
+                    if player and (math.abs((target.Position - entity.Position):LengthSquared()) < math.abs((player.Position - entity.Position):LengthSquared())) or random > 15 then
                         entity.Target = target
                         entity:GetData().distracted = 3
                     end
@@ -749,11 +781,6 @@ function WarpZone:OnUpdate()
             end
         end
     end
-    
-    
-
-    
-
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.OnUpdate)
 
@@ -789,8 +816,7 @@ function WarpZone:TriggerEffect(position)
     end
 end
 
-function WarpZone:postRender()
-	local player = Isaac.GetPlayer(0)
+function WarpZone:postRender(player)
 	local actions = player:GetLastActionTriggers()
     if not Game():IsPaused() then
         if player:HasTrinket(TrinketType.TRINKET_HUNKY_BOYS) and Input.IsActionTriggered(ButtonAction.ACTION_DROP, 0) then
@@ -853,10 +879,9 @@ function WarpZone:postRender()
     end
 
 end
-WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.postRender)
+WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_RENDER, WarpZone.postRender)
 
 function WarpZone:UIOnRender(player, renderoffset)
-    
     if player:HasCollectible(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) then
         local numCollectibles = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_BOW_AND_ARROW)
         
@@ -1027,73 +1052,76 @@ WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.OnTakeHit, Entity
 
 
 function WarpZone:spawnCleanAward(RNG, SpawnPosition)
-    local player = Isaac.GetPlayer(0)
+    local numPlayers = Game():GetNumPlayers()
     local i=RNG:RandomInt(2)
     local room = Game():GetRoom():GetType() == RoomType.ROOM_BOSS
-    if (i == 1 or room) and player:HasCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
-        local coin = Isaac.Spawn(EntityType.ENTITY_PICKUP, 
-                     PickupVariant.PICKUP_COIN,
-                     CoinSubType.COIN_NICKEL,
-                     Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
-                     Vector(0,0),
-                    nil):ToPickup()
-        coin.Timeout = 90
-        coin:GetSprite():SetFrame(1)
-        if room then
-            local coin2 = Isaac.Spawn(EntityType.ENTITY_PICKUP, 
-                     PickupVariant.PICKUP_COIN,
-                     CoinSubType.COIN_NICKEL,
-                     Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
-                     Vector(0,0),
-                    nil):ToPickup()
-            coin2.Timeout = 90
+    
+    for j=0, numPlayers-1, 1 do
+        local player = Isaac.GetPlayer(j)
+        if (i == 1 or room) and player:HasCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
+            local coin = Isaac.Spawn(EntityType.ENTITY_PICKUP, 
+                        PickupVariant.PICKUP_COIN,
+                        CoinSubType.COIN_NICKEL,
+                        Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
+                        Vector(0,0),
+                        nil):ToPickup()
+            coin.Timeout = 90
             coin:GetSprite():SetFrame(1)
+            if room then
+                local coin2 = Isaac.Spawn(EntityType.ENTITY_PICKUP, 
+                        PickupVariant.PICKUP_COIN,
+                        CoinSubType.COIN_NICKEL,
+                        Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
+                        Vector(0,0),
+                        nil):ToPickup()
+                coin2.Timeout = 90
+                coin:GetSprite():SetFrame(1)
+            end
         end
-    end
 
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
-        player:GetData().roomsClearedSinceTake = player:GetData().roomsClearedSinceTake + 1
-        local roomsToSuck = math.max(10 - (2 * player:GetCollectibleNum(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK)), 1)
-        local itemsTakenHere = player:GetData().itemsTaken
-        if player:GetData().roomsClearedSinceTake % roomsToSuck == 0 then
-            local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK)
-            local shift = 0
-            for j, item_tag in ipairs(player:GetData().itemsTaken) do
-                if player:HasCollectible(item_tag) == false then
-                    table.remove(player:GetData().itemsTaken, j-shift)
-                    table.remove(player:GetData().poolsTaken, j-shift)
-                    shift = shift + 1
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
+            player:GetData().roomsClearedSinceTake = player:GetData().roomsClearedSinceTake + 1
+            local roomsToSuck = math.max(10 - (2 * player:GetCollectibleNum(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK)), 1)
+            local itemsTakenHere = player:GetData().itemsTaken
+            if player:GetData().roomsClearedSinceTake % roomsToSuck == 0 then
+                local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK)
+                local shift = 0
+                for j, item_tag in ipairs(player:GetData().itemsTaken) do
+                    if player:HasCollectible(item_tag) == false then
+                        table.remove(player:GetData().itemsTaken, j-shift)
+                        table.remove(player:GetData().poolsTaken, j-shift)
+                        shift = shift + 1
+                    end
+                end
+                
+                local pos_to_delete = rng:RandomInt(#itemsTakenHere) + 1
+                local config = Isaac.GetItemConfig():GetCollectible(player:GetData().itemsTaken[pos_to_delete])
+                if (player:GetData().itemsTaken[pos_to_delete] == CollectibleType.COLLECTIBLE_NIGHTMARE_TICK or (config.Tags & ItemConfig.TAG_QUEST == ItemConfig.TAG_QUEST)) and #itemsTakenHere > 1 then
+                    pos_to_delete = (pos_to_delete % #itemsTakenHere) + 1
+                end
+                
+                config = Isaac.GetItemConfig():GetCollectible(player:GetData().itemsTaken[pos_to_delete])
+                if player:GetData().itemsTaken[pos_to_delete] ~= CollectibleType.COLLECTIBLE_NIGHTMARE_TICK and (config.Tags & ItemConfig.TAG_QUEST ~= ItemConfig.TAG_QUEST) then
+                    local item_del = table.remove(player:GetData().itemsTaken, pos_to_delete)
+                    table.remove(player:GetData().poolsTaken, pos_to_delete)
+                    player:RemoveCollectible(item_del)
+                    player:GetData().itemsSucked = player:GetData().itemsSucked + 1
+                    player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
+                    player:EvaluateItems()
+                    SfxManager:Play(SoundEffect.SOUND_THUMBS_DOWN)
+                    SfxManager:Play(SoundEffect.SOUND_BOSS_BUG_HISS)
+                    player:AnimateSad()
                 end
             end
-            
-            local pos_to_delete = rng:RandomInt(#itemsTakenHere) + 1
-            local config = Isaac.GetItemConfig():GetCollectible(player:GetData().itemsTaken[pos_to_delete])
-            if (player:GetData().itemsTaken[pos_to_delete] == CollectibleType.COLLECTIBLE_NIGHTMARE_TICK or (config.Tags & ItemConfig.TAG_QUEST == ItemConfig.TAG_QUEST)) and #itemsTakenHere > 1 then
-                pos_to_delete = (pos_to_delete % #itemsTakenHere) + 1
-            end
-            
-            config = Isaac.GetItemConfig():GetCollectible(player:GetData().itemsTaken[pos_to_delete])
-            if player:GetData().itemsTaken[pos_to_delete] ~= CollectibleType.COLLECTIBLE_NIGHTMARE_TICK and (config.Tags & ItemConfig.TAG_QUEST ~= ItemConfig.TAG_QUEST) then
-                local item_del = table.remove(player:GetData().itemsTaken, pos_to_delete)
-                table.remove(player:GetData().poolsTaken, pos_to_delete)
-                player:RemoveCollectible(item_del)
-                player:GetData().itemsSucked = player:GetData().itemsSucked + 1
-                player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
-                player:EvaluateItems()
-                SfxManager:Play(SoundEffect.SOUND_THUMBS_DOWN)
-                SfxManager:Play(SoundEffect.SOUND_BOSS_BUG_HISS)
-                player:AnimateSad()
+        end
+
+        if roomsSinceBreak > 0 then
+            roomsSinceBreak = roomsSinceBreak - 1
+            if roomsSinceBreak == 0 then
+                player:RespawnFamiliars()
             end
         end
     end
-
-    if roomsSinceBreak > 0 then
-        roomsSinceBreak = roomsSinceBreak - 1
-        if roomsSinceBreak == 0 then
-            player:RespawnFamiliars()
-        end
-    end
-
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, WarpZone.spawnCleanAward)
 
@@ -1156,7 +1184,7 @@ function WarpZone:preGameExit()
 
 
 function WarpZone:DebugText()
-    local player = Isaac.GetPlayer(0)
+    local player = Isaac.GetPlayer(0) --this one is OK
     local coords = player.Position
     debug_str = tostring(coords)
     --Isaac.RenderText(debug_str, 100, 60, 1, 1, 1, 255)
@@ -1233,12 +1261,17 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, WarpZone.LevelStart)
 
 
 function WarpZone:NewRoom()
-    local player = Isaac.GetPlayer(0)
+    local testPlayer = Isaac.GetPlayer(0)
+    
+    local numPlayers = Game():GetNumPlayers()
     local room = Game():GetRoom()
-    player:GetData().dioDamageOn = false
-    player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
-    player:EvaluateItems()
-
+    
+    for i=0, numPlayers-1, 1 do
+        local player = Isaac.GetPlayer(i)
+        player:GetData().dioDamageOn = false
+        player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
+        player:EvaluateItems()
+    end
     if Game():GetLevel():GetStage() == DoorwayFloor and (Game():GetLevel():GetCurrentRoomIndex() ~=84 or Game():GetLevel():GetStage()~= 1 or not room:IsFirstVisit()) then
         if room:GetType() == RoomType.ROOM_BOSS then
             room:TrySpawnDevilRoomDoor(false, true)
@@ -1253,7 +1286,7 @@ function WarpZone:NewRoom()
             if door then -- if it isnt nil, then
               local doorEntity = door:ToDoor()
             if doorEntity:IsLocked() then
-                doorEntity:TryUnlock(player, true)
+                doorEntity:TryUnlock(testPlayer, true)
             end
             if not doorEntity:IsOpen() then
                 doorEntity:Open()
@@ -1264,8 +1297,9 @@ function WarpZone:NewRoom()
           end
     end
 
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_STRANGE_MARBLE) then
-        local marbleRNG = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_STRANGE_MARBLE)
+    local marblePlayer = doesAnyoneHave(CollectibleType.COLLECTIBLE_STRANGE_MARBLE, false)
+    if marblePlayer ~= nil then
+        local marbleRNG = marblePlayer:GetCollectibleRNG(CollectibleType.COLLECTIBLE_STRANGE_MARBLE)
         for i = 0, room:GetGridSize() do
             local gridIndexPosition = room:GetGridPosition(i)
             if room:IsPositionInRoom(gridIndexPosition , 1) then
@@ -1280,7 +1314,8 @@ function WarpZone:NewRoom()
         end
     end
 
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_GEORGE) and room:IsFirstVisit() then
+    local georgePlayer = doesAnyoneHave(CollectibleType.COLLECTIBLE_GEORGE, false)
+    if georgePlayer ~= nil and room:IsFirstVisit() then
         local roomtype = room:GetType()
         local desc = Game():GetLevel():GetCurrentRoomDesc().Flags
         local index = Game():GetLevel():GetCurrentRoomIndex()
@@ -1306,7 +1341,8 @@ function WarpZone:NewRoom()
         end
     end
     
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_POSSESSION) and room:IsFirstVisit() then
+    local possessPlayer =  doesAnyoneHave(CollectibleType.COLLECTIBLE_POSSESSION, false)
+    if possessPlayer ~= nil and room:IsFirstVisit() then
         local entities = Isaac.GetRoomEntities()
         local charmed = false
         local tempnumPossessed = 0
@@ -1315,7 +1351,7 @@ function WarpZone:NewRoom()
                 tempnumPossessed = tempnumPossessed + 1
             end
             if not charmed and numPossessed < 15 and entity_pos:IsVulnerableEnemy() and not entity_pos:IsBoss() and not entity_pos:HasEntityFlags(EntityFlag.FLAG_CHARM) then
-                entity_pos:AddCharmed(EntityRef(player), -1)
+                entity_pos:AddCharmed(EntityRef(possessPlayer), -1)
                 entity_pos:GetData().InPossession = true
                 charmed = true
             end
@@ -1323,7 +1359,8 @@ function WarpZone:NewRoom()
         numPossessed = tempnumPossessed
     end
 
-    if floorBeggar < 0 and room:GetType() == RoomType.ROOM_SHOP and player:HasCollectible(CollectibleType.COLLECTIBLE_AUBREY) then
+    local aubreyPlayer = doesAnyoneHave(CollectibleType.COLLECTIBLE_AUBREY, false)
+    if floorBeggar < 0 and room:GetType() == RoomType.ROOM_SHOP and aubreyPlayer ~= nil then
         floorBeggar = 0
         Isaac.Spawn(
             EntityType.ENTITY_SLOT,
@@ -1337,7 +1374,9 @@ function WarpZone:NewRoom()
 
     ballCheck = false
     
-    if player:HasTrinket(TrinketType.TRINKET_BIBLE_THUMP) and bibleThumpPool == false then
+    local biblePlayer = doesAnyoneHave(TrinketType.TRINKET_BIBLE_THUMP, true)
+
+    if biblePlayer ~= nil and bibleThumpPool == false then
         bibleThumpPool = true
         Game():GetItemPool():AddBibleUpgrade(1, ItemPoolType.POOL_TREASURE)
         Game():GetItemPool():AddBibleUpgrade(1, ItemPoolType.POOL_SHOP)
@@ -1937,9 +1976,11 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.LaserEnemyHit)
 
 function WarpZone:OnFrame(entityplayer)
-    local player = Isaac.GetPlayer(0)
+    local numPlayers = Game():GetNumPlayers()
+    for j=0, numPlayers-1, 1 do
+        local player =  Isaac.GetPlayer(j)
         local room = Game():GetRoom()
-        if Game():GetLevel():GetStage() == DoorwayFloor and (Game():GetLevel():GetCurrentRoomIndex() ~=84 or Game():GetLevel():GetStage()~= 1) then
+        if j == 0 and Game():GetLevel():GetStage() == DoorwayFloor and (Game():GetLevel():GetCurrentRoomIndex() ~=84 or Game():GetLevel():GetStage()~= 1) then
             for i = 0, 7 do
                 local door = room:GetDoor(i)
                 if door then -- if it isnt nil, then
@@ -2021,13 +2062,14 @@ function WarpZone:OnFrame(entityplayer)
             ballCheck = true
         end
     end
-
+end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, WarpZone.OnFrame)
 
 function WarpZone:OnEntitySpawn(npc)
-    local player = Isaac.GetPlayer(0)
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_STRANGE_MARBLE) then
-        local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_STRANGE_MARBLE)
+    local player = doesAnyoneHave(CollectibleType.COLLECTIBLE_STRANGE_MARBLE, false)
+    if player ~= nil then
+        local rng = RNG()
+        rng:SetSeed(Random(), 1)
         if not npc:IsChampion() and not npc:IsBoss() and rng:RandomInt(8) == 1 then
             npc:MakeChampion(rng:GetSeed())
         end
@@ -2037,8 +2079,8 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_NPC_INIT, WarpZone.OnEntitySpawn)
 
 
 function WarpZone:OnEntityDeath(npc)
-    local player = Isaac.GetPlayer(0)
-    if npc:IsEnemy() and npc:IsChampion() and player:HasCollectible(CollectibleType.COLLECTIBLE_STRANGE_MARBLE) then
+    local player = doesAnyoneHave(CollectibleType.COLLECTIBLE_STRANGE_MARBLE, false)
+    if player ~= nil and npc:IsEnemy() and npc:IsChampion() then
         local championColor = npc:GetChampionColorIdx()
         local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_STRANGE_MARBLE)
         ChampionsToLoot[championColor](EntityRef(npc), rng, EntityRef(player))
@@ -2352,11 +2394,11 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.pre_tumor_
 
 
 function WarpZone:selectPickup(type, variant, subtype, position, velocity, spawner, seed)
-    local player = Isaac.GetPlayer(0)
+    local player = doesAnyoneHave(CollectibleType.COLLECTIBLE_BALL_OF_TUMORS, false)
     if Game():GetRoom():GetFrameCount() <= 0 and not Game():GetRoom():IsFirstVisit() then
         return nil --exclude spawns when re-entering a room with items
     end
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_BALL_OF_TUMORS) and type == EntityType.ENTITY_PICKUP then
+    if player ~= nil and type == EntityType.ENTITY_PICKUP then
         local tumorRNG = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_BALL_OF_TUMORS)
         local rand_num = tumorRNG:RandomInt(100) + 1
         local collectible_num = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_BALL_OF_TUMORS) * 4
