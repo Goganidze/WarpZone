@@ -42,7 +42,6 @@ local itemPool = game:GetItemPool()
 
 --rusty spoon
 local rustColor = Color(.68, .21, .1, 1, 0, 0, 0)
-local lastIsRusty = false
 
 
 --focus
@@ -363,6 +362,25 @@ function WarpZone:GetPlayerFromTear(tear)
         end
     end
     return nil
+end
+
+local function getPlayerFromKnifeLaser(entity)
+	if entity.SpawnerEntity and entity.SpawnerEntity:ToPlayer() then
+		return entity.SpawnerEntity:ToPlayer()
+	elseif entity.SpawnerEntity and entity.SpawnerEntity:ToFamiliar() and entity.SpawnerEntity:ToFamiliar().Player then
+		local familiar = entity.SpawnerEntity:ToFamiliar()
+
+		if familiar.Variant == FamiliarVariant.INCUBUS or familiar.Variant == FamiliarVariant.SPRINKLER or
+		   familiar.Variant == FamiliarVariant.TWISTED_BABY or familiar.Variant == FamiliarVariant.BLOOD_BABY or
+		   familiar.Variant == FamiliarVariant.UMBILICAL_BABY or familiar.Variant == FamiliarVariant.CAINS_OTHER_EYE
+		then
+			return familiar.Player
+		else
+			return nil
+		end
+	else
+		return nil
+	end
 end
 
 local function respawnBalls(numberBalls, player)
@@ -1841,10 +1859,10 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_INIT, WarpZone.checkTear)
 
 function WarpZone:checkLaser(entitylaser)
     local laser = entitylaser:ToLaser()
-    local player = Isaac.GetPlayer(0)
+    local player = getPlayerFromKnifeLaser(laser)
     local var = laser.Variant
     local subt = laser.SubType
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) and not ((var == 1 and subt == 3) or var == 5 or var == 12) then
+    if player and player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) and not ((var == 1 and subt == 3) or var == 5 or var == 12) then
         local chance = player.Luck * 5 + 10
         local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_RUSTY_SPOON)
         if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
@@ -1948,8 +1966,8 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, WarpZone.hitEnemy)
 
 
 function WarpZone:OnKnifeCollide(knife, collider, low)
-    local player = Isaac.GetPlayer(0)
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) and collider:IsVulnerableEnemy() then
+    local player = getPlayerFromKnifeLaser(knife)
+    if player and player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) and collider:IsVulnerableEnemy() then
         local chance = player.Luck * 5 + 10
         local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_RUSTY_SPOON)
         if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
@@ -2170,9 +2188,9 @@ end, InputHook.GET_ACTION_VALUE)
 WarpZone:AddCallback(ModCallbacks.MC_POST_KNIFE_INIT, function(_, knife)
 	if knife.Variant == 9 then
 		if knife.SubType == 4 then
-			local player =  Isaac.GetPlayer(0)
+			local player = getPlayerFromKnifeLaser(knife)
 			if WarpZone.scanforclub then
-				if player:GetData().InputHook and knife.Position:Distance(player.Position) < 20 then
+				if player and player:GetData().InputHook and knife.Position:Distance(player.Position) < 20 then
 					knife:GetData().CustomClub = true
 					player:GetData().GrabbedClub = knife
 					WarpZone.scanforclub = false
@@ -2180,7 +2198,7 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_KNIFE_INIT, function(_, knife)
 					knife.Variant = 1 --Setting the variant to 1 (bone club) prevents it from breaking rocks
                     --knife.Scale = knife.Scale * 2
 				end
-			elseif player:GetData().GrabbedClub and player:GetData().GrabbedClub:Exists() then
+			elseif player and player:GetData().GrabbedClub and player:GetData().GrabbedClub:Exists() then
 				knife.Variant = 1
 			end
 		elseif WarpZone.scanforclub then
