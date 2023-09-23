@@ -906,8 +906,8 @@ function WarpZone:postRender()
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.postRender)
 
-function WarpZone:UIOnRender()
-    local player = Isaac.GetPlayer(0)
+function WarpZone:UIOnRender(player, renderoffset)
+    --local player = Isaac.GetPlayer(0)
     
     if player:HasCollectible(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) then
         local numCollectibles = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_BOW_AND_ARROW)
@@ -922,7 +922,7 @@ function WarpZone:UIOnRender()
         end
     end
 end
-WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.UIOnRender)
+WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_RENDER, WarpZone.UIOnRender)
 
 
 function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
