@@ -21,6 +21,16 @@ defaultData.itemsSucked = 0
 defaultData.itemsTaken = {}
 defaultData.poolsTaken = {}
 defaultData.totalFocusDamage = 0
+defaultData.roomsSinceBreak = 0
+defaultData.arrowTimeUp = 0
+defaultData.arrowTimeDown = 0
+defaultData.arrowTimeLeft = 0
+defaultData.arrowTimeRight = 0
+defaultData.arrowTimeThreeFrames = 0
+defaultData.arrowTimeDelay = 0
+defaultData.ballCheck = true
+
+
 
 
 local numPlayersG = Game():GetNumPlayers()
@@ -48,7 +58,7 @@ whiteColor:SetColorize(1, 1, 1, 1)
 whiteColor:SetTint(20, 20, 20, 2)
 
 --doorway
-local DoorwayFloor = -1
+local DoorwayFloor = -1 --saved
 
 --is you
 local reticle
@@ -87,7 +97,7 @@ local george_room_type = {
 }
 
 --possession
-local numPossessed = 0
+local numPossessed = 0 --saved
 
 --lollipop
 local Lollipop = {
@@ -99,7 +109,6 @@ local Lollipop = {
 	CHARM_CHANCE = 7,
 	CHARM_DURATION = 450
 }
-local roomsSinceBreak = 0
 
 --aubrey
 local BegVariant = Isaac.GetEntityVariantByName("Weapon Beggar")
@@ -110,17 +119,9 @@ local KEEPER_BONUS = 0.5
 
 
 --pop pop 
-local arrowTime = {}
-arrowTime.Up = 0
-arrowTime.Down = 0
-arrowTime.Left = 0
-arrowTime.Right = 0
-arrowTime.threeFrames = 0
-arrowTime.Delay = 0
 local totalFrameDelay = 200
 
 --football
-local ballCheck = true
 local effBlank = Isaac.GetEntityVariantByName("Blank_Effect")
 
 --tumors
@@ -842,48 +843,48 @@ function WarpZone:postRender(player)
         else
             timeSinceTheSpacebarWasLastPressed = timeSinceTheSpacebarWasLastPressed + 1
         end
-
-        if arrowTime.Delay <= 0 then
+        
+        if player:GetData().arrowTimeDelay <= 0 then
             if Input.IsActionTriggered(ButtonAction.ACTION_SHOOTUP, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
-                if arrowTime.Up > 0 then
-                    arrowTime.Delay = totalFrameDelay
+                if player:GetData().arrowTimeUp > 0 then
+                    player:GetData().arrowTimeDelay = totalFrameDelay
                     firePopTear(player, true)
-                    arrowTime.threeFrames = 6
+                    player:GetData().arrowTimeThreeFrames = 6
                 else
-                    arrowTime.Up = 30
+                    player:GetData().arrowTimeUp = 30
                 end
             elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTDOWN, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
-                if arrowTime.Down > 0 then
-                    arrowTime.Delay = totalFrameDelay
+                if player:GetData().arrowTimeDown > 0 then
+                    player:GetData().arrowTimeDelay = totalFrameDelay
                     firePopTear(player, true)
-                    arrowTime.threeFrames = 6
+                    player:GetData().arrowTimeThreeFrames = 6
                 else
-                    arrowTime.Down = 30
+                    player:GetData().arrowTimeDown = 30
                 end
             elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTLEFT, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
-                if arrowTime.Left > 0 then
-                    arrowTime.Delay = totalFrameDelay
+                if player:GetData().arrowTimeLeft > 0 then
+                    player:GetData().arrowTimeDelay = totalFrameDelay
                     firePopTear(player, true)
-                    arrowTime.threeFrames = 6
+                    player:GetData().arrowTimeThreeFrames = 6
                 else
-                    arrowTime.Left = 30
+                    player:GetData().arrowTimeLeft = 30
                 end
             elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTRIGHT, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
-                if arrowTime.Right > 0 then
-                    arrowTime.Delay = totalFrameDelay
+                if player:GetData().arrowTimeRight > 0 then
+                    player:GetData().arrowTimeDelay = totalFrameDelay
                     firePopTear(player, true)
-                    arrowTime.threeFrames = 6
+                    player:GetData().arrowTimeThreeFrames = 6
                 else
-                    arrowTime.Right = 30
+                    player:GetData().arrowTimeRight = 30
                 end
             end
         end
-        arrowTime.Up = arrowTime.Up - 1
-        arrowTime.Down = arrowTime.Down - 1
-        arrowTime.Left = arrowTime.Left - 1
-        arrowTime.Right = arrowTime.Right - 1
-        arrowTime.Delay = arrowTime.Delay - 1
-        if arrowTime.Delay == 0 or arrowTime.Delay == totalFrameDelay-1 then
+        player:GetData().arrowTimeUp = player:GetData().arrowTimeUp - 1
+        player:GetData().arrowTimeDown = player:GetData().arrowTimeDown - 1
+        player:GetData().arrowTimeLeft = player:GetData().arrowTimeLeft - 1
+        player:GetData().arrowTimeRight = player:GetData().arrowTimeRight - 1
+        player:GetData().arrowTimeDelay = player:GetData().arrowTimeDelay - 1
+        if player:GetData().arrowTimeDelay == 0 or player:GetData().arrowTimeDelay == totalFrameDelay-1 then
             player:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
             player:EvaluateItems()
         end
@@ -1126,9 +1127,9 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
             end
         end
 
-        if roomsSinceBreak > 0 then
-            roomsSinceBreak = roomsSinceBreak - 1
-            if roomsSinceBreak == 0 then
+        if player:GetData().roomsSinceBreak and player:GetData().roomsSinceBreak > 0 then
+            player:GetData().roomsSinceBreak = player:GetData().roomsSinceBreak - 1
+            if player:GetData().roomsSinceBreak == 0 then
                 player:RespawnFamiliars()
             end
         end
@@ -1282,6 +1283,9 @@ function WarpZone:NewRoom()
         player:GetData().dioDamageOn = false
         player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
         player:EvaluateItems()
+
+        player:GetData().ballCheck = false
+
     end
     if Game():GetLevel():GetStage() == DoorwayFloor and (Game():GetLevel():GetCurrentRoomIndex() ~=84 or Game():GetLevel():GetStage()~= 1 or not room:IsFirstVisit()) then
         if room:GetType() == RoomType.ROOM_BOSS then
@@ -1383,7 +1387,7 @@ function WarpZone:NewRoom()
         )
     end
 
-    ballCheck = false
+    
     
     local biblePlayer = doesAnyoneHave(TrinketType.TRINKET_BIBLE_THUMP, true)
 
@@ -1687,7 +1691,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - waterAmount
         entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - (cakeBingeBonus * 2)
 
-        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) and arrowTime.Delay > 0 then
+        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) and entityplayer:GetData().arrowTimeDelay > 0 then
             if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) then
                 entityplayer.MaxFireDelay = entityplayer.MaxFireDelay + 40
             else
@@ -1808,10 +1812,10 @@ function WarpZone:postPlayerUpdate(player)
 	end
 
     if player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
-        if arrowTime.threeFrames == 1 then
+        if player:GetData().arrowTimeThreeFrames == 1 then
             firePopTear(player, false)
         end
-        arrowTime.threeFrames = arrowTime.threeFrames-1
+        player:GetData().arrowTimeThreeFrames = player:GetData().arrowTimeThreeFrames-1
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpdate, 0)
@@ -2042,7 +2046,7 @@ function WarpZone:OnFrame(entityplayer)
                     player:AnimateCollectible(CollectibleType.COLLECTIBLE_IS_YOU, "HideItem", "Empty")
                 end
         end
-        if player:HasCollectible(CollectibleType.COLLECTIBLE_FOOTBALL) and not ballCheck and room:GetFrameCount() > 0 then
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_FOOTBALL) and not player:GetData().ballCheck and room:GetFrameCount() > 0 then
             local numberBalls = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_FOOTBALL)
             local numberCubes = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_CUBE_BABY)
             local entities = Isaac.GetRoomEntities()
@@ -2070,7 +2074,7 @@ function WarpZone:OnFrame(entityplayer)
                     local create_entity = Isaac.Spawn(EntityType.ENTITY_FAMILIAR, FamiliarVariant.CUBE_BABY, 0, Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()), Vector(0,0), nil)
                 end
             end
-            ballCheck = true
+            player:GetData().ballCheck = true
         end
     end
 end
@@ -2260,7 +2264,8 @@ local function pre_orbital_collision(_, orbital, collider, low)
             Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_HEART, 0, orbitalPosition, Vector(0, 0), orbital)
             orbital:Remove()
             SfxManager:Play(SoundEffect.SOUND_ROCK_CRUMBLE)
-            roomsSinceBreak = 12
+            local player = orbital.Player
+            player:GetData().roomsSinceBreak = 12
         elseif orbital:GetData().PopHP < 2 then
             local sprite = orbital:GetSprite()
             sprite:Load("gfx/Lollipop_cracked_2.anm2",false)
