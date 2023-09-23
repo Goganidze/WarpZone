@@ -147,6 +147,13 @@ local tumorVariant = Isaac.GetEntityVariantByName("Tumor_Pickup")
 --bible thump
 local bibleThumpPool = false
 
+--Bow and Arrow
+local ArrowHud = Sprite()
+ArrowHud:Load("gfx/bow_hud.anm2", true)
+local ArrowHudLoc = Vector(42, 36)
+local renderedPosition = Vector(25, -10)
+local numArrows = 2
+local tokenVariant = Isaac.GetEntityVariantByName("Tear_Token")
 --item defintions
 
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
@@ -180,6 +187,7 @@ CollectibleType.COLLECTIBLE_HITOPS = Isaac.GetItemIdByName("Hitops")
 CollectibleType.COLLECTIBLE_POPPOP = Isaac.GetItemIdByName("Pop Pop")
 CollectibleType.COLLECTIBLE_FOOTBALL = Isaac.GetItemIdByName("Football")
 CollectibleType.COLLECTIBLE_BALL_OF_TUMORS = Isaac.GetItemIdByName("Ball of Tumors")
+CollectibleType.COLLECTIBLE_BOW_AND_ARROW = Isaac.GetItemIdByName("Bow and Arrow")
 CollectibleType.COLLECTIBLE_TEST_ACTIVE = Isaac.GetItemIdByName("Test Active")
 
 
@@ -224,7 +232,9 @@ if EID then
     EID:addCollectible(CollectibleType.COLLECTIBLE_REAL_LEFT, "On use, rerolls all chests in the room into a better counterpart#Chest Order: Mimic -> Haunted -> Grey -> Red -> Golden or Stone -> Wooden or Old -> Eternal -> Mega", "The Real Left Hand",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_HITOPS, "0.2 Speed Up#This speed up can exceed the speed cap", "Hitops",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_POPPOP, "Double tap to fire two 3x damage tears in a burst#Tear rate is reduced for a short time after using this effect.", "Pop Pop",  "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_FOOTBALL, "Spawns a football familiar that can be picked up and thrown at enemies#The football deals damage based on its speed", "Football",  "en_us")
     EID:addCollectible(CollectibleType.COLLECTIBLE_BALL_OF_TUMORS, "Bombs, hearts, keys and batteries have a small chance of turning into collectible tumors#Collecting tumors powers a tumor orbital, which blocks shots and deals contact damage#With enough tumors, a second orbital will spawn", "Ball of Tumors",  "en_us")
+    EID:addCollectible(CollectibleType.COLLECTIBLE_BOW_AND_ARROW, "Isaac is able to shoot large, piercing arrow tears that deal 1.5x damage, but have only 3 ammunition#Once the ammo is depleted, Isaac fires normal tears#When a tear lands, it drops a token that will replenish 1 tear when collected", "Bow and Arrow",  "en_us")
 
     EID:addTrinket(TrinketType.TRINKET_HUNKY_BOYS, "While held, pressing the Drop Trinket button immediately drops this trinket; you don't need to hold the button#When on the ground, enemies will target the trinket for a short time.", "Hunky Boys", "en_us")
     EID:addTrinket(TrinketType.TRINKET_BIBLE_THUMP, "Once you exit a room with this trinket, The Bible is added to several item pools.#Using The Bible or The Devil? card with this item will deal 40 damage to all enemies in the room, in addition to granting flight.#Using The Bible on Satan will kill him, and you will survive#The golden version of this trinket kills The Lamb as well.", "Bible Thump", "en_us")
@@ -896,6 +906,24 @@ function WarpZone:postRender()
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.postRender)
 
+function WarpZone:UIOnRender()
+    local player = Isaac.GetPlayer(0)
+    
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) then
+        local numCollectibles = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_BOW_AND_ARROW)
+        
+        for i = 1, numCollectibles * 3, 1 do
+            if numArrows - i >= 0 then
+                ArrowHud:SetFrame("Lit", 0)
+            else
+                ArrowHud:SetFrame("Unlit", 0)
+            end
+            ArrowHud:RenderLayer(0,  Isaac.WorldToScreen(player.Position)+renderedPosition + Vector((i-1) * 5, 0))
+        end
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.UIOnRender)
+
 
 function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
     if entity:IsVulnerableEnemy() then
@@ -1134,6 +1162,7 @@ function WarpZone:OnGameStart(isSave)
         tonyBuff = saveData[10]
         PlayerTumors = saveData[11]
         bibleThumpPool = saveData[12]
+        numArrows = saveData[13]
     end
 
     if not isSave then
@@ -1150,6 +1179,7 @@ function WarpZone:OnGameStart(isSave)
         tonyBuff = 1.7
         PlayerTumors = {}
         bibleThumpPool = false
+        numArrows = 0
     end
 
 end
@@ -1169,6 +1199,7 @@ function WarpZone:preGameExit()
     saveData[10] = tonyBuff
     saveData[11] = PlayerTumors
     saveData[12] = bibleThumpPool
+    saveData[13] = numArrows
     local jsonString = json.encode(saveData)
     WarpZone:SaveData(jsonString)
   end
@@ -1230,6 +1261,10 @@ function WarpZone:LevelStart()
                         Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()),
                         Vector(0,0),
                         nil)
+    end
+
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) then
+        numArrows = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) * 3
     end
 
 end
@@ -1583,6 +1618,17 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
         return true
     end
 
+    if entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == tokenVariant and entity:GetData().Collected ~= true then
+        entity:GetData().Collected = true
+        entity:GetSprite():Play("Collect")
+        numArrows = numArrows + 1
+        SfxManager:Play(SoundEffect.SOUND_PENNYPICKUP)
+        return true
+    elseif entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == tokenVariant then
+        return true
+    end
+
+
     if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant == PickupVariant.PICKUP_COLLECTIBLE) and player:HasCollectible(CollectibleType.COLLECTIBLE_TONY) then
         --local dmg_config = Isaac.GetItemConfig():GetCollectible(entity.SubType)
         if entity.SubType ~= 0 and tonyBuff > 1 and entity:GetData().collected ~= true then -- and (dmg_config.CacheFlags & CacheFlag.CACHE_DAMAGE == CacheFlag.CACHE_DAMAGE)
@@ -1603,6 +1649,9 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
         end
         if entity.SubType == CollectibleType.COLLECTIBLE_BALL_OF_TUMORS then
             Isaac.Spawn(EntityType.ENTITY_PICKUP, tumorVariant, 1, Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()), Vector(0,0), nil)
+        end
+        if entity.SubType == CollectibleType.COLLECTIBLE_BOW_AND_ARROW then
+            numArrows = numArrows + 3
         end
     end
     return nil
@@ -1710,6 +1759,12 @@ function WarpZone:checkTear(entitytear)
     elseif player and player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
         tear:GetData().NightmareColor = true
     end
+
+    if player and player:HasCollectible(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) and numArrows > 0 then
+        numArrows = numArrows - 1
+        tear:GetData().BowArrowPiercing = 2
+    end
+
     if player and CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() and primeShot then
         SfxManager:Play(SoundEffect.SOUND_EXPLOSION_WEAK, 3)
         primeShot = false
@@ -1765,6 +1820,14 @@ function WarpZone:updateTear(entitytear)
             tear:ResetSpriteScale()
         end
         
+        if tear:GetData().BowArrowPiercing == 2 then
+            tear:GetData().BowArrowPiercing = 1
+            tear:AddTearFlags(TearFlags.TEAR_PIERCING)
+            tear.Velocity = tear.Velocity * Vector(1.5, 1.5)
+            tear.Scale = tear.Scale * 1.75
+            tear.CollisionDamage = tear.CollisionDamage * 1.5
+        end
+
         if tear:GetData().Is_Rusty == true then
             tear:GetData().Is_Rusty = false
             tear:AddTearFlags(TearFlags.TEAR_HOMING)
@@ -1790,6 +1853,21 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, WarpZone.updateTear)
 
 
+function WarpZone:dropArrow(entity)
+    if entity:GetData().BowArrowPiercing and entity:GetData().BowArrowPiercing > 0 then
+        if game:GetRoom():GetFrameCount() == 0 then
+            numArrows = numArrows + 1
+        else
+            Isaac.Spawn(EntityType.ENTITY_PICKUP,
+                    tokenVariant,
+                    1,
+                    entity.Position,
+                    entity.Velocity * 0.25,
+                    nil)
+            end
+        end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, WarpZone.dropArrow)
 
 
 function WarpZone:hitEnemy(entitytear, collider, low)
@@ -2253,7 +2331,6 @@ function WarpZone:selectPickup(type, variant, subtype, position, velocity, spawn
         return nil --exclude spawns when re-entering a room with items
     end
     if player:HasCollectible(CollectibleType.COLLECTIBLE_BALL_OF_TUMORS) and type == EntityType.ENTITY_PICKUP then
-        print(Game():GetRoom():GetFrameCount())
         local tumorRNG = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_BALL_OF_TUMORS)
         local rand_num = tumorRNG:RandomInt(100) + 1
         local collectible_num = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_BALL_OF_TUMORS) * 4
@@ -2396,6 +2473,14 @@ function WarpZone:BeggarUpdate()
         end
     end
 
+    local tokens = Isaac.FindByType(EntityType.ENTITY_PICKUP, tokenVariant)
+    for _, token in pairs(tokens) do
+        if token:GetSprite():GetFrame() >= 5 and token:GetSprite():GetAnimation() == "Collect" then
+			token:Remove()
+		elseif token:GetSprite():IsEventTriggered("DropSound") then
+            SfxManager:Play(SoundEffect.SOUND_PENNYDROP, 2)
+        end
+    end
 
 
 end
@@ -2488,7 +2573,6 @@ function WarpZone:FindEffects(collectible, rng, entityplayer, useflags, activesl
         and entity_pos.Variant ~= 87 
         and entity_pos.Variant ~= 121 then
             debbug = tostring(entity_pos.Variant) .. "-" .. tostring(entity_pos.Position.X) .. ", " .. tostring(entity_pos.Position.Y)
-            print(debbug)
         end
     end
 
