@@ -2726,5 +2726,23 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_USE_ITEM, WarpZone.BibleKillSatan, Coll
 
 
 function WarpZone:BibleKillSatanWrapper(card, player, useflags)
-    local whocares = WarpZone:BibleKillSatan(nil, nil, player, nil, nil, nil)
+    WarpZone:BibleKillSatan(nil, nil, player, nil, nil, nil)
 end
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.BibleKillSatanWrapper, Card.CARD_REVERSE_DEVIL)
+
+function WarpZone:UseWitchCube(card, player, useflags)
+    local witchRNG = RNG()
+    witchRNG:SetSeed(Random(), 1)
+    if witchRNG:RandomInt(100) > 50 then
+        player:UseActiveItem(CollectibleType.COLLECTIBLE_NECRONOMICON, false, false, true, false, -1, 0)
+        local entities = Isaac.GetRoomEntities()
+        for i, entity in ipairs(entities) do
+            if entity:IsVulnerableEnemy() and witchRNG:RandomInt(100) > 50 then
+                entity:AddBurn(EntityRef(player), 60, 1)
+            end
+        end
+    else
+        player:UseActiveItem(CollectibleType.COLLECTIBLE_BEAN, false, false, true, false, -1, 0)
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseWitchCube, Card.CARD_WITCH_CUBE)
