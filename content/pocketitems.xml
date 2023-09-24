@@ -2,7 +2,7 @@
     <card type="object" name="Cow on a Trash Farm" description="Become back your money" hud="CowOnTrash" mimiccharge="1" pickup="49434"/>
     <card type="special" name="Loot Card" description="Just use it already!" hud="LootCard" mimiccharge="12" pickup="49435"/>
     <card type="object" name="Blank" description="No bullets" hud="Blank" mimiccharge="3" pickup="49436"/>
-    <card type="object" name="Jester Cube" description="Shuffle mania" hud="JesterCube" mimiccharge="6" pickup="49437"/>
+    <card type="object" name="Jester Cube" description="Shufflemania" hud="JesterCube" mimiccharge="6" pickup="49437"/>
     <card type="object" name="Witch Cube" description="Swipe right to torch" hud="WitchCube" mimiccharge="5" pickup="49438"/>
 
 </pocketitems>

@@ -1,8 +1,8 @@
 <AnimatedActor>
-	<Info CreatedBy="robot" CreatedOn="9/22/2023 8:19:50 PM" Version="107" Fps="30"/>
+	<Info CreatedBy="robot" CreatedOn="9/23/2023 8:07:12 PM" Version="108" Fps="30"/>
 	<Content>
 		<Spritesheets>
-			<Spritesheet Path="items\pickups\TearToken.png" Id="0"/>
+			<Spritesheet Path="items\pickups\arrow_pickups.png" Id="0"/>
 		</Spritesheets>
 		<Layers>
 			<Layer Name="body" Id="0" SpritesheetId="0"/>
