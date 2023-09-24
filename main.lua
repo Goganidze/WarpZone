@@ -2830,3 +2830,34 @@ function WarpZone:UseLootCard(card, player, useflags)
     
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseLootCard, Card.CARD_LOOT_CARD)
+
+function WarpZone:useCow(card, player, useflags)
+    local entities = Isaac.GetRoomEntities()
+    local itemID = nil
+    local cowRNG =  RNG()
+    cowRNG:SetSeed(Random(), 1)
+    for i, entity in ipairs(entities) do
+        if entity.Type == EntityType.ENTITY_PICKUP then
+            if entity.Variant == PickupVariant.PICKUP_COLLECTIBLE then
+                local price = entity:ToPickup().Price
+                for j=1, 10000, 1 do
+                    local ranPool = cowRNG:RandomInt(ItemPoolType.NUM_ITEMPOOLS)
+                    itemID = itemPool:GetCollectible(ranPool)
+                    local config = Isaac.GetItemConfig():GetCollectible(itemID)
+                    if config.Tags & ItemConfig.TAG_FLY == ItemConfig.TAG_FLY then
+                        break
+                    end
+                end
+                if itemID ~= nil then
+                    entity:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_COLLECTIBLE, itemID)
+                    entity:ToPickup().Price = price
+                end
+            elseif entity.Variant <= 90 or entity.Variant == PickupVariant.PICKUP_TAROTCARD 
+            or entity.Variant == PickupVariant.PICKUP_REDCHEST or entity.Variant == PickupVariant.PICKUP_TRINKET then
+                player:AddBlueFlies(1, entity.Position, player)
+                entity:Remove()
+            end
+        end
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useCow, Card.CARD_COW_TRASH_FARM)
