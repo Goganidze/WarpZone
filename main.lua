@@ -2732,7 +2732,6 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.BibleKillSatanWrapper, C
 
 function WarpZone:UseWitchCube(card, player, useflags)
     local witchRNG = RNG()
-    print(Card.CARD_WITCH_CUBE)
     witchRNG:SetSeed(Random(), 1)
     if witchRNG:RandomInt(100) > 50 then
         player:UseActiveItem(CollectibleType.COLLECTIBLE_NECRONOMICON, false, false, true, false, -1, 0)
@@ -2753,3 +2752,27 @@ function WarpZone:UseWitchCube(card, player, useflags)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseWitchCube, Card.CARD_WITCH_CUBE)
+
+function WarpZone:UseLootCard(card, player, useflags)
+    local lootRNG = RNG()
+    lootRNG:SetSeed(Random(), 1)
+    local isTrinket = lootRNG:RandomInt(900) < 184
+    if not isTrinket then
+        local ranPool = lootRNG:RandomInt(ItemPoolType.NUM_ITEMPOOLS)
+        Isaac.Spawn(EntityType.ENTITY_PICKUP,
+            PickupVariant.PICKUP_COLLECTIBLE,
+            itemPool:GetCollectible(ranPool),
+            Game():GetRoom():FindFreePickupSpawnPosition(player.Position),
+            Vector(0,0),
+            nil)
+    else
+        Isaac.Spawn(EntityType.ENTITY_PICKUP,
+            PickupVariant.PICKUP_TRINKET,
+            0,
+            Game():GetRoom():FindFreePickupSpawnPosition(player.Position),
+            Vector(0,0),
+            nil)
+    end
+    
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseLootCard, Card.CARD_LOOT_CARD)
