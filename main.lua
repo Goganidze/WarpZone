@@ -1643,7 +1643,7 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
         entity:GetData().Collected = true
         entity:GetSprite():Play("Collect")
         player:GetData().numArrows = player:GetData().numArrows + 1
-        SfxManager:Play(SoundEffect.SOUND_PENNYPICKUP)
+        SfxManager:Play(SoundEffect.SOUND_SHELLGAME)
         return true
     elseif entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == tokenVariant then
         return true
@@ -2565,7 +2565,7 @@ function WarpZone:BeggarUpdate()
         if token:GetSprite():GetFrame() >= 5 and token:GetSprite():GetAnimation() == "Collect" then
 			token:Remove()
 		elseif token:GetSprite():IsEventTriggered("DropSound") then
-            SfxManager:Play(SoundEffect.SOUND_PENNYDROP, 2)
+            SfxManager:Play(SoundEffect.SOUND_SCAMPER, 2)
         end
     end
 
