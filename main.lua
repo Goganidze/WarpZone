@@ -153,6 +153,8 @@ local renderedPosition = Vector(25, -10)
 local tokenVariant = Isaac.GetEntityVariantByName("Tear_Token")
 
 
+
+
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
