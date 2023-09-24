@@ -1903,7 +1903,7 @@ function WarpZone:updateTear(entitytear)
             tear:GetData().BowArrowPiercing = 1
             tear:AddTearFlags(TearFlags.TEAR_PIERCING)
             tear.Velocity = tear.Velocity * Vector(1.5, 1.5)
-            tear.Scale = tear.Scale * 1.75
+            tear.Scale = tear.Scale * 1.45
             tear.CollisionDamage = tear.CollisionDamage * 1.5
         end
 
