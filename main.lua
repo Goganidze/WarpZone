@@ -154,7 +154,6 @@ local tokenVariant = Isaac.GetEntityVariantByName("Tear_Token")
 
 
 
-
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
@@ -194,6 +193,13 @@ CollectibleType.COLLECTIBLE_TEST_ACTIVE = Isaac.GetItemIdByName("Test Active")
 TrinketType.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
 TrinketType.TRINKET_HUNKY_BOYS = Isaac.GetTrinketIdByName("Hunky Boys")
 TrinketType.TRINKET_BIBLE_THUMP = Isaac.GetTrinketIdByName("Bible Thump")
+
+Card.CARD_COW_TRASH_FARM = Isaac.GetCardIdByName("Cow on a Trash Farm")
+Card.CARD_LOOT_CARD = Isaac.GetCardIdByName("Loot Card")
+Card.CARD_BLANK = Isaac.GetCardIdByName("Blank")
+Card.CARD_JESTER_CUBE = Isaac.GetCardIdByName("Jester Cube")
+Card.CARD_WITCH_CUBE = Isaac.GetCardIdByName("Witch Cube")
+
 
 SoundEffect.SOUND_POP_POP = Isaac.GetSoundIdByName("PopPop_sound")
 
