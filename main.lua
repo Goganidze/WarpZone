@@ -2861,3 +2861,10 @@ function WarpZone:useCow(card, player, useflags)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useCow, Card.CARD_COW_TRASH_FARM)
+
+function WarpZone:useJester(card, player, useflags)
+    for i=1, 6, 1 do
+        player:UseCard(Card.CARD_SOUL_ISAAC, 257)
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useJester, Card.CARD_JESTER_CUBE)
