@@ -394,6 +394,60 @@ local function respawnBalls(numberBalls, player)
     end
 end
 
+
+function WarpZone:Lerp(first, second, percent, smoothIn, smoothOut)
+    if smoothIn then
+        percent = percent ^ smoothIn
+    end
+
+    if smoothOut then
+        percent = 1 - percent
+        percent = percent ^ smoothOut
+        percent = 1 - percent
+    end
+
+	return (first + (second - first)*percent)
+end
+
+function WarpZone.AnyPlayerDo(foo)
+	for i = 0, game:GetNumPlayers() - 1 do
+		local player = Isaac.GetPlayer(i)
+		foo(player)
+	end
+end
+
+
+
+function WarpZone:magnetoChaseCheck(pickup)
+	local closestPlayer
+	local closestDist = 999999
+	WarpZone.AnyPlayerDo(function(player)
+		if player:HasCollectible(CollectibleType.COLLECTIBLE_MAGNETO)
+		or player:HasTrinket(TrinketType.TRINKET_SUPER_MAGNET) then
+			local dist = pickup.Position:Distance(player.Position)
+			if (not closestPlayer) or (closestPlayer and closestDist > dist) then
+				closestPlayer = player
+				closestDist = dist
+			end
+		end
+		end)
+	if closestPlayer then
+		local vec = (closestPlayer.Position - pickup.Position):Resized(2)
+		pickup.Velocity = WarpZone:Lerp(pickup.Velocity, vec, 0.2)
+		pickup:GetData().affectedByMagneto = pickup:GetData().affectedByMagneto or pickup.GridCollisionClass
+		pickup.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_WALLS
+	else
+		if pickup:GetData().affectedByMagneto then
+			pickup.GridCollisionClass = pickup:GetData().affectedByMagneto
+			pickup:GetData().affectedByMagneto = nil
+		end
+	end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_PICKUP_UPDATE, WarpZone.magnetoChaseCheck, tumorVariant)
+WarpZone:AddCallback(ModCallbacks.MC_POST_PICKUP_UPDATE, WarpZone.magnetoChaseCheck, tokenVariant)
+
+
+
 local function findGridEntityResponse(position, player)
     local room = Game():GetRoom()
     local bestTask
