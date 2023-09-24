@@ -202,6 +202,7 @@ Card.CARD_WITCH_CUBE = Isaac.GetCardIdByName("WitchCube")
 
 
 SoundEffect.SOUND_POP_POP = Isaac.GetSoundIdByName("PopPop_sound")
+SoundEffect.SOUND_COW_TRASH = Isaac.GetSoundIdByName("TrashFarm")
 
 --external item descriptions
 if EID then
@@ -2836,6 +2837,7 @@ function WarpZone:useCow(card, player, useflags)
     local itemID = nil
     local cowRNG =  RNG()
     cowRNG:SetSeed(Random(), 1)
+    SfxManager:Play(SoundEffect.SOUND_COW_TRASH, 2)
     for i, entity in ipairs(entities) do
         if entity.Type == EntityType.ENTITY_PICKUP then
             if entity.Variant == PickupVariant.PICKUP_COLLECTIBLE then

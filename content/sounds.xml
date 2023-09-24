@@ -2,4 +2,7 @@
     <sound name="PopPop_sound">
         <sample weight="1" path="SndPopPop.wav" />
     </sound>
+    <sound name="TrashFarm">
+        <sample weight="1" path="cowcut1.wav" />
+    </sound>
 </sounds>
