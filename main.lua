@@ -194,11 +194,11 @@ TrinketType.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
 TrinketType.TRINKET_HUNKY_BOYS = Isaac.GetTrinketIdByName("Hunky Boys")
 TrinketType.TRINKET_BIBLE_THUMP = Isaac.GetTrinketIdByName("Bible Thump")
 
-Card.CARD_COW_TRASH_FARM = Isaac.GetCardIdByName("Cow on a Trash Farm")
-Card.CARD_LOOT_CARD = Isaac.GetCardIdByName("Loot Card")
+Card.CARD_COW_TRASH_FARM = Isaac.GetCardIdByName("CowOnTrash")
+Card.CARD_LOOT_CARD = Isaac.GetCardIdByName("LootCard")
 Card.CARD_BLANK = Isaac.GetCardIdByName("Blank")
-Card.CARD_JESTER_CUBE = Isaac.GetCardIdByName("Jester Cube")
-Card.CARD_WITCH_CUBE = Isaac.GetCardIdByName("Witch Cube")
+Card.CARD_JESTER_CUBE = Isaac.GetCardIdByName("JesterCube")
+Card.CARD_WITCH_CUBE = Isaac.GetCardIdByName("WitchCube")
 
 
 SoundEffect.SOUND_POP_POP = Isaac.GetSoundIdByName("PopPop_sound")
@@ -2732,6 +2732,7 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.BibleKillSatanWrapper, C
 
 function WarpZone:UseWitchCube(card, player, useflags)
     local witchRNG = RNG()
+    print(Card.CARD_WITCH_CUBE)
     witchRNG:SetSeed(Random(), 1)
     if witchRNG:RandomInt(100) > 50 then
         player:UseActiveItem(CollectibleType.COLLECTIBLE_NECRONOMICON, false, false, true, false, -1, 0)
@@ -2743,6 +2744,12 @@ function WarpZone:UseWitchCube(card, player, useflags)
         end
     else
         player:UseActiveItem(CollectibleType.COLLECTIBLE_BEAN, false, false, true, false, -1, 0)
+        Isaac.Spawn(EntityType.ENTITY_PICKUP,
+            PickupVariant.PICKUP_TAROTCARD,
+            Card.CARD_WITCH_CUBE,
+            Game():GetRoom():FindFreePickupSpawnPosition(player.Position),
+            Vector(0,0),
+            nil)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseWitchCube, Card.CARD_WITCH_CUBE)
