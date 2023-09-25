@@ -2853,10 +2853,12 @@ function WarpZone:useCow(card, player, useflags)
                 if itemID ~= nil then
                     entity:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_COLLECTIBLE, itemID)
                     entity:ToPickup().Price = price
+                    Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, -1, entity.Position, entity.Velocity, player)
                 end
             elseif entity.Variant <= 90 or entity.Variant == PickupVariant.PICKUP_TAROTCARD 
             or entity.Variant == PickupVariant.PICKUP_REDCHEST or entity.Variant == PickupVariant.PICKUP_TRINKET then
                 player:AddBlueFlies(1, entity.Position, player)
+                --Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, -1, entity.Position, entity.Velocity, player)
                 entity:Remove()
             end
         end
@@ -2865,6 +2867,12 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useCow, Card.CARD_COW_TRASH_FARM)
 
 function WarpZone:useJester(card, player, useflags)
+    local entities = Isaac.GetRoomEntities()
+    for i, entity in ipairs(entities) do
+        if entity.Variant == PickupVariant.PICKUP_COLLECTIBLE then
+            Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, -1, entity.Position, entity.Velocity, player)
+        end
+    end
     for i=1, 6, 1 do
         player:UseCard(Card.CARD_SOUL_ISAAC, 257)
     end
