@@ -197,6 +197,8 @@ TrinketType.TRINKET_BIBLE_THUMP = Isaac.GetTrinketIdByName("Bible Thump")
 Card.CARD_COW_TRASH_FARM = Isaac.GetCardIdByName("CowOnTrash")
 Card.CARD_LOOT_CARD = Isaac.GetCardIdByName("LootCard")
 Card.CARD_BLANK = Isaac.GetCardIdByName("Blank")
+Card.CARD_BLANK_2 = Isaac.GetCardIdByName("Blank2")
+Card.CARD_BLANK_3 = Isaac.GetCardIdByName("Blank3")
 Card.CARD_JESTER_CUBE = Isaac.GetCardIdByName("JesterCube")
 Card.CARD_WITCH_CUBE = Isaac.GetCardIdByName("WitchCube")
 
@@ -2878,3 +2880,76 @@ function WarpZone:useJester(card, player, useflags)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useJester, Card.CARD_JESTER_CUBE)
+
+
+
+function WarpZone:useBlank(card, player, useflags)
+    local center = player.Position
+    local radius = 99999
+	--Remove projectiles in radius
+	for _, projectile in ipairs(Isaac.FindByType(EntityType.ENTITY_PROJECTILE)) do
+		projectile = projectile:ToProjectile()
+
+		local realPosition = projectile.Position - Vector(0, projectile.Height)
+
+		if realPosition:DistanceSquared(center) <= (radius * 3) ^ 2 then
+			if projectile:HasProjectileFlags(ProjectileFlags.ACID_GREEN) or
+			projectile:HasProjectileFlags(ProjectileFlags.ACID_RED) or
+			projectile:HasProjectileFlags(ProjectileFlags.CREEP_BROWN) or
+			projectile:HasProjectileFlags(ProjectileFlags.EXPLODE) or
+			projectile:HasProjectileFlags(ProjectileFlags.BURST) or
+			projectile:HasProjectileFlags(ProjectileFlags.ACID_GREEN) then
+				--If the projectile has any flag that triggers on hit, we need to remove the projectile
+				projectile:Remove()
+			else
+				projectile:Die()
+			end
+		end
+	end
+    local blankRNG =  RNG()
+    blankRNG:SetSeed(Random(), 1)
+	--Push enemies back
+	for _, entity in ipairs(Isaac.FindInRadius(center, radius * 3, EntityPartition.ENEMY)) do
+		if entity:IsActiveEnemy(false) and entity:IsVulnerableEnemy() then
+			local pushDirection = (entity.Position - center):Normalized()
+			entity:AddVelocity(pushDirection * 30)
+            if blankRNG:RandomInt(5) == 2 then
+                entity:AddConfusion(EntityRef(player), 60, true)
+            end
+		end
+	end
+    SfxManager:Play(SoundEffect.SOUND_DEATH_CARD)
+    
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useBlank, Card.CARD_BLANK)
+
+function WarpZone:useBlank2(card, player, useflags)
+    WarpZone:useBlank(card, player, useflags)
+    Isaac.Spawn(EntityType.ENTITY_PICKUP,
+            PickupVariant.PICKUP_TAROTCARD,
+            Card.CARD_BLANK,
+            Game():GetRoom():FindFreePickupSpawnPosition(player.Position),
+            Vector(0,0),
+            nil)
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useBlank2, Card.CARD_BLANK_2)
+
+
+function WarpZone:useBlank3(card, player, useflags)
+    WarpZone:useBlank(card, player, useflags)
+    Isaac.Spawn(EntityType.ENTITY_PICKUP,
+            PickupVariant.PICKUP_TAROTCARD,
+            Card.CARD_BLANK_2,
+            Game():GetRoom():FindFreePickupSpawnPosition(player.Position),
+            Vector(0,0),
+            nil)
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useBlank3, Card.CARD_BLANK_3)
+
+function WarpZone:cardRNG(RNG, cardS, IncludePlayingCards, IncludeRunes, OnlyRunes)
+    if cardS == Card.CARD_BLANK or cardS == Card.CARD_BLANK_2 then
+        return Card.CARD_BLANK_3
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_GET_CARD, WarpZone.cardRNG)
+
