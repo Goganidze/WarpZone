@@ -2720,6 +2720,7 @@ function WarpZone:FindEffects(collectible, rng, entityplayer, useflags, activesl
         end
     end
 
+    
     return {
         Discharge = false,
         Remove = false,
@@ -2918,8 +2919,18 @@ function WarpZone:useBlank(card, player, useflags)
             end
 		end
 	end
+    local entity_source = Isaac.Spawn(EntityType.ENTITY_EFFECT,
+        EffectVariant.SIREN_RING,
+        0,
+        player.Position,
+        Vector(0,0),
+        nil)
+
+    local entity_sprite = entity_source:GetSprite()
+    entity_sprite.PlaybackSpeed = entity_sprite.PlaybackSpeed * 2
+    entity_sprite.Color = Color(.2, .2, 1, 1, 0, 0, .5)
     SfxManager:Play(SoundEffect.SOUND_DEATH_CARD)
-    
+
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useBlank, Card.CARD_BLANK)
 
