@@ -152,7 +152,12 @@ ArrowHud:Load("gfx/bow_hud.anm2", true)
 local renderedPosition = Vector(25, -10)
 local tokenVariant = Isaac.GetEntityVariantByName("Tear_Token")
 
-
+--emergency meeting
+local enemiesToMove = {}
+local inTransit = -1
+local isBossEmergency = false
+local bossPrepped = false
+local roomsPrepped = {}
 
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
@@ -188,6 +193,7 @@ CollectibleType.COLLECTIBLE_FOOTBALL = Isaac.GetItemIdByName("Football")
 CollectibleType.COLLECTIBLE_BALL_OF_TUMORS = Isaac.GetItemIdByName("Ball of Tumors")
 CollectibleType.COLLECTIBLE_BOW_AND_ARROW = Isaac.GetItemIdByName("Bow and Arrow")
 CollectibleType.COLLECTIBLE_TEST_ACTIVE = Isaac.GetItemIdByName("Test Active")
+CollectibleType.COLLECTIBLE_EMERGENCY_MEETING = Isaac.GetItemIdByName("Emergency Meeting")
 
 
 TrinketType.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
@@ -1194,6 +1200,11 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
             end
         end
     end
+    if isBossEmergency and Game():GetLevel():GetCurrentRoomIndex() == 84 then
+        bossPrepped = true
+    end
+    isBossEmergency = false
+
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, WarpZone.spawnCleanAward)
 
@@ -1329,7 +1340,10 @@ function WarpZone:LevelStart()
             player:GetData().numArrows = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) * 3
         end
     end
-
+    bossPrepped = false
+    while next (roomsPrepped) do
+        roomsPrepped[next(roomsPrepped)]=nil
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, WarpZone.LevelStart)
 
@@ -1469,7 +1483,16 @@ function WarpZone:NewRoom()
         Game():GetItemPool():AddBibleUpgrade(1, ItemPoolType.POOL_GREED_SECRET)
         Game():GetItemPool():AddBibleUpgrade(1, ItemPoolType.POOL_GREED_BOSS)
     end
-    
+    if bossPrepped and room:GetType() == RoomType.ROOM_BOSS and not room:IsClear() and tableContains(roomsPrepped, Game():GetLevel():GetCurrentRoomIndex() ,true) ~= false then
+        local entities = Isaac.GetRoomEntities()
+        for i, entity in pairs(entities) do
+            if entity:IsActiveEnemy() then
+                entity:Remove()
+            end
+        end
+        bossPrepped = false
+    end
+    isBossEmergency = false
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, WarpZone.NewRoom)
 
@@ -1647,7 +1670,6 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseDoorway, CollectibleType.COLLECTIBLE_DOORWAY)
 
 function WarpZone:UseIsYou(collectible, rng, entityplayer, useflags, activeslot, customvardata)
-    print(entityplayer.ControllerIndex)
     if entityplayer:GetData().baba_active == nil and entityplayer:GetData().reticle == nil then
         entityplayer:GetData().reticle = Isaac.Spawn(1000, 30, 0, entityplayer.Position, Vector(0, 0), entityplayer)
         entityplayer:GetData().blinkTime = 10
@@ -2626,7 +2648,9 @@ function WarpZone:BeggarUpdate()
         end
     end
 
-
+    if inTransit >= 0 and Game():GetLevel():GetCurrentRoomIndex() == 84 then
+        WarpZone:FinishTransit(Game():GetRoom())
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.BeggarUpdate)
 
@@ -2713,14 +2737,20 @@ function WarpZone:FindEffects(collectible, rng, entityplayer, useflags, activesl
     local entities = Isaac.GetRoomEntities()
     local debbug = ""
     for i, entity_pos in ipairs(entities) do
-        if entity_pos.Type == EntityType.ENTITY_EFFECT 
-        and entity_pos.Variant ~= 87 
-        and entity_pos.Variant ~= 121 then
-            debbug = tostring(entity_pos.Variant) .. "-" .. tostring(entity_pos.Position.X) .. ", " .. tostring(entity_pos.Position.Y)
+        if entity_pos.Type == EntityType.ENTITY_LARRYJR then
+            debbug = tostring(entity_pos.Variant) .. "-" .. tostring(entity_pos.Position) .. " --  " ..  tostring(entity_pos.Parent.Position)
+            print(debbug)
         end
     end
 
-    
+    local room = Game():GetRoom()
+    for i=1, room:GetGridSize() do
+        local ge = room:GetGridEntity(i)
+        if ge and ge:GetType() == GridEntityType.GRID_TRAPDOOR then
+            --print(ge:GetGridIndex())
+        end
+
+    end
     return {
         Discharge = false,
         Remove = false,
@@ -2963,4 +2993,109 @@ function WarpZone:cardRNG(RNG, cardS, IncludePlayingCards, IncludeRunes, OnlyRun
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_GET_CARD, WarpZone.cardRNG)
+
+
+
+function WarpZone:UseEmergencyMeeting(collectible, rng, player, useflags, activeslot, customvardata)
+    local roomtype = Game():GetRoom():GetType()
+    local spawnedEnemies= false
+    local enemyEntities = Isaac.GetRoomEntities()
+
+
+    for i, entity in ipairs(enemyEntities) do
+        if entity:IsActiveEnemy() then
+            if (entity.Type == EntityType.ENTITY_PIN and entity.Parent ~= nil) or
+            entity.Type == EntityType.ENTITY_GEMINI and entity.Variant >= 10 then
+                goto skipmark
+            end
+
+            spawnedEnemies = true
+            enemiesToMove[i] = {}
+            enemiesToMove[i].Position = Vector(entity.Position.X, entity.Position.Y)--entity.Position
+            enemiesToMove[i].Type = entity.Type
+            enemiesToMove[i].Variant = entity.Variant
+            enemiesToMove[i].SubType = entity.SubType
+            enemiesToMove[i].Flags= entity:GetEntityFlags()
+            enemiesToMove[i].HitPoints = entity.HitPoints
+            enemiesToMove[i].Data = entity:GetData()
+
+            ::skipmark::
+            entity:Remove()
+        end
+        
+    end
+    if roomtype == RoomType.ROOM_BOSS and spawnedEnemies and not Game():GetRoom():IsClear() then
+        inTransit = 2
+        table.insert(roomsPrepped, Game():GetLevel():GetCurrentRoomIndex())
+    elseif spawnedEnemies then
+        inTransit = 1
+        Game():GetRoom():SetClear(true)
+    end
+    
+    player:UseCard(Card.CARD_FOOL, 257)
+    ::continue::
+end
+
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseEmergencyMeeting, CollectibleType.COLLECTIBLE_EMERGENCY_MEETING)
+
+
+
+
+function WarpZone:FinishTransit(room)
+    local spawnedEnemies= false
+    --local isBossRoom = inTransit
+    if inTransit == 2 then
+        isBossEmergency = true
+    end
+    inTransit = -1
+    for k, mapping in pairs(enemiesToMove) do
+        spawnedEnemies = true
+        WarpZone.AnyPlayerDo(function(player) player:SetMinDamageCooldown(60) end)
+        
+        if not room:IsPositionInRoom(mapping.Position, 40) then
+            mapping.Position = room:GetRandomPosition(40)
+        end
+
+        local newenemy = Isaac.Spawn(mapping.Type,
+        mapping.Variant,
+        mapping.SubType,
+        mapping.Position,
+        Vector(0,0),
+        nil)
+
+        newenemy:AddEntityFlags(mapping.Flags)
+        newenemy:AddConfusion(EntityRef(newenemy), 90, false)
+        newenemy.HitPoints = mapping.HitPoints
+
+        --if isBossRoom > 1 and newenemy:IsBoss() and Game():GetLevel():GetStage() <= 7 then 
+        --    isBossRoom = 1
+        --    newenemy:GetData().BossSpawnItems = true
+        --end
+
+        for d,v in pairs(mapping.Data) do
+            newenemy:GetData()[d] = v
+        end
+    end
+
+    if spawnedEnemies == true then
+        room:SetClear(false)
+    end
+
+    while next (enemiesToMove) do
+        enemiesToMove[next(enemiesToMove)]=nil
+    end
+    
+
+
+    for i = 0, 7 do
+        local door = room:GetDoor(i)
+        if door then
+            local doorEntity = door:ToDoor()
+            if doorEntity:IsOpen() then
+                doorEntity:Close()
+            end
+        end
+    end
+end
+
 
