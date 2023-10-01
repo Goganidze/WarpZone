@@ -2997,10 +2997,21 @@ WarpZone:AddCallback(ModCallbacks.MC_GET_CARD, WarpZone.cardRNG)
 
 
 function WarpZone:UseEmergencyMeeting(collectible, rng, player, useflags, activeslot, customvardata)
+
     local roomtype = Game():GetRoom():GetType()
     local spawnedEnemies= false
     local enemyEntities = Isaac.GetRoomEntities()
 
+    if (Game():GetLevel():GetStage() == LevelStage.STAGE3_2 and roomtype == RoomType.ROOM_BOSS) or
+    (Game():GetLevel():GetStage() == LevelStage.STAGE4_2 and roomtype == RoomType.ROOM_BOSS) or
+    Game():GetLevel():GetStage() == LevelStage.STAGE4_3 or
+    Game():GetLevel():GetStage() == LevelStage.STAGE8 then
+        return {
+            Discharge = false,
+            Remove = false,
+            ShowAnim = false
+        }
+    end
 
     for i, entity in ipairs(enemyEntities) do
         if entity:IsActiveEnemy() then
@@ -3035,10 +3046,7 @@ function WarpZone:UseEmergencyMeeting(collectible, rng, player, useflags, active
     player:UseCard(Card.CARD_FOOL, 257)
     ::continue::
 end
-
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseEmergencyMeeting, CollectibleType.COLLECTIBLE_EMERGENCY_MEETING)
-
-
 
 
 function WarpZone:FinishTransit(room)
@@ -3085,8 +3093,6 @@ function WarpZone:FinishTransit(room)
         enemiesToMove[next(enemiesToMove)]=nil
     end
     
-
-
     for i = 0, 7 do
         local door = room:GetDoor(i)
         if door then
