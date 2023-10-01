@@ -5,4 +5,7 @@
     <sound name="TrashFarm">
         <sample weight="1" path="cowcut1.wav" />
     </sound>
+    <sound name="EmergencyMeetingSound">
+        <sample weight="1" path="Emergency_Meeting.wav" />
+    </sound>
 </sounds>

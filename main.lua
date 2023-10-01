@@ -211,6 +211,8 @@ Card.CARD_WITCH_CUBE = Isaac.GetCardIdByName("WitchCube")
 
 SoundEffect.SOUND_POP_POP = Isaac.GetSoundIdByName("PopPop_sound")
 SoundEffect.SOUND_COW_TRASH = Isaac.GetSoundIdByName("TrashFarm")
+SoundEffect.SOUND_EMERGENCY_MEETING = Isaac.GetSoundIdByName("EmergencyMeetingSound")
+
 
 --external item descriptions
 if EID then
@@ -3044,6 +3046,7 @@ function WarpZone:UseEmergencyMeeting(collectible, rng, player, useflags, active
     end
     
     player:UseCard(Card.CARD_FOOL, 257)
+    SfxManager:Play(SoundEffect.SOUND_EMERGENCY_MEETING, 2)
     ::continue::
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseEmergencyMeeting, CollectibleType.COLLECTIBLE_EMERGENCY_MEETING)
