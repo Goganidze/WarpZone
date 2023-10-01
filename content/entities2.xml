@@ -32,6 +32,12 @@
     <entity anm2path="cards_3_blank.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="12" friction="1" id="5" name="Blank" numGridCollisionPoints="24" shadowSize="16" stageHP="0" variant="300" subtype="49436">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
+    <entity anm2path="cards_3.1_blank.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="12" friction="1" id="5" name="Blank2" numGridCollisionPoints="24" shadowSize="16" stageHP="0" variant="300" subtype="49439">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
+    </entity>
+    <entity anm2path="cards_3.2_blank.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="12" friction="1" id="5" name="Blank3" numGridCollisionPoints="24" shadowSize="16" stageHP="0" variant="300" subtype="49440">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
+    </entity>
     <entity anm2path="cards_4_jestercube.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="12" friction="1" id="5" name="Jester Cube" numGridCollisionPoints="24" shadowSize="16" stageHP="0" variant="300" subtype="49437">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
