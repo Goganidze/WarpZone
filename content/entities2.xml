@@ -44,4 +44,13 @@
     <entity anm2path="cards_5_witchcube.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="12" friction="1" id="5" name="Witch Cube" numGridCollisionPoints="24" shadowSize="16" stageHP="0" variant="300" subtype="49438">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
+    <entity anm2path="cards_6_murdercard.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="12" friction="1" id="5" name="Murder Card" numGridCollisionPoints="24" shadowSize="16" stageHP="0" variant="300" subtype="49441">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
+    </entity>
+    <entity anm2path="cards_7_amberchunk.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="12" friction="1" id="5" name="Amber Chunk" numGridCollisionPoints="24" shadowSize="16" stageHP="0" variant="300" subtype="49442">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
+    </entity>
+    <entity anm2path="cards_8_slaycard.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="12" friction="1" id="5" name="Slay the Spire Card" numGridCollisionPoints="24" shadowSize="16" stageHP="0" variant="300" subtype="49443">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
+    </entity>
 </entities>
