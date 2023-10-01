@@ -2958,7 +2958,7 @@ function WarpZone:useBlank(card, player, useflags)
 
     local entity_sprite = entity_source:GetSprite()
     entity_sprite.PlaybackSpeed = entity_sprite.PlaybackSpeed * 2
-    entity_sprite.Color = Color(.2, .2, 1, 1, 0, 0, .5)
+    entity_sprite.Color = Color(0, 0, 1, 1, 0, 0, .5)
     SfxManager:Play(SoundEffect.SOUND_DEATH_CARD)
 
 end
