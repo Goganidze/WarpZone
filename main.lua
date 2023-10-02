@@ -332,6 +332,15 @@ end
 
 
 --util functions
+
+local function isNil(value, replacement)
+    if value == nil then
+        return replacement
+    else
+        return value
+    end
+end
+
 local function RandomFloatRange(greater)
     local lower = 0
     return lower + math.random()  * (greater - lower);
@@ -1830,7 +1839,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         end
         entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - waterAmount
         entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - (cakeBingeBonus * 2)
-        entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - entityplayer:GetData().bonusFireDelay
+        entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - isNil(entityplayer:GetData().bonusFireDelay, 0)
 
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) and entityplayer:GetData().arrowTimeDelay > 0 then
             if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) then
@@ -1858,7 +1867,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         if entityplayer:GetData().dioDamageOn == true then
             entityplayer.Damage = entityplayer.Damage * 3
         end
-        entityplayer.Damage = entityplayer.Damage + entityplayer:GetData().bonusDamage
+        entityplayer.Damage = entityplayer.Damage + isNil(entityplayer:GetData().bonusDamage, 0)
     end
 
     if Cache == CacheFlag.CACHE_RANGE then
@@ -1866,18 +1875,18 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_GEORGE) then
             entityplayer.TearRange = entityplayer.TearRange + (entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_GEORGE) * 96)
         end
-        entityplayer.TearRange = entityplayer.TearRange + entityplayer:GetData().bonusRange
+        entityplayer.TearRange = entityplayer.TearRange + isNil(entityplayer:GetData().bonusRange, 0)
     end
 
     if Cache == CacheFlag.CACHE_LUCK then
         entityplayer.Luck = entityplayer.Luck + tank_qty
-        entityplayer.Luck = entityplayer.Luck +  entityplayer:GetData().bonusLuck
+        entityplayer.Luck = entityplayer.Luck +  isNil(entityplayer:GetData().bonusLuck, 0)
     end
 
     if Cache == CacheFlag.CACHE_SPEED then
         entityplayer.MoveSpeed = entityplayer.MoveSpeed - (tank_qty * .3)
         entityplayer.MoveSpeed = entityplayer.MoveSpeed - (cakeBingeBonus * .03)
-        entityplayer.MoveSpeed = entityplayer.MoveSpeed + entityplayer:GetData().bonusSpeed
+        entityplayer.MoveSpeed = entityplayer.MoveSpeed + isNil(entityplayer:GetData().bonusSpeed, 0)
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_HITOPS) then
             entityplayer:GetData().breakCap = false
         end
