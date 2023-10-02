@@ -31,6 +31,11 @@ defaultData.arrowTimeDelay = 0
 defaultData.ballCheck = true
 defaultData.blinkTime = 10
 defaultData.timeSinceTheSpacebarWasLastPressed = 0
+defaultData.bonusSpeed = 0
+defaultData.bonusDamage = 0
+defaultData.bonusFireDelay = 0
+defaultData.bonusRange = 0
+defaultData.bonusLuck = 0
 
 
 local numPlayersG = Game():GetNumPlayers()
@@ -1825,6 +1830,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         end
         entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - waterAmount
         entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - (cakeBingeBonus * 2)
+        entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - entityplayer:GetData().bonusFireDelay
 
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) and entityplayer:GetData().arrowTimeDelay > 0 then
             if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) then
@@ -1852,6 +1858,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         if entityplayer:GetData().dioDamageOn == true then
             entityplayer.Damage = entityplayer.Damage * 3
         end
+        entityplayer.Damage = entityplayer.Damage + entityplayer:GetData().bonusDamage
     end
 
     if Cache == CacheFlag.CACHE_RANGE then
@@ -1859,15 +1866,18 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_GEORGE) then
             entityplayer.TearRange = entityplayer.TearRange + (entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_GEORGE) * 96)
         end
+        entityplayer.TearRange = entityplayer.TearRange + entityplayer:GetData().bonusRange
     end
 
     if Cache == CacheFlag.CACHE_LUCK then
         entityplayer.Luck = entityplayer.Luck + tank_qty
+        entityplayer.Luck = entityplayer.Luck +  entityplayer:GetData().bonusLuck
     end
 
     if Cache == CacheFlag.CACHE_SPEED then
         entityplayer.MoveSpeed = entityplayer.MoveSpeed - (tank_qty * .3)
         entityplayer.MoveSpeed = entityplayer.MoveSpeed - (cakeBingeBonus * .03)
+        entityplayer.MoveSpeed = entityplayer.MoveSpeed + entityplayer:GetData().bonusSpeed
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_HITOPS) then
             entityplayer:GetData().breakCap = false
         end
@@ -3155,4 +3165,46 @@ function WarpZone:FinishTransit(room)
     end
 end
 
+function WarpZone:UseFiendFire(card, player, useflags)
+    local entities = Isaac.GetRoomEntities()
+    local fireRng = RNG()
+    fireRng:SetSeed(Random(), 1)
+    for i, entity in ipairs(entities) do
+        if entity.Type == EntityType.ENTITY_PICKUP then
+            print(entity.Variant)
+        end
+        if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant <= 90 or
+        entity.Variant == PickupVariant.PICKUP_REDCHEST
+        or entity.Variant == PickupVariant.PICKUP_TRINKET
+        or entity.Variant == PickupVariant.PICKUP_TAROTCARD
+        )then
+           Isaac.Spawn(EntityType.ENTITY_EFFECT,
+           EffectVariant.HOT_BOMB_FIRE,
+           0,
+           entity.Position,
+           Vector(fireRng:RandomFloat() - .5, fireRng:RandomFloat() - .5) * Vector(2, 2),
+           nil)
+           entity:Remove()
+
+            local chosenStat = fireRng:RandomInt(5)
+            if chosenStat == 0 then
+                player:GetData().bonusRange = player:GetData().bonusRange + 20
+            elseif chosenStat == 1 then
+                player:GetData().bonusDamage = player:GetData().bonusDamage + .2
+            elseif chosenStat == 2 then
+                player:GetData().bonusLuck = player:GetData().bonusLuck + .2
+            elseif chosenStat == 3 then
+                player:GetData().bonusSpeed = player:GetData().bonusSpeed + .04
+            elseif chosenStat == 4 then
+                player:GetData().bonusFireDelay = player:GetData().bonusFireDelay + .2
+            end
+        end
+    end
+    SfxManager:Play(SoundEffect.SOUND_FIRE_RUSH, 2)
+    SfxManager:Play(SoundEffect.SOUND_FIREDEATH_HISS, 2) 
+    player:AddCacheFlags(CacheFlag.CACHE_ALL)
+    player:EvaluateItems()
+
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseFiendFire, Card.CARD_FIEND_FIRE)
 
