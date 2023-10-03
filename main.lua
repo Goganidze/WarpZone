@@ -3217,3 +3217,20 @@ function WarpZone:UseFiendFire(card, player, useflags)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseFiendFire, Card.CARD_FIEND_FIRE)
 
+function WarpZone:UseDemonForm(card, player, useflags)
+    local formRng = RNG()
+    formRng:SetSeed(Random(), 1)
+    local chosenStat = formRng:RandomInt(5)
+    if chosenStat == 0 then
+        player:UseActiveItem(CollectibleType.COLLECTIBLE_MEGA_BLAST)
+    elseif chosenStat == 1 then
+        player:UseActiveItem(CollectibleType.COLLECTIBLE_BOOK_OF_BELIAL)
+    elseif chosenStat == 2 then
+        player:UseActiveItem(CollectibleType.COLLECTIBLE_THE_NAIL)
+    elseif chosenStat == 3 then
+        player:UseActiveItem(CollectibleType.COLLECTIBLE_SULFUR)
+    elseif chosenStat == 4 then
+        player:UseCard(Card.CARD_EMPRESS, 256)
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseDemonForm, Card.CARD_DEMON_FORM)
