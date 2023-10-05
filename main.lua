@@ -12,7 +12,7 @@ local saveData = {}
 local lastIndex = 5
 
 local defaultData = {}
-defaultData.numArrows = 3
+defaultData.numArrows = 0
 defaultData.playerTumors = 0
 defaultData.tonyBuff = 1.7
 defaultData.dioDamageOn = false
@@ -2057,13 +2057,8 @@ function WarpZone:updateTear(entitytear)
             tear:GetData().BowArrowPiercing = 1
             tear:AddTearFlags(TearFlags.TEAR_PIERCING)
             tear.Velocity = tear.Velocity * Vector(1.5, 1.5)
-            tear.Scale = tear.Scale * 0.5
-            tear.CollisionDamage = tear.CollisionDamage * 2.5
-            local sprite_tear = tear:GetSprite()
-            sprite_tear:ReplaceSpritesheet(0, "gfx/tearswap_bow.png")
-            --sprite_tear.Rotation = (tear.Velocity + Vector(0, tear.FallingSpeed)):GetAngleDegrees()
-            tear:GetSprite().Rotation = (tear.Velocity + Vector(0, tear.FallingSpeed)):GetAngleDegrees()
-            sprite_tear:LoadGraphics()
+            tear.Scale = tear.Scale * 1.45
+            tear.CollisionDamage = tear.CollisionDamage * 1.5
         end
 
         if tear:GetData().Is_Rusty == true then
