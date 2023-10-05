@@ -3122,10 +3122,14 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseEmergencyMeeting, Col
 function WarpZone:FinishTransit(room)
     local spawnedEnemies= false
     --local isBossRoom = inTransit
+    local emergencyRNG =  RNG()
+    emergencyRNG:SetSeed(Random(), 1)
     if inTransit == 2 then
         isBossEmergency = true
     end
     inTransit = -1
+    local sus = emergencyRNG:RandomInt(#enemiesToMove)
+    local i = 0
     for k, mapping in pairs(enemiesToMove) do
         spawnedEnemies = true
         WarpZone.AnyPlayerDo(function(player) player:SetMinDamageCooldown(60) end)
@@ -3144,6 +3148,9 @@ function WarpZone:FinishTransit(room)
         newenemy:AddEntityFlags(mapping.Flags)
         newenemy:AddConfusion(EntityRef(newenemy), 90, false)
         newenemy.HitPoints = mapping.HitPoints
+        if i == sus and not newenemy:IsBoss() then
+           newenemy:AddEntityFlags(EntityFlag.FLAG_BAITED)
+        end
 
         --if isBossRoom > 1 and newenemy:IsBoss() and Game():GetLevel():GetStage() <= 7 then 
         --    isBossRoom = 1
@@ -3153,6 +3160,7 @@ function WarpZone:FinishTransit(room)
         for d,v in pairs(mapping.Data) do
             newenemy:GetData()[d] = v
         end
+        i = i + 1
     end
 
     if spawnedEnemies == true then
