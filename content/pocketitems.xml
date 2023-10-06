@@ -6,7 +6,7 @@
     <card type="object" name="Blanks" description="No bullets" hud="Blank3" mimiccharge="3" pickup="49440"/>
     <card type="object" name="Jester" description="Shufflemania" hud="JesterCube" mimiccharge="6" pickup="49437"/>
     <card type="object" name="Witch" description="Swipe right to torch" hud="WitchCube" mimiccharge="5" pickup="49438"/>
-    <card type="special" name="Murder!" description="..." hud="MurderCard" mimiccharge="1" pickup="49441"/>
+    <card type="special" name="Murder!" description="Everything you touch dies!" hud="MurderCard" mimiccharge="1" pickup="49441"/>
     <card type="object" name="Chunk of Amber" description="..." hud="AmberChunk" mimiccharge="6" pickup="49442"/>
     <card type="special" name="Demon Form" description="Wait, which one?" hud="DemonForm" mimiccharge="5" pickup="49443"/>
     <card type="special" name="Fiend Fire" description="It consumes everything..." hud="FiendFire" mimiccharge="6" pickup="49443"/>

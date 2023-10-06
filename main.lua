@@ -1907,6 +1907,12 @@ function WarpZone:postPlayerUpdate(player)
         player.MoveSpeed = math.min(player.MoveSpeed+player:GetCollectibleNum(CollectibleType.COLLECTIBLE_HITOPS)*0.2, 3)
         data.breakCap = nil
     end
+    if Game():GetFrameCount() - isNil(player:GetData().MurderFrame, -999) < 15 then
+        player.MoveSpeed = 4
+    elseif player.MoveSpeed >= 4 then
+        player:AddCacheFlags(CacheFlag.CACHE_SPEED)
+        player:EvaluateItems()
+    end
 
     if player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) == true or player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true  then
         
@@ -3242,3 +3248,9 @@ function WarpZone:UseDemonForm(card, player, useflags)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseDemonForm, Card.CARD_DEMON_FORM)
+
+
+function WarpZone:UseMurderCard(card, player, useflags)
+    player:GetData().MurderFrame = Game():GetFrameCount()
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseMurderCard, Card.CARD_MURDER)
