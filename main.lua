@@ -165,6 +165,9 @@ local isBossEmergency = false
 local bossPrepped = false
 local roomsPrepped = {}
 
+--chunk of amber
+local preservedItems = {}
+
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
@@ -1286,6 +1289,10 @@ function WarpZone:OnGameStart(isSave)
         numPossessed = saveData[2]
         floorBeggar = saveData[3]
         bibleThumpPool = saveData[4]
+        isBossEmergency = saveData[5]
+        bossPrepped = saveData[6]
+        roomsPrepped = saveData[7]
+        preservedItems = saveData[8]
 
         for i=0, numPlayers-1, 1 do
             local player = Isaac.GetPlayer(i)
@@ -1298,11 +1305,18 @@ function WarpZone:OnGameStart(isSave)
     end
 
     if not isSave then
+        saveData = json.decode(WarpZone:LoadData())
+        preservedItems = saveData[8]--this persists across games
+
         saveData = {}
         DoorwayFloor = -1
         numPossessed = 0
         floorBeggar = -1
         bibleThumpPool = false
+        isBossEmergency = false
+        bossPrepped = false
+        roomsPrepped = {}
+
         for i=0, numPlayers-1, 1 do
             local player = Isaac.GetPlayer(i)
             for k,v in pairs(defaultData) do
@@ -1321,7 +1335,11 @@ function WarpZone:preGameExit()
     saveData[2] = numPossessed
     saveData[3] = floorBeggar
     saveData[4] = bibleThumpPool
-    
+    saveData[5] = isBossEmergency
+    saveData[6] = bossPrepped
+    saveData[7] = roomsPrepped
+    saveData[8] = preservedItems
+
     for i=0, numPlayers-1, 1 do
         local player = Isaac.GetPlayer(i)
         saveData[i + lastIndex] = {}
@@ -3273,6 +3291,7 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseFiendFire, Card.CARD_
 --end
 
 function WarpZone:UseDemonForm2(card, player, useflags)
+    SfxManager:Play(SoundEffect.SOUND_SATAN_GROW)
     if player:GetData().InDemonForm == nil then
         player:GetData().InDemonForm = player:GetPlayerType()
         player:ChangePlayerType(PlayerType.PLAYER_AZAZEL)
@@ -3292,10 +3311,12 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseDemonForm2, Card.CARD
 
 function WarpZone:UseMurderCard(card, player, useflags)
     player:GetData().MurderFrame = Game():GetFrameCount()
-    local color = player:GetSprite().Color
-    
-    print(color.R .. "-" .. color.G .. "-" .. color.B)
-    print(color.RO .. "-" .. color.GO .. "-" .. color.BO)
     player:GetSprite().Color = Color(1, 0, 0, 1, 0, 0, 0)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseMurderCard, Card.CARD_MURDER)
+
+
+function WarpZone:UseAmberChunk(card, player, useflags)
+
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseAmberChunk, Card.CARD_AMBER_CHUNK)
