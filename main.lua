@@ -36,6 +36,7 @@ defaultData.bonusDamage = 0
 defaultData.bonusFireDelay = 0
 defaultData.bonusRange = 0
 defaultData.bonusLuck = 0
+defaultData.inDemonForm = nil
 
 
 local numPlayersG = Game():GetNumPlayers()
@@ -1088,6 +1089,10 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
         return
     end
     
+    if Game():GetFrameCount() - isNil(player:GetData().MurderFrame, -999) < 15 then
+        return false
+    end
+
     if player:HasCollectible(CollectibleType.COLLECTIBLE_POSSESSION) then
         local entities = Isaac.GetRoomEntities()
         numPossessed = 0
@@ -1425,7 +1430,11 @@ function WarpZone:NewRoom()
         player:EvaluateItems()
 
         player:GetData().ballCheck = false
-
+        if player:GetData().InDemonForm ~= nil then
+            player:ChangePlayerType(player:GetData().InDemonForm)
+            player:GetData().InDemonForm = nil
+            player:GetEffects():RemoveCollectibleEffect(CollectibleType.COLLECTIBLE_BIRTHRIGHT, 1)
+        end
     end
     if Game():GetLevel():GetStage() == DoorwayFloor and (Game():GetLevel():GetCurrentRoomIndex() ~=84 or Game():GetLevel():GetStage()~= 1 or not room:IsFirstVisit()) then
         if room:GetType() == RoomType.ROOM_BOSS then
@@ -1860,6 +1869,10 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
             entityplayer.Damage = entityplayer.Damage + (entityplayer:GetData().itemsSucked * 0.75)
         end
         
+        if entityplayer:GetData().InDemonForm ~= nil then
+            entityplayer.Damage = entityplayer.Damage + 1
+        end
+
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_TONY) then
             entityplayer.Damage = (entityplayer.Damage * entityplayer:GetData().tonyBuff) + (entityplayer:GetData().tonyBuff * 1.428)
         end
@@ -1912,6 +1925,7 @@ function WarpZone:postPlayerUpdate(player)
     elseif player.MoveSpeed >= 4 then
         player:AddCacheFlags(CacheFlag.CACHE_SPEED)
         player:EvaluateItems()
+        player:GetSprite().Color = Color(1, 1, 1, 1, 0, 0, 0)
     end
 
     if player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) == true or player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true  then
@@ -3125,6 +3139,16 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseEmergencyMeeting, CollectibleType.COLLECTIBLE_EMERGENCY_MEETING)
 
 
+function WarpZone:OnPlayerCollide(player, collider)
+    if collider:IsActiveEnemy() and Game():GetFrameCount() - isNil(player:GetData().MurderFrame, -999) < 15 then
+        collider:Die()
+        SfxManager:Play(SoundEffect.SOUND_DEATH_BURST_LARGE, 2)
+        return true
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_PRE_PLAYER_COLLISION, WarpZone.OnPlayerCollide)
+
+
 function WarpZone:FinishTransit(room)
     local spawnedEnemies= false
     --local isBossRoom = inTransit
@@ -3231,26 +3255,47 @@ function WarpZone:UseFiendFire(card, player, useflags)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseFiendFire, Card.CARD_FIEND_FIRE)
 
-function WarpZone:UseDemonForm(card, player, useflags)
-    local formRng = RNG()
-    formRng:SetSeed(Random(), 1)
-    local chosenStat = formRng:RandomInt(5)
-    if chosenStat == 0 then
-        player:UseActiveItem(CollectibleType.COLLECTIBLE_MEGA_BLAST)
-    elseif chosenStat == 1 then
-        player:UseActiveItem(CollectibleType.COLLECTIBLE_BOOK_OF_BELIAL)
-    elseif chosenStat == 2 then
-        player:UseActiveItem(CollectibleType.COLLECTIBLE_THE_NAIL)
-    elseif chosenStat == 3 then
-        player:UseActiveItem(CollectibleType.COLLECTIBLE_SULFUR)
-    elseif chosenStat == 4 then
-        player:UseCard(Card.CARD_EMPRESS, 256)
+--function WarpZone:UseDemonForm(card, player, useflags)
+--    local formRng = RNG()
+--    formRng:SetSeed(Random(), 1)
+--    local chosenStat = formRng:RandomInt(5)
+--    if chosenStat == 0 then
+--        player:UseActiveItem(CollectibleType.COLLECTIBLE_MEGA_BLAST)
+--    elseif chosenStat == 1 then
+--        player:UseActiveItem(CollectibleType.COLLECTIBLE_BOOK_OF_BELIAL)
+--    elseif chosenStat == 2 then
+--        player:UseActiveItem(CollectibleType.COLLECTIBLE_THE_NAIL)
+--    elseif chosenStat == 3 then
+--        player:UseActiveItem(CollectibleType.COLLECTIBLE_SULFUR)
+--    elseif chosenStat == 4 then
+--        player:UseCard(Card.CARD_EMPRESS, 256)
+--    end
+--end
+
+function WarpZone:UseDemonForm2(card, player, useflags)
+    if player:GetData().InDemonForm == nil then
+        player:GetData().InDemonForm = player:GetPlayerType()
+        player:ChangePlayerType(PlayerType.PLAYER_AZAZEL)
+        player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
+        player:EvaluateItems()
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_BRIMSTONE)
+        or player:GetData().InDemonForm == PlayerType.PLAYER_AZAZEL then
+            player:GetEffects():AddCollectibleEffect(CollectibleType.COLLECTIBLE_BIRTHRIGHT, false)
+        end
+
     end
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseDemonForm, Card.CARD_DEMON_FORM)
+
+
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseDemonForm2, Card.CARD_DEMON_FORM)
 
 
 function WarpZone:UseMurderCard(card, player, useflags)
     player:GetData().MurderFrame = Game():GetFrameCount()
+    local color = player:GetSprite().Color
+    
+    print(color.R .. "-" .. color.G .. "-" .. color.B)
+    print(color.RO .. "-" .. color.GO .. "-" .. color.BO)
+    player:GetSprite().Color = Color(1, 0, 0, 1, 0, 0, 0)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseMurderCard, Card.CARD_MURDER)
