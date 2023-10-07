@@ -166,7 +166,7 @@ local bossPrepped = false
 local roomsPrepped = {}
 
 --chunk of amber
-local preservedItems = {}
+local preservedItems = nil
 
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
@@ -277,6 +277,10 @@ if EID then
     EID:addCard(Card.CARD_BLANK_3, "Clears all enemy projectiles in the room.#Pushes nearby enemies away#You can use this 3 times before it disappears", "Blank", "en_us")
     EID:addCard(Card.CARD_JESTER_CUBE, "On use, all items in the room will cycle between 6 additional choices, similar to Glitched Crown", "Jester", "en_us")
     EID:addCard(Card.CARD_WITCH_CUBE, "50% chance to deal 40 damage to all enemies in the room and apply burn.#50% chance to spawn another Witch card and fire off a poison fart", "Witch", "en_us")
+    EID:addCard(Card.CARD_MURDER, "For a quarter second, increase speed to 4 and kill everything you touch.#Gain a Stompy effect for the room", "Murder!", "en_us")
+    EID:addCard(Card.CARD_AMBER_CHUNK, "All pickups in the room, including items and the final chest at the end of the game, will be removed and saved.#The previous items you consumed in this way will respawn, even across games#You will also receive a lucky penny", "Chunk of Amber", "en_us")
+    EID:addCard(Card.CARD_FIEND_FIRE, "All pickups in the room are consumed#For each pickup consumed, gain a small, permanent boost to Damage, Tears, Luck, Range, or Speed#Pickups turn into fires, which can damage enemies.", "Fiend Fire", "en_us")
+    EID:addCard(Card.CARD_DEMON_FORM, "For the current room, Isaac becomes Azazel#+1 Damage#If you already have a brimstone laser, it will be widened from the current room", "Demon Form", "en_us")
     
     local CardHuds = {}
     CardHuds.CowHud = Sprite()
@@ -780,7 +784,7 @@ local ChampionsToLoot = {
             Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_LIL_BATTERY, 0, npc.Position, Vector(0, 0), npc)
         end,
         [ChampionColor.GREEN] = function (ref, rng)
-            ---@type EntityNPC
+            --@type EntityNPC
             local npc = ref.Entity
             Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_PILL, PillColor.PILL_NULL, npc.Position, Vector(0, 0), npc)
         end,
@@ -792,8 +796,8 @@ local ChampionsToLoot = {
         end,
         [ChampionColor.BLUE] = function (ref, rng, playerRef)
             local npc = ref.Entity
-            ---@type EntityPlayer
-            local player = playerRef.Entity:ToPlayer() 
+            --@type EntityPlayer
+            local player = playerRef.Entity:ToPlayer()
             player:AddBlueFlies(3, player.Position, player)
         end,
         [ChampionColor.BLACK] = function (ref, rng)
@@ -847,7 +851,7 @@ local ChampionsToLoot = {
         end,
         [ChampionColor.FLY_PROTECTED] = function (ref, rng, playerRef)
             local npc = ref.Entity
-            ---@type EntityPlayer
+            --@type EntityPlayer
             local player = playerRef.Entity:ToPlayer()
             for i = 0, 2 do
                 player:AddBlueSpider(player.Position)
@@ -3317,6 +3321,51 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseMurderCard, Card.CARD
 
 
 function WarpZone:UseAmberChunk(card, player, useflags)
+    local entities = Isaac.GetRoomEntities()
+    local amberRng = RNG()
+    amberRng:SetSeed(Random(), 1)
 
+    if preservedItems == nil then
+        preservedItems = {}
+    end
+    for k, v in pairs(preservedItems) do
+        Isaac.Spawn(EntityType.ENTITY_PICKUP,
+           v.Variant,
+           v.SubType,
+           Game():GetRoom():FindFreePickupSpawnPosition(player.Position),
+           Vector(0, 0),
+           nil)
+        tableContains(preservedItems, v, true)
+
+    end
+    while next (preservedItems) do
+        preservedItems[next(preservedItems)]=nil
+    end
+    for i, entity in ipairs(entities) do --this shouldn't actually work but it seems to work anyway. i'm not gonna touch it
+        if entity.Type == EntityType.ENTITY_PICKUP then
+            print(entity.Variant)
+        end
+        if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant <= 90 or
+        entity.Variant == PickupVariant.PICKUP_REDCHEST
+        or entity.Variant == PickupVariant.PICKUP_TRINKET
+        or entity.Variant == PickupVariant.PICKUP_TAROTCARD
+        or entity.Variant == PickupVariant.PICKUP_COLLECTIBLE
+        or entity.Variant == PickupVariant.PICKUP_BIGCHEST
+        or entity.Variant == PickupVariant.PICKUP_TROPHY
+        )then
+            
+           preservedItems[i] = {}
+           preservedItems[i].Variant = entity.Variant
+           preservedItems[i].SubType = entity.SubType
+           entity:Remove()
+
+        end
+    end
+    Isaac.Spawn(EntityType.ENTITY_PICKUP,
+           PickupVariant.PICKUP_COIN,
+           CoinSubType.COIN_LUCKYPENNY,
+           Game():GetRoom():FindFreePickupSpawnPosition(player.Position),
+           Vector(0, 0),
+           nil)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseAmberChunk, Card.CARD_AMBER_CHUNK)
