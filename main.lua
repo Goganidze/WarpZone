@@ -37,6 +37,10 @@ defaultData.bonusFireDelay = 0
 defaultData.bonusRange = 0
 defaultData.bonusLuck = 0
 defaultData.inDemonForm = nil
+defaultData.arrowHoldUp = 0
+defaultData.arrowHoldDown = 0
+defaultData.arrowHoldLeft = 0
+defaultData.arrowHoldRight = 0
 
 
 local numPlayersG = Game():GetNumPlayers()
@@ -168,6 +172,11 @@ local roomsPrepped = {}
 --chunk of amber
 local preservedItems = nil
 
+--boxing glove
+local chargebarFrames = 235
+local BoxHud = Sprite()
+BoxHud:Load("gfx/chargebar_glove.anm2", true)
+
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
@@ -203,6 +212,7 @@ CollectibleType.COLLECTIBLE_BALL_OF_TUMORS = Isaac.GetItemIdByName("Ball of Tumo
 CollectibleType.COLLECTIBLE_BOW_AND_ARROW = Isaac.GetItemIdByName("Bow and Arrow")
 CollectibleType.COLLECTIBLE_TEST_ACTIVE = Isaac.GetItemIdByName("Test Active")
 CollectibleType.COLLECTIBLE_EMERGENCY_MEETING = Isaac.GetItemIdByName("Emergency Meeting")
+CollectibleType.COLLECTIBLE_BOXING_GLOVE = Isaac.GetItemIdByName("Boxing Glove")
 
 
 TrinketType.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
@@ -968,8 +978,9 @@ end
 
 function WarpZone:postRender(player)
 	local actions = player:GetLastActionTriggers()
+    local controllerid = player.ControllerIndex
     if not Game():IsPaused() then
-        if player:HasTrinket(TrinketType.TRINKET_HUNKY_BOYS) and Input.IsActionTriggered(ButtonAction.ACTION_DROP, 0) then
+        if player:HasTrinket(TrinketType.TRINKET_HUNKY_BOYS) and Input.IsActionTriggered(ButtonAction.ACTION_DROP, controllerid) then
             --player:DropTrinket(player.Position)
             player:TryRemoveTrinket(TrinketType.TRINKET_HUNKY_BOYS)
             Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, TrinketType.TRINKET_HUNKY_BOYS, player.Position, Vector(0, 0), nil)
@@ -983,7 +994,7 @@ function WarpZone:postRender(player)
         end
         
         if player:GetData().arrowTimeDelay <= 0 then
-            if Input.IsActionTriggered(ButtonAction.ACTION_SHOOTUP, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
+            if Input.IsActionTriggered(ButtonAction.ACTION_SHOOTUP, controllerid) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
                 if player:GetData().arrowTimeUp > 0 then
                     player:GetData().arrowTimeDelay = totalFrameDelay
                     firePopTear(player, true)
@@ -991,7 +1002,7 @@ function WarpZone:postRender(player)
                 else
                     player:GetData().arrowTimeUp = 30
                 end
-            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTDOWN, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
+            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTDOWN, controllerid) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
                 if player:GetData().arrowTimeDown > 0 then
                     player:GetData().arrowTimeDelay = totalFrameDelay
                     firePopTear(player, true)
@@ -999,7 +1010,7 @@ function WarpZone:postRender(player)
                 else
                     player:GetData().arrowTimeDown = 30
                 end
-            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTLEFT, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
+            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTLEFT, controllerid) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
                 if player:GetData().arrowTimeLeft > 0 then
                     player:GetData().arrowTimeDelay = totalFrameDelay
                     firePopTear(player, true)
@@ -1007,7 +1018,7 @@ function WarpZone:postRender(player)
                 else
                     player:GetData().arrowTimeLeft = 30
                 end
-            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTRIGHT, 0) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
+            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTRIGHT, controllerid) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
                 if player:GetData().arrowTimeRight > 0 then
                     player:GetData().arrowTimeDelay = totalFrameDelay
                     firePopTear(player, true)
@@ -1026,6 +1037,29 @@ function WarpZone:postRender(player)
             player:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
             player:EvaluateItems()
         end
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_BOXING_GLOVE) then
+            --print(controllerid)
+            if Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, controllerid) then
+                player:GetData().arrowHoldUp = player:GetData().arrowHoldUp + 1
+            else
+                player:GetData().arrowHoldUp = 0
+            end
+            if Input.IsActionPressed(ButtonAction.ACTION_SHOOTDOWN, controllerid) then
+                player:GetData().arrowHoldDown = player:GetData().arrowHoldDown + 1
+            else
+                player:GetData().arrowHoldDown = 0
+            end
+            if Input.IsActionPressed(ButtonAction.ACTION_SHOOTLEFT, controllerid) then
+                player:GetData().arrowHoldLeft = player:GetData().arrowHoldLeft + 1
+            else
+                player:GetData().arrowHoldLeft = 0
+            end
+            if Input.IsActionPressed(ButtonAction.ACTION_SHOOTRIGHT, controllerid) then
+                player:GetData().arrowHoldRight = player:GetData().arrowHoldRight + 1
+            else
+                player:GetData().arrowHoldRight = 0
+            end
+        end
     end
 
 end
@@ -1043,6 +1077,17 @@ function WarpZone:UIOnRender(player, renderoffset)
             end
             ArrowHud:RenderLayer(0,  Isaac.WorldToScreen(player.Position)+renderedPosition + Vector((i-1) * 5, 0))
         end
+    end
+    local currentCharge = math.max(player:GetData().arrowHoldUp, player:GetData().arrowHoldDown, player:GetData().arrowHoldLeft, player:GetData().arrowHoldRight)
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_BOXING_GLOVE) and currentCharge > 0 and currentCharge <= 141 then
+        print("ayy")
+        local frameToSet = math.floor(math.min(currentCharge * (100/141), 100))
+        BoxHud:SetFrame("Charging", frameToSet)
+        BoxHud:Render(Isaac.WorldToScreen(player.Position)+renderedPosition)
+    elseif player:HasCollectible(CollectibleType.COLLECTIBLE_BOXING_GLOVE) and currentCharge > 141 then
+        local frameToSet = math.floor(((currentCharge-141))/2) % 6
+        BoxHud:SetFrame("Charged", frameToSet)
+        BoxHud:Render(Isaac.WorldToScreen(player.Position)+renderedPosition)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_RENDER, WarpZone.UIOnRender)
