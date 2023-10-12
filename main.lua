@@ -161,6 +161,10 @@ local ArrowHud = Sprite()
 ArrowHud:Load("gfx/bow_hud.anm2", true)
 local renderedPosition = Vector(25, -10)
 local tokenVariant = Isaac.GetEntityVariantByName("Tear_Token")
+local arrowTrail = {
+    col = Color(.7,.5,.5,0.6),
+    MinRadius = 0.21,
+}
 
 --emergency meeting
 local enemiesToMove = {}
@@ -2083,6 +2087,16 @@ function WarpZone:checkTear(entitytear)
     if player and player:HasCollectible(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) and player:GetData().numArrows > 0 then
         player:GetData().numArrows = player:GetData().numArrows - 1
         tear:GetData().BowArrowPiercing = 2
+        local spr = tear:GetSprite()
+        spr:Load("gfx/arrow tear.anm2", true)
+        spr:Play(spr:GetDefaultAnimation())
+
+        if not tear.Child then
+            tear.Child = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.SPRITE_TRAIL, 0, tear.Position, Vector(0,0), tear)
+            tear.Child.Color = arrowTrail.col
+            tear.Child:ToEffect().MinRadius = arrowTrail.MinRadius
+            tear.Child:ToEffect():FollowParent(tear)
+        end
     end
 
     if player and CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() and player:GetData().primeShot ~= nil then
@@ -2118,12 +2132,13 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_LASER_INIT, WarpZone.checkLaser)
 
 function WarpZone:updateTear(entitytear)
     local tear = entitytear:ToTear()
+    local data = tear:GetData()
     local focusshot = false
     local player = WarpZone:GetPlayerFromTear(tear)
-    if tear:GetData() then
-        focusshot = tear:GetData().FocusShot == true
+    if data then
+        focusshot = data.FocusShot == true
         if focusshot then
-            tear:GetData().FocusShot = false
+            data.FocusShot = false
             tear:AddTearFlags(TearFlags.TEAR_PIERCING)
             tear:AddTearFlags(TearFlags.TEAR_SPECTRAL)
             tear:AddTearFlags(TearFlags.TEAR_DARK_MATTER)
@@ -2140,20 +2155,29 @@ function WarpZone:updateTear(entitytear)
             tear:ResetSpriteScale()
         end
         
-        if tear:GetData().BowArrowPiercing == 2 then
-            tear:GetData().BowArrowPiercing = 1
+        if data.BowArrowPiercing == 2 then
+            data.BowArrowPiercing = 1
             tear:AddTearFlags(TearFlags.TEAR_PIERCING)
             tear.Velocity = tear.Velocity * Vector(1.5, 1.5)
             tear.Scale = tear.Scale * 1.45
             tear.CollisionDamage = tear.CollisionDamage * 1.5
+            tear:GetSprite().Rotation = Vector(tear.Velocity.X, tear.Velocity.Y + tear.FallingSpeed):GetAngleDegrees()
+            if tear.Child then
+                tear.Child:ToEffect().ParentOffset = tear.PositionOffset
+            end
+        elseif data.BowArrowPiercing == 1 then
+            tear:GetSprite().Rotation = Vector(tear.Velocity.X, tear.Velocity.Y + tear.FallingSpeed):GetAngleDegrees()
+            if tear.Child then
+                tear.Child:ToEffect().ParentOffset = tear.PositionOffset
+            end
         end
 
-        if tear:GetData().Is_Rusty == true then
-            tear:GetData().Is_Rusty = false
+        if data.Is_Rusty == true then
+            data.Is_Rusty = false
             tear:AddTearFlags(TearFlags.TEAR_HOMING)
             local sprite_tear = tear:GetSprite()
             sprite_tear.Color = rustColor
-        elseif tear:GetData().NightmareColor then
+        elseif data.NightmareColor then
             local sprite_tear = tear:GetSprite()
             sprite_tear.Color = tickColor
         end
@@ -2163,10 +2187,10 @@ function WarpZone:updateTear(entitytear)
         waterAmount = waterAmount + 0.3 * ((player:GetCollectibleNum(CollectibleType.COLLECTIBLE_WATER_FULL) * 3) + (player:GetCollectibleNum(CollectibleType.COLLECTIBLE_WATER_MID) * 2) + (player:GetCollectibleNum(CollectibleType.COLLECTIBLE_WATER_LOW) * 1))
     end
     if not focusshot then
-        if tear:GetData().resized == nil then
+        if data.resized == nil then
             tear.Scale = tear.Scale * waterAmount
             tear:ResetSpriteScale()
-            tear:GetData().resized = true
+            data.resized = true
         end
     end
 end
@@ -2181,14 +2205,18 @@ function WarpZone:dropArrow(entity)
                 player:GetData().numArrows = player:GetData().numArrows + 1
             end
         else
-            Isaac.Spawn(EntityType.ENTITY_PICKUP,
+            local arrow = Isaac.Spawn(EntityType.ENTITY_PICKUP,
                     tokenVariant,
                     1,
                     entity.Position,
                     entity.Velocity * 0.25,
                     nil)
-            end
+                arrow:GetSprite():SetFrame(23)
         end
+        if entity.Child then
+            entity.Child:Remove()
+        end
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, WarpZone.dropArrow)
 
