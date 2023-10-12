@@ -1,4 +1,5 @@
 --basic data
+local Vector = Vector
 local game = Game()
 local WarpZone  = RegisterMod("WarpZone", 1)
 local json = require("json")
