@@ -2160,8 +2160,8 @@ function WarpZone:updateTear(entitytear)
             data.BowArrowPiercing = 1
             tear:AddTearFlags(TearFlags.TEAR_PIERCING)
             tear.Velocity = tear.Velocity * Vector(1.5, 1.5)
-            tear.Scale = tear.Scale * 1.45
-            tear.CollisionDamage = tear.CollisionDamage * 1.5
+            tear.Scale = tear.Scale * 0.5
+            tear.CollisionDamage = tear.CollisionDamage * 2.5
             tear:GetSprite().Rotation = Vector(tear.Velocity.X, tear.Velocity.Y + tear.FallingSpeed):GetAngleDegrees()
             if tear.Child then
                 tear.Child:ToEffect().ParentOffset = tear.PositionOffset
