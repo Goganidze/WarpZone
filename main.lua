@@ -1052,8 +1052,7 @@ function WarpZone:postRender(player)
             player:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
             player:EvaluateItems()
         end
-        if player:HasCollectible(CollectibleType.COLLECTIBLE_BOXING_GLOVE) then
-            --print(controllerid)
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_BOXING_GLOVE) and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN_B then
             local maxThreshold = player:GetData().arrowHoldBox
             if Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, controllerid) or
             Input.IsActionPressed(ButtonAction.ACTION_SHOOTDOWN, controllerid) or
