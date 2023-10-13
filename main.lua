@@ -1142,13 +1142,19 @@ function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
             if knife:GetData().isGloveObj ~= nil then
                 --print((knife.Position-entity.Position):Length())
                 --print(knife.Size + entity.Size)
-                if (knife.Position-entity.Position):Length() <= knife.Size + entity.Size + 42 then
+                if (knife.Position-entity.Position):Length() <= knife.Size + entity.Size + 50 then
                     local player = getPlayerFromKnifeLaser(knife)
                     if player then
                         --entity.Mass = math.floor(entity.Mass * 0.5)
-                        entity:AddVelocity((knife.Position - player.Position) * Vector(5, 5))
-                        print(tostring(entity.Friction) .. " friction")
-                        print(tostring(entity.Mass) .. " mass")
+                        entity.Friction = 0.95
+                        entity.Mass = 5
+                        --entity:AddVelocity((knife.Position - player.Position) * Vector(5, 5))
+                        --print()
+                        local dir = player:GetLastDirection()
+                        entity:AddVelocity(dir * 40)
+                        --print(tostring(knife.Position - player.Position) .. "velocitymult")
+                        --print(tostring(entity.Mass) .. " mass")
+                        return false
                     end
                 end
             end
@@ -2502,6 +2508,8 @@ end)
 function WarpZone:OnKnifeUpdate(knife)
     if knife:GetData().isGloveObj == 2 then
         knife:GetSprite().Color = Color(1, 0, 0, 1, 0, 0, 0)
+        knife.Scale = knife.Scale * 1.5
+        knife:GetSprite().Scale = knife:GetSprite().Scale * 1.5
         knife:GetData().isGloveObj = 1
     end
 end
