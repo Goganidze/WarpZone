@@ -39,10 +39,7 @@ defaultData.bonusFireDelay = 0
 defaultData.bonusRange = 0
 defaultData.bonusLuck = 0
 defaultData.inDemonForm = nil
-defaultData.arrowHoldUp = 0
-defaultData.arrowHoldDown = 0
-defaultData.arrowHoldLeft = 0
-defaultData.arrowHoldRight = 0
+defaultData.arrowHoldBox = 0
 
 
 local numPlayersG = Game():GetNumPlayers()
@@ -186,6 +183,7 @@ local preservedItems = nil
 local chargebarFrames = 235
 local BoxHud = Sprite()
 BoxHud:Load("gfx/chargebar_glove.anm2", true)
+local framesToCharge = 141
 
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
@@ -366,6 +364,18 @@ local function isNil(value, replacement)
         return replacement
     else
         return value
+    end
+end
+
+local function getDirectionFromVector(vector)
+    if vector.X == 0 and vector.Y == 1 then
+        return Direction.DOWN
+    elseif vector.X == 0 and vector.Y == -1 then
+        return Direction.UP
+    elseif vector.X == 1 and vector.Y == 0 then
+        return Direction.RIGHT
+    elseif vector.X == -1 and vector.Y == 0 then
+        return Direction.LEFT
     end
 end
 
@@ -1047,27 +1057,19 @@ function WarpZone:postRender(player)
             player:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
             player:EvaluateItems()
         end
-        if player:HasCollectible(CollectibleType.COLLECTIBLE_BOXING_GLOVE) then
-            --print(controllerid)
-            if Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, controllerid) then
-                player:GetData().arrowHoldUp = player:GetData().arrowHoldUp + 1
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_BOXING_GLOVE) and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN_B then
+            local maxThreshold = player:GetData().arrowHoldBox
+            if Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, controllerid) or
+            Input.IsActionPressed(ButtonAction.ACTION_SHOOTDOWN, controllerid) or
+            Input.IsActionPressed(ButtonAction.ACTION_SHOOTLEFT, controllerid) or
+            Input.IsActionPressed(ButtonAction.ACTION_SHOOTRIGHT, controllerid) then
+                player:GetData().arrowHoldBox = player:GetData().arrowHoldBox + 1
             else
-                player:GetData().arrowHoldUp = 0
+                player:GetData().arrowHoldBox = 0
             end
-            if Input.IsActionPressed(ButtonAction.ACTION_SHOOTDOWN, controllerid) then
-                player:GetData().arrowHoldDown = player:GetData().arrowHoldDown + 1
-            else
-                player:GetData().arrowHoldDown = 0
-            end
-            if Input.IsActionPressed(ButtonAction.ACTION_SHOOTLEFT, controllerid) then
-                player:GetData().arrowHoldLeft = player:GetData().arrowHoldLeft + 1
-            else
-                player:GetData().arrowHoldLeft = 0
-            end
-            if Input.IsActionPressed(ButtonAction.ACTION_SHOOTRIGHT, controllerid) then
-                player:GetData().arrowHoldRight = player:GetData().arrowHoldRight + 1
-            else
-                player:GetData().arrowHoldRight = 0
+            
+            if maxThreshold > framesToCharge and player:GetData().arrowHoldBox == 0 then
+                player:GetData().fireGlove = true
             end
         end
     end
@@ -1088,14 +1090,13 @@ function WarpZone:UIOnRender(player, renderoffset)
             ArrowHud:RenderLayer(0,  Isaac.WorldToScreen(player.Position)+renderedPosition + Vector((i-1) * 5, 0))
         end
     end
-    local currentCharge = math.max(player:GetData().arrowHoldUp, player:GetData().arrowHoldDown, player:GetData().arrowHoldLeft, player:GetData().arrowHoldRight)
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_BOXING_GLOVE) and currentCharge > 0 and currentCharge <= 141 then
-        print("ayy")
-        local frameToSet = math.floor(math.min(currentCharge * (100/141), 100))
+    local currentCharge = player:GetData().arrowHoldBox
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_BOXING_GLOVE) and currentCharge > 0 and currentCharge <= framesToCharge then
+        local frameToSet = math.floor(math.min(currentCharge * (100/framesToCharge), 100))
         BoxHud:SetFrame("Charging", frameToSet)
         BoxHud:Render(Isaac.WorldToScreen(player.Position)+renderedPosition)
-    elseif player:HasCollectible(CollectibleType.COLLECTIBLE_BOXING_GLOVE) and currentCharge > 141 then
-        local frameToSet = math.floor(((currentCharge-141))/2) % 6
+    elseif player:HasCollectible(CollectibleType.COLLECTIBLE_BOXING_GLOVE) and currentCharge > framesToCharge then
+        local frameToSet = math.floor(((currentCharge-framesToCharge))/2) % 6
         BoxHud:SetFrame("Charged", frameToSet)
         BoxHud:Render(Isaac.WorldToScreen(player.Position)+renderedPosition)
     end
@@ -1109,7 +1110,6 @@ function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
         for i=0, numPlayers-1, 1 do
             local player =  Isaac.GetPlayer(i)
             local source_entity = source.Entity
-
             if source_entity and source_entity:GetData() and source_entity:GetData().FocusIndicator == nil and
                 (CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() or
                 CollectibleType.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
@@ -1136,6 +1136,25 @@ function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
                     SfxManager:Play(SoundEffect.SOUND_BATTERYCHARGE)
                 else
                     player:SetActiveCharge(newCharge)
+                end
+            end
+        end
+        
+        local knives = Isaac.FindByType(EntityType.ENTITY_KNIFE)
+        
+        for i, knife in ipairs(knives) do
+            if knife:GetData().isGloveObj ~= nil then
+                if (knife.Position-entity.Position):Length() <= knife.Size + entity.Size + 50 then
+                    local player = getPlayerFromKnifeLaser(knife)
+                    if player then
+                        entity.Friction = 0.55
+                        entity.Mass = 5
+                        local dir = player:GetLastDirection()
+                        entity:AddVelocity(dir * 40)
+                        entity:AddConfusion(EntityRef(knife), 90, true)
+                        SfxManager:Play(SoundEffect.SOUND_PUNCH)
+                        --return false
+                    end
                 end
             end
         end
@@ -1993,6 +2012,10 @@ WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, WarpZone.EvaluateCache)
 function WarpZone:postPlayerUpdate(player)
     local data = player:GetData()
 
+    if data.fireGlove == true then
+        WarpZone:fireGlove(player)
+        player:GetData().fireGlove = nil
+    end
     if(data.breakCap==false) then
         player.MoveSpeed = math.min(player.MoveSpeed+player:GetCollectibleNum(CollectibleType.COLLECTIBLE_HITOPS)*0.2, 3)
         data.breakCap = nil
@@ -2175,8 +2198,8 @@ function WarpZone:updateTear(entitytear)
             data.BowArrowPiercing = 1
             tear:AddTearFlags(TearFlags.TEAR_PIERCING)
             tear.Velocity = tear.Velocity * Vector(1.5, 1.5)
-            tear.Scale = tear.Scale * 1.45
-            tear.CollisionDamage = tear.CollisionDamage * 1.5
+            tear.Scale = tear.Scale * 0.5
+            tear.CollisionDamage = tear.CollisionDamage * 2.5
             tear:GetSprite().Rotation = Vector(tear.Velocity.X, tear.Velocity.Y + tear.FallingSpeed):GetAngleDegrees()
             if tear.Child then
                 tear.Child:ToEffect().ParentOffset = tear.PositionOffset
@@ -2425,7 +2448,7 @@ function WarpZone:scheduleForUpdate(foo, delay, callback)
     table.insert(WarpZone.delayedFuncs[callback], { Func = foo, Delay = delay })
 end
 
-function WarpZone:FireClub(player, direction)
+function WarpZone:FireClub(player, direction, usingGlove)
 	if not player:GetEffects():HasCollectibleEffect(CollectibleType.COLLECTIBLE_BERSERK) and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN_B then
 		player:UseActiveItem(CollectibleType.COLLECTIBLE_NOTCHED_AXE)
 		WarpZone:scheduleForUpdate(function()
@@ -2439,6 +2462,7 @@ function WarpZone:FireClub(player, direction)
 	end
 	player:SetShootingCooldown(0)
 	WarpZone.scanforclub = true
+    WarpZone.isGlove = usingGlove
 end
 
 WarpZone.directiontoshootdirection = {
@@ -2476,6 +2500,10 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_KNIFE_INIT, function(_, knife)
 					player:GetData().InputHook = nil
 					knife.Variant = 1 --Setting the variant to 1 (bone club) prevents it from breaking rocks
                     --knife.Scale = knife.Scale * 2
+                    if WarpZone.isGlove == true then
+                        knife:GetData().isGloveObj = 2
+                        WarpZone.isGlove = false
+                    end
 				end
 			elseif player and player:GetData().GrabbedClub and player:GetData().GrabbedClub:Exists() then
 				knife.Variant = 1
@@ -2486,6 +2514,16 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_KNIFE_INIT, function(_, knife)
 	end
 end)
 
+function WarpZone:OnKnifeUpdate(knife)
+    if knife:GetData().isGloveObj == 2 then
+        knife:GetSprite().Color = Color(1, 0, 0, 1, 0, 0, 0)
+        knife.Scale = knife.Scale * 1.5
+        knife:GetSprite().Scale = knife:GetSprite().Scale * 1.5
+        knife:GetData().isGloveObj = 1
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_KNIFE_UPDATE, WarpZone.OnKnifeUpdate)
+
 WarpZone:AddCallback(ModCallbacks.MC_POST_FIRE_TEAR, function(_, tear)
 	local player = WarpZone:GetPlayerFromTear(tear)
     
@@ -2493,7 +2531,7 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_FIRE_TEAR, function(_, tear)
         if player:HasCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE) then
             player:GetData().dioDamageOn = true
             tear:Remove()
-            WarpZone:FireClub(player, player:GetFireDirection())
+            WarpZone:FireClub(player, player:GetFireDirection(), false)
         else
             player:GetData().dioDamageOn = false
         end
@@ -2501,9 +2539,6 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_FIRE_TEAR, function(_, tear)
         player:EvaluateItems()
     end
 end)
-
-
-
 
 local function init_lollipop(_, orbital)
 	orbital.OrbitDistance = Lollipop.ORBIT_DISTANCE
@@ -3330,9 +3365,6 @@ function WarpZone:UseFiendFire(card, player, useflags)
     local fireRng = RNG()
     fireRng:SetSeed(Random(), 1)
     for i, entity in ipairs(entities) do
-        if entity.Type == EntityType.ENTITY_PICKUP then
-            print(entity.Variant)
-        end
         if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant <= 90 or
         entity.Variant == PickupVariant.PICKUP_REDCHEST
         or entity.Variant == PickupVariant.PICKUP_TRINKET
@@ -3433,9 +3465,6 @@ function WarpZone:UseAmberChunk(card, player, useflags)
         preservedItems[next(preservedItems)]=nil
     end
     for i, entity in ipairs(entities) do --this shouldn't actually work but it seems to work anyway. i'm not gonna touch it
-        if entity.Type == EntityType.ENTITY_PICKUP then
-            print(entity.Variant)
-        end
         if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant <= 90 or
         entity.Variant == PickupVariant.PICKUP_REDCHEST
         or entity.Variant == PickupVariant.PICKUP_TRINKET
@@ -3461,7 +3490,12 @@ function WarpZone:UseAmberChunk(card, player, useflags)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseAmberChunk, Card.CARD_AMBER_CHUNK)
 
-
+function WarpZone:fireGlove(player)
+    --print(player:GetLastDirection().X .. " " .. player:GetLastDirection().Y .. " aiming")
+    local punchDestination = player.Position + (player:GetLastDirection() * 20)
+    
+    WarpZone:FireClub(player, getDirectionFromVector(player:GetLastDirection()), true)
+end
 
 --extra files and translation
 local ItemTranslate = include("lua.ItemTranslate")
