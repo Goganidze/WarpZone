@@ -4,7 +4,7 @@
     <costume id = "4" anm2path = "rustyspoons.anm2" type = "passive" skinColor = "4" />
     <costume id = "12" anm2path = "strangemarble.anm2" type = "passive" />
     <costume id = "14" anm2path = "NightmareTickCostume.anm2" type = "passive" hasSkinAlt = "true"/>
-    <costume id = "5" anm2path = "NewgroundsTank.anm2" type = "passive" hasSkinAlt = "true"/>
+    <costume id = "5" anm2path = "NewgroundsTank.anm2" type = "passive" hasSkinAlt = "false"/>
     <costume id = "29" anm2path = "costume_poppop.anm2" type = "passive"/>
     <costume id = "28" anm2path = "hitops.anm2" type = "passive"/>
 </costumes>
