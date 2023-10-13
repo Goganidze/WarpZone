@@ -1140,21 +1140,16 @@ function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
         
         for i, knife in ipairs(knives) do
             if knife:GetData().isGloveObj ~= nil then
-                --print((knife.Position-entity.Position):Length())
-                --print(knife.Size + entity.Size)
                 if (knife.Position-entity.Position):Length() <= knife.Size + entity.Size + 50 then
                     local player = getPlayerFromKnifeLaser(knife)
                     if player then
-                        --entity.Mass = math.floor(entity.Mass * 0.5)
-                        entity.Friction = 0.95
+                        entity.Friction = 0.55
                         entity.Mass = 5
-                        --entity:AddVelocity((knife.Position - player.Position) * Vector(5, 5))
-                        --print()
                         local dir = player:GetLastDirection()
                         entity:AddVelocity(dir * 40)
-                        --print(tostring(knife.Position - player.Position) .. "velocitymult")
-                        --print(tostring(entity.Mass) .. " mass")
-                        return false
+                        entity:AddConfusion(EntityRef(knife), 90, true)
+                        SfxManager:Play(SoundEffect.SOUND_PUNCH)
+                        --return false
                     end
                 end
             end
