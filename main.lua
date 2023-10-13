@@ -1,7 +1,8 @@
 --basic data
 local Vector = Vector
 local game = Game()
-local WarpZone  = RegisterMod("WarpZone", 1)
+WarpZone = RegisterMod("WarpZone", 1)
+local WarpZone = WarpZone
 local json = require("json")
 local myRNG = RNG()
 myRNG:SetSeed(Random(), 1)
@@ -125,6 +126,10 @@ local KEEPER_BONUS = 0.5
 local totalFrameDelay = 200
 
 --football
+WarpZone.FOOTBALL = { 
+    FAM = { ID = Isaac.GetEntityTypeByName("WZ football ball"), VAR = Isaac.GetEntityVariantByName("WZ football ball") } ,
+    ITEM = Isaac.GetItemIdByName("Football"),
+}
 local effBlank = Isaac.GetEntityVariantByName("Blank_Effect")
 
 --tumors
@@ -2003,7 +2008,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
 end
 WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, WarpZone.EvaluateCache)
 
-
+---@param player EntityPlayer
 function WarpZone:postPlayerUpdate(player)
     local data = player:GetData()
 
@@ -2085,6 +2090,16 @@ function WarpZone:postPlayerUpdate(player)
             firePopTear(player, false)
         end
         player:GetData().arrowTimeThreeFrames = player:GetData().arrowTimeThreeFrames-1
+    end
+
+    data.WarpZone_data = data.WarpZone_data or {}
+
+    if data.WarpZone_data.IsHoldindEntity and not data.WarpZone_data.HoldEntity then
+        data.WarpZone_data.IsHoldindEntity = nil
+        player:PlayExtraAnimation("HideItem")
+    end
+    if data.WarpZone_data.HoldEntityLogic and type(data.WarpZone_data.HoldEntityLogic) == "function" then
+        data.WarpZone_data.HoldEntityLogic(player)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpdate, 0)
@@ -2336,7 +2351,7 @@ function WarpZone:OnFrame(player)
                     player:AnimateCollectible(CollectibleType.COLLECTIBLE_IS_YOU, "HideItem", "Empty")
                 end
         end
-        if player:HasCollectible(CollectibleType.COLLECTIBLE_FOOTBALL) and not player:GetData().ballCheck and room:GetFrameCount() > 0 then
+        --[[if player:HasCollectible(CollectibleType.COLLECTIBLE_FOOTBALL) and not player:GetData().ballCheck and room:GetFrameCount() > 0 then
             local numberBalls = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_FOOTBALL)
             local numberCubes = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_CUBE_BABY)
             local entities = Isaac.GetRoomEntities()
@@ -2365,7 +2380,7 @@ function WarpZone:OnFrame(player)
                 end
             end
             player:GetData().ballCheck = true
-        end
+        end]]
 
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, WarpZone.OnFrame)
@@ -2586,7 +2601,8 @@ end
 
 WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, pre_orbital_collision, Lollipop.VARIANT)
 
-
+---@param player EntityPlayer
+---@param cache_flag integer
 local function update_cache(_, player, cache_flag)
 	if cache_flag == CacheFlag.CACHE_FAMILIARS then
 		local pop_pickups = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_LOLLIPOP)
@@ -2622,8 +2638,9 @@ local function update_cache(_, player, cache_flag)
             player:CheckFamiliar(SmallTumor.VARIANT, smalltumors, myRNG3)
         end
 
-        local ball_pickups = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_FOOTBALL)
-        respawnBalls(ball_pickups, player)
+        local ball_pickups = player:GetCollectibleNum(WarpZone.FOOTBALL.ITEM) --CollectibleType.COLLECTIBLE_FOOTBALL
+        player:CheckFamiliar(WarpZone.FOOTBALL.FAM.VAR, ball_pickups, player:GetCollectibleRNG(WarpZone.FOOTBALL.ITEM))
+        --respawnBalls(ball_pickups, player)
     end
 end
 
@@ -3480,3 +3497,15 @@ function WarpZone:fireGlove(player)
     WarpZone:FireClub(player, getDirectionFromVector(player:GetLastDirection()), true)
 end
 
+--extra files and translation
+local ItemTranslate = include("lua.ItemTranslate")
+ItemTranslate("WarpZone")
+
+local extrafiles = {
+    "lua.ru",
+    "lua.football"
+}
+for i=1,#extrafiles do
+    local module = include(extrafiles[i])
+    module(WarpZone)
+end
