@@ -38,10 +38,7 @@ defaultData.bonusFireDelay = 0
 defaultData.bonusRange = 0
 defaultData.bonusLuck = 0
 defaultData.inDemonForm = nil
-defaultData.arrowHoldUp = 0
-defaultData.arrowHoldDown = 0
-defaultData.arrowHoldLeft = 0
-defaultData.arrowHoldRight = 0
+defaultData.arrowHoldBox = 0
 
 
 local numPlayersG = Game():GetNumPlayers()
@@ -1057,33 +1054,17 @@ function WarpZone:postRender(player)
         end
         if player:HasCollectible(CollectibleType.COLLECTIBLE_BOXING_GLOVE) then
             --print(controllerid)
-            local maxThreshold = math.max(player:GetData().arrowHoldUp, player:GetData().arrowHoldDown, player:GetData().arrowHoldLeft, player:GetData().arrowHoldRight)
-            if Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, controllerid) then
-                player:GetData().arrowHoldUp = player:GetData().arrowHoldUp + 1
+            local maxThreshold = player:GetData().arrowHoldBox
+            if Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, controllerid) or
+            Input.IsActionPressed(ButtonAction.ACTION_SHOOTDOWN, controllerid) or
+            Input.IsActionPressed(ButtonAction.ACTION_SHOOTLEFT, controllerid) or
+            Input.IsActionPressed(ButtonAction.ACTION_SHOOTRIGHT, controllerid) then
+                player:GetData().arrowHoldBox = player:GetData().arrowHoldBox + 1
             else
-                player:GetData().arrowHoldUp = 0
+                player:GetData().arrowHoldBox = 0
             end
-            if Input.IsActionPressed(ButtonAction.ACTION_SHOOTDOWN, controllerid) then
-                player:GetData().arrowHoldDown = player:GetData().arrowHoldDown + 1
-            else
-                player:GetData().arrowHoldDown = 0
-            end
-            if Input.IsActionPressed(ButtonAction.ACTION_SHOOTLEFT, controllerid) then
-                player:GetData().arrowHoldLeft = player:GetData().arrowHoldLeft + 1
-            else
-                player:GetData().arrowHoldLeft = 0
-            end
-            if Input.IsActionPressed(ButtonAction.ACTION_SHOOTRIGHT, controllerid) then
-                player:GetData().arrowHoldRight = player:GetData().arrowHoldRight + 1
-            else
-                player:GetData().arrowHoldRight = 0
-            end
-            local newMaxThreshold = math.max(player:GetData().arrowHoldUp, player:GetData().arrowHoldDown, player:GetData().arrowHoldLeft, player:GetData().arrowHoldRight)
-            if maxThreshold > newMaxThreshold and maxThreshold > framesToCharge then
-                player:GetData().arrowHoldRight = 0
-                player:GetData().arrowHoldDown = 0
-                player:GetData().arrowHoldLeft = 0
-                player:GetData().arrowHoldUp = 0
+            
+            if maxThreshold > framesToCharge and player:GetData().arrowHoldBox == 0 then
                 player:GetData().fireGlove = true
             end
         end
@@ -1105,7 +1086,7 @@ function WarpZone:UIOnRender(player, renderoffset)
             ArrowHud:RenderLayer(0,  Isaac.WorldToScreen(player.Position)+renderedPosition + Vector((i-1) * 5, 0))
         end
     end
-    local currentCharge = math.max(player:GetData().arrowHoldUp, player:GetData().arrowHoldDown, player:GetData().arrowHoldLeft, player:GetData().arrowHoldRight)
+    local currentCharge = player:GetData().arrowHoldBox
     if player:HasCollectible(CollectibleType.COLLECTIBLE_BOXING_GLOVE) and currentCharge > 0 and currentCharge <= framesToCharge then
         local frameToSet = math.floor(math.min(currentCharge * (100/framesToCharge), 100))
         BoxHud:SetFrame("Charging", frameToSet)
@@ -1164,7 +1145,7 @@ function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
                 if (knife.Position-entity.Position):Length() <= knife.Size + entity.Size + 42 then
                     local player = getPlayerFromKnifeLaser(knife)
                     if player then
-                        entity.Mass = math.floor(entity.Mass * 0.5)
+                        --entity.Mass = math.floor(entity.Mass * 0.5)
                         entity:AddVelocity((knife.Position - player.Position) * Vector(5, 5))
                         print(tostring(entity.Friction) .. " friction")
                         print(tostring(entity.Mass) .. " mass")
