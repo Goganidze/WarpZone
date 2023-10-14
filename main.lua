@@ -2240,7 +2240,7 @@ function WarpZone:dropArrow(entity)
     if entity:GetData().BowArrowPiercing and entity:GetData().BowArrowPiercing > 0 then
         if game:GetRoom():GetFrameCount() == 0 then
             local player = entity.SpawnerEntity
-            if player:ToPlayer() ~= nil then
+            if player and player:ToPlayer() ~= nil then
                 player:GetData().numArrows = player:GetData().numArrows + 1
             end
         else
@@ -3503,7 +3503,7 @@ ItemTranslate("WarpZone")
 
 local extrafiles = {
     "lua.ru",
-    "lua.football"
+    "lua.football",
 }
 for i=1,#extrafiles do
     local module = include(extrafiles[i])
