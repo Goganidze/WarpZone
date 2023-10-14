@@ -224,6 +224,7 @@ WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW = Isaac.GetItemIdByName("Bow an
 WarpZone.WarpZoneTypes.COLLECTIBLE_TEST_ACTIVE = Isaac.GetItemIdByName("Test Active")
 WarpZone.WarpZoneTypes.COLLECTIBLE_EMERGENCY_MEETING = Isaac.GetItemIdByName("Emergency Meeting")
 WarpZone.WarpZoneTypes.COLLECTIBLE_BOXING_GLOVE = Isaac.GetItemIdByName("Boxing Glove")
+WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY = Isaac.GetItemIdByName("Gravity")
 
 
 WarpZone.WarpZoneTypes.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
@@ -1177,6 +1178,10 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
         return false
     end
 
+    if Game():GetFrameCount() - isNil(player:GetData().InGravityState, -999) < 150 then
+        return false
+    end
+
     if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POSSESSION) then
         local entities = Isaac.GetRoomEntities()
         numPossessed = 0
@@ -1988,6 +1993,15 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
             entityplayer.TearRange = entityplayer.TearRange + (entityplayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_GEORGE) * 96)
         end
         entityplayer.TearRange = entityplayer.TearRange + isNil(entityplayer:GetData().bonusRange, 0)
+        if Game():GetFrameCount() - isNil(entityplayer:GetData().InGravityState, -999) < 150 then
+            entityplayer.TearRange = entityplayer.TearRange + 250
+        end
+    end
+
+    if Cache == CacheFlag.CACHE_FLYING then
+        if Game():GetFrameCount() - isNil(entityplayer:GetData().InGravityState, -999) < 150 then
+            entityplayer.CanFly = true
+        end
     end
 
     if Cache == CacheFlag.CACHE_LUCK then
@@ -2032,6 +2046,26 @@ function WarpZone:postPlayerUpdate(player)
         player:GetSprite().Color = Color(1, 1, 1, 1, 0, 0, 0)
         player:GetEffects():RemoveCollectibleEffect(WarpZone.WarpZoneTypes.COLLECTIBLE_LEO, 1)
     end
+
+    if Game():GetFrameCount() - isNil(player:GetData().InGravityState, -999) == 8 then
+        player:GetSprite().Color = Color(1, 1, 1, 0, 1, 1, 1)
+        player:GetSprite():LoadGraphics()
+    end
+
+    if isNil(player:GetData().InGravityState, -999) > 0 and (Game():GetFrameCount() - isNil(player:GetData().InGravityState, -999) >= 150) then
+        player:PlayExtraAnimation("TeleportDown")
+        player:GetSprite().Color = Color(1, 1, 1, 1, 0, 0, 0)
+        player:GetData().InGravityState = -1
+        player:AddCacheFlags(CacheFlag.CACHE_RANGE)
+        player:AddCacheFlags(CacheFlag.CACHE_FLYING)
+        player:EvaluateItems()
+    end
+
+    --if Input.IsActionTriggered(ButtonAction.ACTION_ITEM, player.ControllerIndex) == true and 
+    --player:GetActiveItem() == WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY
+    --and isNil(player:GetData().InGravityState, -999) < 0 then
+    --    player:UseActiveItem(CollectibleType.COLLECTIBLE_HOW_TO_JUMP)
+    --end
 
     if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) == true or player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) == true  then
         
@@ -2166,6 +2200,15 @@ function WarpZone:checkTear(entitytear)
         tear:GetData().FocusShot = true
         tear:GetData().FocusIndicator = true
     end
+
+    if player:GetData().InGravityState > 0 then
+        tear:GetData().TearGravityState = true
+        tear.Position = Vector(player.Position.X, 3)
+        if math.abs(tear.Velocity.X) > math.abs(tear.Velocity.Y) then
+            tear.Velocity = Vector(math.abs(tear.Velocity.Y), tear.Velocity.X)
+        end
+        tear.Velocity = Vector(tear.Velocity.X, (math.abs(tear.Velocity.Y)* 1.25))
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_INIT, WarpZone.checkTear)
 
@@ -2241,6 +2284,10 @@ function WarpZone:updateTear(entitytear)
         elseif data.NightmareColor then
             local sprite_tear = tear:GetSprite()
             sprite_tear.Color = tickColor
+        end
+        
+        if data.TearGravityState == true then
+            tear:AddTearFlags(TearFlags.TEAR_SPECTRAL)
         end
     end
     local waterAmount = 1
@@ -3318,11 +3365,16 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseEmergencyMeeting, War
 
 
 function WarpZone:OnPlayerCollide(player, collider)
+    if Game():GetFrameCount() - isNil(player:GetData().InGravityState, -999) < 150 then
+        return true
+    end
     if collider:IsActiveEnemy() and Game():GetFrameCount() - isNil(player:GetData().MurderFrame, -999) < 15 then
         collider:Die()
         SfxManager:Play(SoundEffect.SOUND_DEATH_BURST_LARGE, 2)
         return true
     end
+
+    
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_PLAYER_COLLISION, WarpZone.OnPlayerCollide)
 
@@ -3528,6 +3580,19 @@ function WarpZone:fireGlove(player)
     
     WarpZone:FireClub(player, getDirectionFromVector(player:GetLastDirection()), true)
 end
+
+function WarpZone:useGravity(collectible, rng, player, useflags, activeslot, customvardata)
+    --player:AnimateLightTravel()
+    player:PlayExtraAnimation("TeleportUp")
+    
+    player:GetData().InGravityState = Game():GetFrameCount()
+    player:AddCacheFlags(CacheFlag.CACHE_RANGE)
+    player:AddCacheFlags(CacheFlag.CACHE_FLYING)
+    player:EvaluateItems()
+    
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.useGravity, WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY)
+
 
 --extra files and translation
 local ItemTranslate = include("lua.ItemTranslate")
