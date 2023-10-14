@@ -230,22 +230,22 @@ WarpZone.WarpZoneTypes.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of th
 WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS = Isaac.GetTrinketIdByName("Hunky Boys")
 WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP = Isaac.GetTrinketIdByName("Bible Thump")
 
-Card.CARD_COW_TRASH_FARM = Isaac.GetCardIdByName("CowOnTrash")
-Card.CARD_LOOT_CARD = Isaac.GetCardIdByName("LootCard")
-Card.CARD_BLANK = Isaac.GetCardIdByName("Blank")
-Card.CARD_BLANK_2 = Isaac.GetCardIdByName("Blank2")
-Card.CARD_BLANK_3 = Isaac.GetCardIdByName("Blank3")
-Card.CARD_JESTER_CUBE = Isaac.GetCardIdByName("JesterCube")
-Card.CARD_WITCH_CUBE = Isaac.GetCardIdByName("WitchCube")
-Card.CARD_MURDER = Isaac.GetCardIdByName("MurderCard")
-Card.CARD_AMBER_CHUNK = Isaac.GetCardIdByName("AmberChunk")
-Card.CARD_DEMON_FORM = Isaac.GetCardIdByName("DemonForm")
-Card.CARD_FIEND_FIRE = Isaac.GetCardIdByName("FiendFire")
+WarpZone.WarpZoneTypes.CARD_COW_TRASH_FARM = Isaac.GetCardIdByName("CowOnTrash")
+WarpZone.WarpZoneTypes.CARD_LOOT_CARD = Isaac.GetCardIdByName("LootCard")
+WarpZone.WarpZoneTypes.CARD_BLANK = Isaac.GetCardIdByName("Blank")
+WarpZone.WarpZoneTypes.CARD_BLANK_2 = Isaac.GetCardIdByName("Blank2")
+WarpZone.WarpZoneTypes.CARD_BLANK_3 = Isaac.GetCardIdByName("Blank3")
+WarpZone.WarpZoneTypes.CARD_JESTER_CUBE = Isaac.GetCardIdByName("JesterCube")
+WarpZone.WarpZoneTypes.CARD_WITCH_CUBE = Isaac.GetCardIdByName("WitchCube")
+WarpZone.WarpZoneTypes.CARD_MURDER = Isaac.GetCardIdByName("MurderCard")
+WarpZone.WarpZoneTypes.CARD_AMBER_CHUNK = Isaac.GetCardIdByName("AmberChunk")
+WarpZone.WarpZoneTypes.CARD_DEMON_FORM = Isaac.GetCardIdByName("DemonForm")
+WarpZone.WarpZoneTypes.CARD_FIEND_FIRE = Isaac.GetCardIdByName("FiendFire")
 
 
-SoundEffect.SOUND_POP_POP = Isaac.GetSoundIdByName("PopPop_sound")
-SoundEffect.SOUND_COW_TRASH = Isaac.GetSoundIdByName("TrashFarm")
-SoundEffect.SOUND_EMERGENCY_MEETING = Isaac.GetSoundIdByName("EmergencyMeetingSound")
+WarpZone.WarpZoneTypes.SOUND_POP_POP = Isaac.GetSoundIdByName("PopPop_sound")
+WarpZone.WarpZoneTypes.SOUND_COW_TRASH = Isaac.GetSoundIdByName("TrashFarm")
+WarpZone.WarpZoneTypes.SOUND_EMERGENCY_MEETING = Isaac.GetSoundIdByName("EmergencyMeetingSound")
 
 
 --external item descriptions
@@ -291,52 +291,52 @@ if EID then
     EID:addTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS, "While held, pressing the Drop Trinket button immediately drops this trinket; you don't need to hold the button#When on the ground, enemies will target the trinket for a short time.", "Hunky Boys", "en_us")
     EID:addTrinket(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP, "Once you exit a room with this trinket, The Bible is added to several item pools.#Using The Bible or The Devil? card with this item will deal 40 damage to all enemies in the room, in addition to granting flight.#Using The Bible on Satan will kill him, and you will survive#The golden version of this trinket kills The Lamb as well.", "Bible Thump", "en_us")
 
-    EID:addCard(Card.CARD_COW_TRASH_FARM, "Rerolls all items into fly themed items#Rerolls pickups into blue flies#Does not actually become back your money", "Cow on a Trash Farm", "en_us")
-    EID:addCard(Card.CARD_LOOT_CARD, "Randomly spawns a random item or trinket from any pool", "Loot Card", "en_us")
-    EID:addCard(Card.CARD_BLANK, "Clears all enemy projectiles in the room.#Pushes nearby enemies away#There is one use left", "Blank", "en_us")
-    EID:addCard(Card.CARD_BLANK_2, "Clears all enemy projectiles in the room.#Pushes nearby enemies away#There are two uses left", "Blank", "en_us")
-    EID:addCard(Card.CARD_BLANK_3, "Clears all enemy projectiles in the room.#Pushes nearby enemies away#You can use this 3 times before it disappears", "Blank", "en_us")
-    EID:addCard(Card.CARD_JESTER_CUBE, "On use, all items in the room will cycle between 6 additional choices, similar to Glitched Crown", "Jester", "en_us")
-    EID:addCard(Card.CARD_WITCH_CUBE, "50% chance to deal 40 damage to all enemies in the room and apply burn.#50% chance to spawn another Witch card and fire off a poison fart", "Witch", "en_us")
-    EID:addCard(Card.CARD_MURDER, "For a quarter second, increase speed to 4 and kill everything you touch.#Gain a Stompy effect for the room", "Murder!", "en_us")
-    EID:addCard(Card.CARD_AMBER_CHUNK, "All pickups in the room, including items and the final chest at the end of the game, will be removed and saved.#The previous items you consumed in this way will respawn, even across games#You will also receive a lucky penny", "Chunk of Amber", "en_us")
-    EID:addCard(Card.CARD_FIEND_FIRE, "All pickups in the room are consumed#For each pickup consumed, gain a small, permanent boost to Damage, Tears, Luck, Range, or Speed#Pickups turn into fires, which can damage enemies.", "Fiend Fire", "en_us")
-    EID:addCard(Card.CARD_DEMON_FORM, "For the current room, Isaac becomes Azazel#+1 Damage#If you already have a brimstone laser, it will be widened from the current room", "Demon Form", "en_us")
+    EID:addCard(WarpZone.WarpZoneTypes.CARD_COW_TRASH_FARM, "Rerolls all items into fly themed items#Rerolls pickups into blue flies#Does not actually become back your money", "Cow on a Trash Farm", "en_us")
+    EID:addCard(WarpZone.WarpZoneTypes.CARD_LOOT_CARD, "Randomly spawns a random item or trinket from any pool", "Loot Card", "en_us")
+    EID:addCard(WarpZone.WarpZoneTypes.CARD_BLANK, "Clears all enemy projectiles in the room.#Pushes nearby enemies away#There is one use left", "Blank", "en_us")
+    EID:addCard(WarpZone.WarpZoneTypes.CARD_BLANK_2, "Clears all enemy projectiles in the room.#Pushes nearby enemies away#There are two uses left", "Blank", "en_us")
+    EID:addCard(WarpZone.WarpZoneTypes.CARD_BLANK_3, "Clears all enemy projectiles in the room.#Pushes nearby enemies away#You can use this 3 times before it disappears", "Blank", "en_us")
+    EID:addCard(WarpZone.WarpZoneTypes.CARD_JESTER_CUBE, "On use, all items in the room will cycle between 6 additional choices, similar to Glitched Crown", "Jester", "en_us")
+    EID:addCard(WarpZone.WarpZoneTypes.CARD_WITCH_CUBE, "50% chance to deal 40 damage to all enemies in the room and apply burn.#50% chance to spawn another Witch card and fire off a poison fart", "Witch", "en_us")
+    EID:addCard(WarpZone.WarpZoneTypes.CARD_MURDER, "For a quarter second, increase speed to 4 and kill everything you touch.#Gain a Stompy effect for the room", "Murder!", "en_us")
+    EID:addCard(WarpZone.WarpZoneTypes.CARD_AMBER_CHUNK, "All pickups in the room, including items and the final chest at the end of the game, will be removed and saved.#The previous items you consumed in this way will respawn, even across games#You will also receive a lucky penny", "Chunk of Amber", "en_us")
+    EID:addCard(WarpZone.WarpZoneTypes.CARD_FIEND_FIRE, "All pickups in the room are consumed#For each pickup consumed, gain a small, permanent boost to Damage, Tears, Luck, Range, or Speed#Pickups turn into fires, which can damage enemies.", "Fiend Fire", "en_us")
+    EID:addCard(WarpZone.WarpZoneTypes.CARD_DEMON_FORM, "For the current room, Isaac becomes Azazel#+1 Damage#If you already have a brimstone laser, it will be widened from the current room", "Demon Form", "en_us")
     
     local CardHuds = {}
     CardHuds.CowHud = Sprite()
     CardHuds.CowHud:Load("gfx/cards_1_cow_on_trash.anm2", true)
-    EID:addIcon("Card" .. tostring(Card.CARD_COW_TRASH_FARM), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.CowHud)
+    EID:addIcon("Card" .. tostring(WarpZone.WarpZoneTypes.CARD_COW_TRASH_FARM), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.CowHud)
     CardHuds.LootCard = Sprite()
     CardHuds.LootCard:Load("gfx/cards_2_lootcard.anm2", true)
-    EID:addIcon("Card" .. tostring(Card.CARD_LOOT_CARD), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.LootCard)
+    EID:addIcon("Card" .. tostring(WarpZone.WarpZoneTypes.CARD_LOOT_CARD), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.LootCard)
     CardHuds.Blank1 = Sprite()
     CardHuds.Blank1:Load("gfx/cards_3_blank.anm2", true)
-    EID:addIcon("Card" .. tostring(Card.CARD_BLANK), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.Blank1)
+    EID:addIcon("Card" .. tostring(WarpZone.WarpZoneTypes.CARD_BLANK), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.Blank1)
     CardHuds.Blank2 = Sprite()
     CardHuds.Blank2:Load("gfx/cards_3.1_blank.anm2", true)
-    EID:addIcon("Card" .. tostring(Card.CARD_BLANK_2), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.Blank2)
+    EID:addIcon("Card" .. tostring(WarpZone.WarpZoneTypes.CARD_BLANK_2), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.Blank2)
     CardHuds.Blank3 = Sprite()
     CardHuds.Blank3:Load("gfx/cards_3.2_blank.anm2", true)
-    EID:addIcon("Card" .. tostring(Card.CARD_BLANK_3), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.Blank3)
+    EID:addIcon("Card" .. tostring(WarpZone.WarpZoneTypes.CARD_BLANK_3), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.Blank3)
     CardHuds.Jester = Sprite()
     CardHuds.Jester:Load("gfx/cards_4_jestercube.anm2", true)
-    EID:addIcon("Card" .. tostring(Card.CARD_JESTER_CUBE), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.Jester)
+    EID:addIcon("Card" .. tostring(WarpZone.WarpZoneTypes.CARD_JESTER_CUBE), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.Jester)
     CardHuds.Witch = Sprite()
     CardHuds.Witch:Load("gfx/cards_5_witchcube.anm2", true)
-    EID:addIcon("Card" .. tostring(Card.CARD_WITCH_CUBE), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.Witch)
+    EID:addIcon("Card" .. tostring(WarpZone.WarpZoneTypes.CARD_WITCH_CUBE), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.Witch)
     CardHuds.Murder = Sprite()
     CardHuds.Murder:Load("gfx/cards_6_murdercard.anm2", true)
-    EID:addIcon("Card" .. tostring(Card.CARD_MURDER), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.Murder)
+    EID:addIcon("Card" .. tostring(WarpZone.WarpZoneTypes.CARD_MURDER), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.Murder)
     CardHuds.AmberChunk = Sprite()
     CardHuds.AmberChunk:Load("gfx/cards_7_amberchunk.anm2", true)
-    EID:addIcon("Card" .. tostring(Card.CARD_AMBER_CHUNK), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.AmberChunk)
+    EID:addIcon("Card" .. tostring(WarpZone.WarpZoneTypes.CARD_AMBER_CHUNK), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.AmberChunk)
     CardHuds.DemonForm = Sprite()
     CardHuds.DemonForm:Load("gfx/cards_8_slaycard.anm2", true)
-    EID:addIcon("Card" .. tostring(Card.CARD_DEMON_FORM), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.DemonForm)
+    EID:addIcon("Card" .. tostring(WarpZone.WarpZoneTypes.CARD_DEMON_FORM), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.DemonForm)
     CardHuds.FiendFire = Sprite()
     CardHuds.FiendFire:Load("gfx/cards_8_slaycard.anm2", true)
-    EID:addIcon("Card" .. tostring(Card.CARD_FIEND_FIRE), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.FiendFire)
+    EID:addIcon("Card" .. tostring(WarpZone.WarpZoneTypes.CARD_FIEND_FIRE), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.FiendFire)
 
 
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL, "Зачистка комнаты имеет 50% шанс оставить никель, пропадающий через 2 секунды.#При получении урона игрок теряет половину своих монет, и бросает на пол эти монеты (они пропадают через 1 секунду).#Если у игрока есть монеты, урон будет в полное сердце.", "Золотой Идол", "ru")
@@ -800,7 +800,7 @@ local function firePopTear(player, playYV)
         tear.CollisionDamage = tear.CollisionDamage * 3
     end
     if playYV then
-        SfxManager:Play(SoundEffect.SOUND_POP_POP, 1)
+        SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_POP_POP, 1)
     end
 
     SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT, 2)
@@ -3100,13 +3100,13 @@ function WarpZone:UseWitchCube(card, player, useflags)
         player:UseActiveItem(CollectibleType.COLLECTIBLE_BEAN, false, false, true, false, -1, 0)
         Isaac.Spawn(EntityType.ENTITY_PICKUP,
             PickupVariant.PICKUP_TAROTCARD,
-            Card.CARD_WITCH_CUBE,
+            WarpZone.WarpZoneTypes.CARD_WITCH_CUBE,
             Game():GetRoom():FindFreePickupSpawnPosition(player.Position),
             Vector(0,0),
             nil)
     end
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseWitchCube, Card.CARD_WITCH_CUBE)
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseWitchCube, WarpZone.WarpZoneTypes.CARD_WITCH_CUBE)
 
 function WarpZone:UseLootCard(card, player, useflags)
     local lootRNG = RNG()
@@ -3130,14 +3130,14 @@ function WarpZone:UseLootCard(card, player, useflags)
     end
     
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseLootCard, Card.CARD_LOOT_CARD)
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseLootCard, WarpZone.WarpZoneTypes.CARD_LOOT_CARD)
 
 function WarpZone:useCow(card, player, useflags)
     local entities = Isaac.GetRoomEntities()
     local itemID = nil
     local cowRNG =  RNG()
     cowRNG:SetSeed(Random(), 1)
-    SfxManager:Play(SoundEffect.SOUND_COW_TRASH, 2)
+    SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_COW_TRASH, 2)
     for i, entity in ipairs(entities) do
         if entity.Type == EntityType.ENTITY_PICKUP then
             if entity.Variant == PickupVariant.PICKUP_COLLECTIBLE then
@@ -3164,7 +3164,7 @@ function WarpZone:useCow(card, player, useflags)
         end
     end
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useCow, Card.CARD_COW_TRASH_FARM)
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useCow, WarpZone.WarpZoneTypes.CARD_COW_TRASH_FARM)
 
 function WarpZone:useJester(card, player, useflags)
     local entities = Isaac.GetRoomEntities()
@@ -3177,7 +3177,7 @@ function WarpZone:useJester(card, player, useflags)
         player:UseCard(Card.CARD_SOUL_ISAAC, 257)
     end
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useJester, Card.CARD_JESTER_CUBE)
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useJester, WarpZone.WarpZoneTypes.CARD_JESTER_CUBE)
 
 
 
@@ -3229,34 +3229,34 @@ function WarpZone:useBlank(card, player, useflags)
     SfxManager:Play(SoundEffect.SOUND_DEATH_CARD)
 
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useBlank, Card.CARD_BLANK)
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useBlank, WarpZone.WarpZoneTypes.CARD_BLANK)
 
 function WarpZone:useBlank2(card, player, useflags)
     WarpZone:useBlank(card, player, useflags)
     Isaac.Spawn(EntityType.ENTITY_PICKUP,
             PickupVariant.PICKUP_TAROTCARD,
-            Card.CARD_BLANK,
+            WarpZone.WarpZoneTypes.CARD_BLANK,
             Game():GetRoom():FindFreePickupSpawnPosition(player.Position),
             Vector(0,0),
             nil)
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useBlank2, Card.CARD_BLANK_2)
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useBlank2, WarpZone.WarpZoneTypes.CARD_BLANK_2)
 
 
 function WarpZone:useBlank3(card, player, useflags)
     WarpZone:useBlank(card, player, useflags)
     Isaac.Spawn(EntityType.ENTITY_PICKUP,
             PickupVariant.PICKUP_TAROTCARD,
-            Card.CARD_BLANK_2,
+            WarpZone.WarpZoneTypes.CARD_BLANK_2,
             Game():GetRoom():FindFreePickupSpawnPosition(player.Position),
             Vector(0,0),
             nil)
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useBlank3, Card.CARD_BLANK_3)
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useBlank3, WarpZone.WarpZoneTypes.CARD_BLANK_3)
 
 function WarpZone:cardRNG(RNG, cardS, IncludePlayingCards, IncludeRunes, OnlyRunes)
-    if cardS == Card.CARD_BLANK or cardS == Card.CARD_BLANK_2 then
-        return Card.CARD_BLANK_3
+    if cardS == WarpZone.WarpZoneTypes.CARD_BLANK or cardS == WarpZone.WarpZoneTypes.CARD_BLANK_2 then
+        return WarpZone.WarpZoneTypes.CARD_BLANK_3
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_GET_CARD, WarpZone.cardRNG)
@@ -3311,7 +3311,7 @@ function WarpZone:UseEmergencyMeeting(collectible, rng, player, useflags, active
     end
     
     player:UseCard(Card.CARD_FOOL, 257)
-    SfxManager:Play(SoundEffect.SOUND_EMERGENCY_MEETING, 2)
+    SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_EMERGENCY_MEETING, 2)
     ::continue::
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseEmergencyMeeting, WarpZone.WarpZoneTypes.COLLECTIBLE_EMERGENCY_MEETING)
@@ -3428,7 +3428,7 @@ function WarpZone:UseFiendFire(card, player, useflags)
     player:EvaluateItems()
 
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseFiendFire, Card.CARD_FIEND_FIRE)
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseFiendFire, WarpZone.WarpZoneTypes.CARD_FIEND_FIRE)
 
 --function WarpZone:UseDemonForm(card, player, useflags)
 --    local formRng = RNG()
@@ -3443,7 +3443,7 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseFiendFire, Card.CARD_
 --    elseif chosenStat == 3 then
 --        player:UseActiveItem(CollectibleType.COLLECTIBLE_SULFUR)
 --    elseif chosenStat == 4 then
---        player:UseCard(Card.CARD_EMPRESS, 256)
+--        player:UseCard(WarpZone.WarpZoneTypes.CARD_EMPRESS, 256)
 --    end
 --end
 
@@ -3463,7 +3463,7 @@ function WarpZone:UseDemonForm2(card, player, useflags)
 end
 
 
-WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseDemonForm2, Card.CARD_DEMON_FORM)
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseDemonForm2, WarpZone.WarpZoneTypes.CARD_DEMON_FORM)
 
 
 function WarpZone:UseMurderCard(card, player, useflags)
@@ -3472,7 +3472,7 @@ function WarpZone:UseMurderCard(card, player, useflags)
     player:GetEffects():AddCollectibleEffect(CollectibleType.COLLECTIBLE_LEO, false, 1)
     player:GetData().InMurderState = true
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseMurderCard, Card.CARD_MURDER)
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseMurderCard, WarpZone.WarpZoneTypes.CARD_MURDER)
 
 
 function WarpZone:UseAmberChunk(card, player, useflags)
@@ -3520,7 +3520,7 @@ function WarpZone:UseAmberChunk(card, player, useflags)
            Vector(0, 0),
            nil)
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseAmberChunk, Card.CARD_AMBER_CHUNK)
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseAmberChunk, WarpZone.WarpZoneTypes.CARD_AMBER_CHUNK)
 
 function WarpZone:fireGlove(player)
     --print(player:GetLastDirection().X .. " " .. player:GetLastDirection().Y .. " aiming")
