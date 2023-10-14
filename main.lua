@@ -187,41 +187,43 @@ local framesToCharge = 141
 local boxRenderedPosition = Vector(20, -27)
 
 --item defintions
-CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
-CollectibleType.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
-CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE = Isaac.GetItemIdByName("Birthday Cake")
-CollectibleType.COLLECTIBLE_RUSTY_SPOON = Isaac.GetItemIdByName("Rusty Spoon")
-CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK = Isaac.GetItemIdByName("Newgrounds Tank")
-CollectibleType.COLLECTIBLE_GREED_BUTT = Isaac.GetItemIdByName("Greed Butt")
-CollectibleType.COLLECTIBLE_FOCUS = Isaac.GetItemIdByName("Focus")
-CollectibleType.COLLECTIBLE_FOCUS_2 = Isaac.GetItemIdByName(" Focus ")
-CollectibleType.COLLECTIBLE_FOCUS_3 = Isaac.GetItemIdByName("  Focus  ")
-CollectibleType.COLLECTIBLE_FOCUS_4 = Isaac.GetItemIdByName("   Focus   ")
-CollectibleType.COLLECTIBLE_DOORWAY = Isaac.GetItemIdByName("The Doorway")
-CollectibleType.COLLECTIBLE_STRANGE_MARBLE = Isaac.GetItemIdByName("Strange Marble")
-CollectibleType.COLLECTIBLE_IS_YOU = Isaac.GetItemIdByName("Is You")
-CollectibleType.COLLECTIBLE_NIGHTMARE_TICK = Isaac.GetItemIdByName("Nightmare Tick")
-CollectibleType.COLLECTIBLE_SPELUNKERS_PACK = Isaac.GetItemIdByName("Spelunker's Pack")
-CollectibleType.COLLECTIBLE_DIOGENES_POT = Isaac.GetItemIdByName("Diogenes's Pot")
-CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE = Isaac.GetItemIdByName(" Diogenes's Pot ")
-CollectibleType.COLLECTIBLE_GEORGE = Isaac.GetItemIdByName("George")
-CollectibleType.COLLECTIBLE_POSSESSION = Isaac.GetItemIdByName("Possession")
-CollectibleType.COLLECTIBLE_LOLLIPOP = Isaac.GetItemIdByName("Lollipop")
-CollectibleType.COLLECTIBLE_WATER_FULL = Isaac.GetItemIdByName("Water Bottle")
-CollectibleType.COLLECTIBLE_WATER_MID = Isaac.GetItemIdByName(" Water Bottle ")
-CollectibleType.COLLECTIBLE_WATER_LOW = Isaac.GetItemIdByName("  Water Bottle  ")
-CollectibleType.COLLECTIBLE_WATER_EMPTY = Isaac.GetItemIdByName("   Water Bottle   ")
-CollectibleType.COLLECTIBLE_AUBREY = Isaac.GetItemIdByName("Aubrey")
-CollectibleType.COLLECTIBLE_TONY = Isaac.GetItemIdByName("Tony")
-CollectibleType.COLLECTIBLE_REAL_LEFT = Isaac.GetItemIdByName("The Real Left Hand")
-CollectibleType.COLLECTIBLE_HITOPS = Isaac.GetItemIdByName("Hitops")
-CollectibleType.COLLECTIBLE_POPPOP = Isaac.GetItemIdByName("Pop Pop")
-CollectibleType.COLLECTIBLE_FOOTBALL = Isaac.GetItemIdByName("Football")
-CollectibleType.COLLECTIBLE_BALL_OF_TUMORS = Isaac.GetItemIdByName("Ball of Tumors")
-CollectibleType.COLLECTIBLE_BOW_AND_ARROW = Isaac.GetItemIdByName("Bow and Arrow")
-CollectibleType.COLLECTIBLE_TEST_ACTIVE = Isaac.GetItemIdByName("Test Active")
-CollectibleType.COLLECTIBLE_EMERGENCY_MEETING = Isaac.GetItemIdByName("Emergency Meeting")
-CollectibleType.COLLECTIBLE_BOXING_GLOVE = Isaac.GetItemIdByName("Boxing Glove")
+WarpZone.WarpZoneTypes = {}
+
+WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
+WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
+WarpZone.WarpZoneTypes.COLLECTIBLE_BIRTHDAY_CAKE = Isaac.GetItemIdByName("Birthday Cake")
+WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON = Isaac.GetItemIdByName("Rusty Spoon")
+WarpZone.WarpZoneTypes.COLLECTIBLE_NEWGROUNDS_TANK = Isaac.GetItemIdByName("Newgrounds Tank")
+WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT = Isaac.GetItemIdByName("Greed Butt")
+WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS = Isaac.GetItemIdByName("Focus")
+WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_2 = Isaac.GetItemIdByName(" Focus ")
+WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_3 = Isaac.GetItemIdByName("  Focus  ")
+WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4 = Isaac.GetItemIdByName("   Focus   ")
+WarpZone.WarpZoneTypes.COLLECTIBLE_DOORWAY = Isaac.GetItemIdByName("The Doorway")
+WarpZone.WarpZoneTypes.COLLECTIBLE_STRANGE_MARBLE = Isaac.GetItemIdByName("Strange Marble")
+WarpZone.WarpZoneTypes.COLLECTIBLE_IS_YOU = Isaac.GetItemIdByName("Is You")
+WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK = Isaac.GetItemIdByName("Nightmare Tick")
+WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK = Isaac.GetItemIdByName("Spelunker's Pack")
+WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT = Isaac.GetItemIdByName("Diogenes's Pot")
+WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE = Isaac.GetItemIdByName(" Diogenes's Pot ")
+WarpZone.WarpZoneTypes.COLLECTIBLE_GEORGE = Isaac.GetItemIdByName("George")
+WarpZone.WarpZoneTypes.COLLECTIBLE_POSSESSION = Isaac.GetItemIdByName("Possession")
+WarpZone.WarpZoneTypes.COLLECTIBLE_LOLLIPOP = Isaac.GetItemIdByName("Lollipop")
+WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_FULL = Isaac.GetItemIdByName("Water Bottle")
+WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_MID = Isaac.GetItemIdByName(" Water Bottle ")
+WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_LOW = Isaac.GetItemIdByName("  Water Bottle  ")
+WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_EMPTY = Isaac.GetItemIdByName("   Water Bottle   ")
+WarpZone.WarpZoneTypes.COLLECTIBLE_AUBREY = Isaac.GetItemIdByName("Aubrey")
+WarpZone.WarpZoneTypes.COLLECTIBLE_TONY = Isaac.GetItemIdByName("Tony")
+WarpZone.WarpZoneTypes.COLLECTIBLE_REAL_LEFT = Isaac.GetItemIdByName("The Real Left Hand")
+WarpZone.WarpZoneTypes.COLLECTIBLE_HITOPS = Isaac.GetItemIdByName("Hitops")
+WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP = Isaac.GetItemIdByName("Pop Pop")
+WarpZone.WarpZoneTypes.COLLECTIBLE_FOOTBALL = Isaac.GetItemIdByName("Football")
+WarpZone.WarpZoneTypes.COLLECTIBLE_BALL_OF_TUMORS = Isaac.GetItemIdByName("Ball of Tumors")
+WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW = Isaac.GetItemIdByName("Bow and Arrow")
+WarpZone.WarpZoneTypes.COLLECTIBLE_TEST_ACTIVE = Isaac.GetItemIdByName("Test Active")
+WarpZone.WarpZoneTypes.COLLECTIBLE_EMERGENCY_MEETING = Isaac.GetItemIdByName("Emergency Meeting")
+WarpZone.WarpZoneTypes.COLLECTIBLE_BOXING_GLOVE = Isaac.GetItemIdByName("Boxing Glove")
 
 
 TrinketType.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
@@ -248,43 +250,43 @@ SoundEffect.SOUND_EMERGENCY_MEETING = Isaac.GetSoundIdByName("EmergencyMeetingSo
 
 --external item descriptions
 if EID then
-	EID:addCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL, "#The player has a 50% chance of receiving a fading nickel when a room is cleared#Damage causes the player to lose half their money, dropping some of it on the ground as fading coins.#When the player is holding money, damage is always 1 full heart", "Golden Idol", "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_PASTKILLER, "#Removes the first 3 items from your inventory, including quest items like the Key Pieces#3 sets of 3 choice pedestals appear#The new items are from the same pools as the ones you lost", "Gun that can Kill the Past", "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE, "{{ArrowUp}} +1 HP#A random consumable and pickups of each type now spawn at the start of a floor#When the player holds Binge Eater, -.03 Speed and +.5 Tears", "Birthday Cake", "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON, "#10% chance to fire a homing tear that inflicts bleed#100% chance at 18 Luck", "Rusty Spoon", "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK, "{{ArrowDown}} +0.3 Speed Down#{{ArrowUp}} +0.27 Tears Up#{{ArrowUp}} +0.5 Damage Up#{{ArrowUp}} +1 Range Up#{{ArrowUp}} +0.16 Shot Speed Up#{{ArrowUp}} +1 Luck Up#On taking a hit, the player has a 10% chance to shield from damage", "Newgrounds Tank", "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_GREED_BUTT, "#When hit by an enemy or projectile from behind, you fart, launching a coin out of your butt#There is a 4% chance that you drop a gold poop instead", "Greed Butt", "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_FOCUS, "#When below full red hearts, heal 1 red heart#When at full health, launch a large piercing tear#This item only gains charge by inflicting damage", "Focus", "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_FOCUS_2, "#When below full red hearts, heal 1 red heart#When at full health, launch a large piercing tear#This item only gains charge by inflicting damage", "Focus", "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_FOCUS_3, "#When below full red hearts, heal 1 red heart#When at full health, launch a large piercing tear#This item only gains charge by inflicting damage", "Focus", "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_FOCUS_4, "#When below full red hearts, heal 1 red heart#When at full health, launch a large piercing tear#This item only gains charge by inflicting damage", "Focus", "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_DOORWAY, "#All doors are opened, and stay open for the rest of the floor#Secret rooms, Angel/Devil rooms, The Mega Satan door, Boss Rush and Hush are included#Challenge Rooms are open to enter, however the door closes when activating the challenge#The Ultra Secret Room is unlocked, and red rooms are now open to the edge of the map, revealing the error room", "The Doorway", "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_STRANGE_MARBLE, "#All enemies have a 1 in 8 chance to become champions#Champions always drop loot, and often have a chance to drop extra", "Strange Marble", "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_IS_YOU, "#Point the reticle at an obstacle to use an active item effect that corresponds to it#For example, pointing it at a normal rock lets you use Mom's Bracelet", "Is You",  "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK, "#Every 8 room clears, one passive item is removed from your inventory#.75 Damage Up for each item removed this way", "Nightmare Tick",  "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_SPELUNKERS_PACK, "#+12 bombs#Pits within your bombs' blast radius are filled in#When your bomb explodes, the resonant force breaks tinted and super secret rocks throughout the room #Bomb rocks in the room will break apart, dropping a bomb pickup", "Spelunker's Pack",  "en_us")
+	EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL, "#The player has a 50% chance of receiving a fading nickel when a room is cleared#Damage causes the player to lose half their money, dropping some of it on the ground as fading coins.#When the player is holding money, damage is always 1 full heart", "Golden Idol", "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER, "#Removes the first 3 items from your inventory, including quest items like the Key Pieces#3 sets of 3 choice pedestals appear#The new items are from the same pools as the ones you lost", "Gun that can Kill the Past", "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BIRTHDAY_CAKE, "{{ArrowUp}} +1 HP#A random consumable and pickups of each type now spawn at the start of a floor#When the player holds Binge Eater, -.03 Speed and +.5 Tears", "Birthday Cake", "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON, "#10% chance to fire a homing tear that inflicts bleed#100% chance at 18 Luck", "Rusty Spoon", "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NEWGROUNDS_TANK, "{{ArrowDown}} +0.3 Speed Down#{{ArrowUp}} +0.27 Tears Up#{{ArrowUp}} +0.5 Damage Up#{{ArrowUp}} +1 Range Up#{{ArrowUp}} +0.16 Shot Speed Up#{{ArrowUp}} +1 Luck Up#On taking a hit, the player has a 10% chance to shield from damage", "Newgrounds Tank", "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT, "#When hit by an enemy or projectile from behind, you fart, launching a coin out of your butt#There is a 4% chance that you drop a gold poop instead", "Greed Butt", "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS, "#When below full red hearts, heal 1 red heart#When at full health, launch a large piercing tear#This item only gains charge by inflicting damage", "Focus", "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_2, "#When below full red hearts, heal 1 red heart#When at full health, launch a large piercing tear#This item only gains charge by inflicting damage", "Focus", "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_3, "#When below full red hearts, heal 1 red heart#When at full health, launch a large piercing tear#This item only gains charge by inflicting damage", "Focus", "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4, "#When below full red hearts, heal 1 red heart#When at full health, launch a large piercing tear#This item only gains charge by inflicting damage", "Focus", "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DOORWAY, "#All doors are opened, and stay open for the rest of the floor#Secret rooms, Angel/Devil rooms, The Mega Satan door, Boss Rush and Hush are included#Challenge Rooms are open to enter, however the door closes when activating the challenge#The Ultra Secret Room is unlocked, and red rooms are now open to the edge of the map, revealing the error room", "The Doorway", "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_STRANGE_MARBLE, "#All enemies have a 1 in 8 chance to become champions#Champions always drop loot, and often have a chance to drop extra", "Strange Marble", "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_IS_YOU, "#Point the reticle at an obstacle to use an active item effect that corresponds to it#For example, pointing it at a normal rock lets you use Mom's Bracelet", "Is You",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK, "#Every 8 room clears, one passive item is removed from your inventory#.75 Damage Up for each item removed this way", "Nightmare Tick",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK, "#+12 bombs#Pits within your bombs' blast radius are filled in#When your bomb explodes, the resonant force breaks tinted and super secret rocks throughout the room #Bomb rocks in the room will break apart, dropping a bomb pickup", "Spelunker's Pack",  "en_us")
 
     EID:addTrinket(TrinketType.TRINKET_RING_SNAKE, "#Receive 2 cards at the start of each floor", "Ring of the Snake", "en_us")
 
-    EID:addCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT, "Toggles a melee hammer strike on and off#When equipped, you receive a 1.5x damage multiplier#Getting hit while equipped teleports you to the starting room", "Diogenes's Pot",  "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE, "Toggles a melee hammer strike on and off#When equipped, you receive a 1.5x damage multiplier#Getting hit while equipped teleports you to the starting room", "Diogenes's Pot",  "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_GEORGE, "{{ArrowUp}} 2.4 Range Up#When entering most special rooms, a red room will unlock across from you", "George",  "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_POSSESSION, "Each room, one random non-boss enemy will be permanently charmed#These enemies carry over between rooms#Only 15 enemies can be charmed at a time#Taking damage (excluding sacrifice rooms, etc) removes the charm from all affected enemies, making them hostile again", "Possession",  "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_LOLLIPOP, "Spawns a lollipop orbital. It does no damage, but it charms enemies on contact", "Lollipop",  "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_WATER_EMPTY, "I did not hit her#It is bullshit#I did not hit her#I did not", "Water Bottle",  "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_WATER_LOW, "{{ArrowUp}} 0.22 Tears Up#{{ArrowUp}} Tear Size Up", "Water Bottle",  "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_WATER_MID, "{{ArrowUp}} 0.37 Tears Up#{{ArrowUp}} Tear Size Up", "Water Bottle",  "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_WATER_FULL, "{{ArrowUp}} 0.43 Tears Up#{{ArrowUp}} Tear Size Up", "Water Bottle",  "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_AUBREY, "Once per floor, when entering a shop, a weapon beggar will spawn.#Weapon beggars take coins, and spawn only active items from every pool.#3 active items are spawned from one weapon beggar before it leaves.", "Aubrey",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT, "Toggles a melee hammer strike on and off#When equipped, you receive a 1.5x damage multiplier#Getting hit while equipped teleports you to the starting room", "Diogenes's Pot",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE, "Toggles a melee hammer strike on and off#When equipped, you receive a 1.5x damage multiplier#Getting hit while equipped teleports you to the starting room", "Diogenes's Pot",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GEORGE, "{{ArrowUp}} 2.4 Range Up#When entering most special rooms, a red room will unlock across from you", "George",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POSSESSION, "Each room, one random non-boss enemy will be permanently charmed#These enemies carry over between rooms#Only 15 enemies can be charmed at a time#Taking damage (excluding sacrifice rooms, etc) removes the charm from all affected enemies, making them hostile again", "Possession",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_LOLLIPOP, "Spawns a lollipop orbital. It does no damage, but it charms enemies on contact", "Lollipop",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_EMPTY, "I did not hit her#It is bullshit#I did not hit her#I did not", "Water Bottle",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_LOW, "{{ArrowUp}} 0.22 Tears Up#{{ArrowUp}} Tear Size Up", "Water Bottle",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_MID, "{{ArrowUp}} 0.37 Tears Up#{{ArrowUp}} Tear Size Up", "Water Bottle",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_FULL, "{{ArrowUp}} 0.43 Tears Up#{{ArrowUp}} Tear Size Up", "Water Bottle",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_AUBREY, "Once per floor, when entering a shop, a weapon beggar will spawn.#Weapon beggars take coins, and spawn only active items from every pool.#3 active items are spawned from one weapon beggar before it leaves.", "Aubrey",  "en_us")
 
-    EID:addCollectible(CollectibleType.COLLECTIBLE_TONY, "1.7 Damage Multiplier#+1 Damage Up#When any item is taken, the buff and multiplier are both reduced by 0.1#This item's minimum damage multiplier is 1, it cannot decrease damage", "Tony",  "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_REAL_LEFT, "On use, rerolls all chests in the room into a better counterpart#Chest Order: Mimic -> Haunted -> Grey -> Red -> Golden or Stone -> Wooden or Old -> Eternal -> Mega", "The Real Left Hand",  "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_HITOPS, "0.2 Speed Up#This speed up can exceed the speed cap", "Hitops",  "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_POPPOP, "Double tap to fire two 3x damage tears in a burst#Tear rate is reduced for a short time after using this effect.", "Pop Pop",  "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_FOOTBALL, "Spawns a football familiar that can be picked up and thrown at enemies#The football deals damage based on its speed", "Football",  "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_BALL_OF_TUMORS, "Bombs, hearts, keys and batteries have a small chance of turning into collectible tumors#Collecting tumors powers a tumor orbital, which blocks shots and deals contact damage#With enough tumors, a second orbital will spawn", "Ball of Tumors",  "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_BOW_AND_ARROW, "Isaac is able to shoot large, piercing arrow tears that deal 1.5x damage, but have only 3 ammunition#Once the ammo is depleted, Isaac fires normal tears#When a tear lands, it drops a token that will replenish 1 tear when collected", "Bow and Arrow",  "en_us")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_EMERGENCY_MEETING, "On use, teleports you and all other enemies in the room to the starting room.#On arrival, all enemies, including bosses, are confused for a few seconds", "Emergency Meeting",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_TONY, "1.7 Damage Multiplier#+1 Damage Up#When any item is taken, the buff and multiplier are both reduced by 0.1#This item's minimum damage multiplier is 1, it cannot decrease damage", "Tony",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_REAL_LEFT, "On use, rerolls all chests in the room into a better counterpart#Chest Order: Mimic -> Haunted -> Grey -> Red -> Golden or Stone -> Wooden or Old -> Eternal -> Mega", "The Real Left Hand",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_HITOPS, "0.2 Speed Up#This speed up can exceed the speed cap", "Hitops",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP, "Double tap to fire two 3x damage tears in a burst#Tear rate is reduced for a short time after using this effect.", "Pop Pop",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOOTBALL, "Spawns a football familiar that can be picked up and thrown at enemies#The football deals damage based on its speed", "Football",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BALL_OF_TUMORS, "Bombs, hearts, keys and batteries have a small chance of turning into collectible tumors#Collecting tumors powers a tumor orbital, which blocks shots and deals contact damage#With enough tumors, a second orbital will spawn", "Ball of Tumors",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW, "Isaac is able to shoot large, piercing arrow tears that deal 1.5x damage, but have only 3 ammunition#Once the ammo is depleted, Isaac fires normal tears#When a tear lands, it drops a token that will replenish 1 tear when collected", "Bow and Arrow",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_EMERGENCY_MEETING, "On use, teleports you and all other enemies in the room to the starting room.#On arrival, all enemies, including bosses, are confused for a few seconds", "Emergency Meeting",  "en_us")
 
     EID:addTrinket(TrinketType.TRINKET_HUNKY_BOYS, "While held, pressing the Drop Trinket button immediately drops this trinket; you don't need to hold the button#When on the ground, enemies will target the trinket for a short time.", "Hunky Boys", "en_us")
     EID:addTrinket(TrinketType.TRINKET_BIBLE_THUMP, "Once you exit a room with this trinket, The Bible is added to several item pools.#Using The Bible or The Devil? card with this item will deal 40 damage to all enemies in the room, in addition to granting flight.#Using The Bible on Satan will kill him, and you will survive#The golden version of this trinket kills The Lamb as well.", "Bible Thump", "en_us")
@@ -337,21 +339,21 @@ if EID then
     EID:addIcon("Card" .. tostring(Card.CARD_FIEND_FIRE), "HUDSmall", 0, 16, 16, 6, 6, CardHuds.FiendFire)
 
 
-    EID:addCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL, "Зачистка комнаты имеет 50% шанс оставить никель, пропадающий через 2 секунды.#При получении урона игрок теряет половину своих монет, и бросает на пол эти монеты (они пропадают через 1 секунду).#Если у игрока есть монеты, урон будет в полное сердце.", "Золотой Идол", "ru")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_PASTKILLER, "Удаляет первые три предмета,полученных в забеге (Может удалить сюжетные предметы).#Создает по три пьедестала с предметами из того же пула за каждый потерянный предмет, из 3х предметов можно взять только 1.#The new items are from the same pools as the ones you lost.", "Пушка, Убивающая Прошлое", "ru")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE, "{{ArrowUp}} +1 Контейнер Сердца #Случайная карта/пилюля/руна, случайная монета, бомба и ключ появляются в начале каждого этажа.#Предмет еды, С Кутежником дает -.03 скорости и +.5 скорострельности.", "Именинный Торт", "ru")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON, "10% шанс выстрелить самонаводящейся слезой, накладывающей кровотечение#100% шанс при 18 удачи", "Ржавая Ложка", "ru")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK, "{{ArrowDown}}  -.3 Скорости#{{ArrowUp}} +.27 Скорострельности#{{ArrowUp}} +.5 Урона#{{ArrowUp}} +.04 Дальности#{{ArrowUp}} +.16 Скорости слезы#{{ArrowUp}} +1 Удачи#При получении урона, 10% шанс предотвратить его.", "Танк Newgrounds", "ru")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_GREED_BUTT, "При получении урона в зад, персонаж пукает и выпускает монетку.#4% шанс создать золотую кучку вместо пука с монетой.", "Алчная Жопа!", "ru")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_FOCUS, "Если у вас не полное здоровье, вылечи 1 красное сердце.#При полном здоровье, выпусти большую слезу, наносящую большой урон, проходящую сквозь врагов.#Этот предмет заряжается нанесением урона.", "Фокус", "ru")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_FOCUS_2, "Если у вас не полное здоровье, вылечи 1 красное сердце.#При полном здоровье, выпусти большую слезу, наносящую большой урон, проходящую сквозь врагов.#Этот предмет заряжается нанесением урона", "Фокус", "ru")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_FOCUS_3, "Если у вас не полное здоровье, вылечи 1 красное сердце.#При полном здоровье, выпусти большую слезу, наносящую большой урон, проходящую сквозь врагов.#Этот предмет заряжается нанесением урона", "Фокус", "ru")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_FOCUS_4, "Если у вас не полное здоровье, вылечи 1 красное сердце.#При полном здоровье, выпусти большую слезу, наносящую большой урон, проходящую сквозь врагов.#Этот предмет заряжается нанесением урона", "Фокус", "ru")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_DOORWAY, "Все двери открываются, и остаются открытыми до конца этажа.#Открываются Секретные комнаты, комнаты Ангела/Дьявола, Дверь Мега Сатаны, Двери Испытания Боссов и Молчания (Если они на этом этаже).#Комнаты испытания открыты, но дверь закрывается на время прохождения испытания.#Открывает Ультра Секретную комнату и проход к ней, так же открывает проход к комнате Ошибки, открывая красные комнаты через Ультра секретную комнату до края карты.", "Проход", "ru")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_STRANGE_MARBLE, "Все враги с 10% шансом могут стать чемпионами.#Чемпионы всегда оставляют награду, и могут оставить дополнительную.", "Странный Марбл", "ru")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_IS_YOU, "Создает крестик под персонажем, который надо направлять на препятствия (Камни, Блоки и т.д.).#После этого, нужно еще раз активировать предмет для срабатывания эффекта. У каждого обьекта свой эффект.", "Это Ты",  "ru")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK, "Каждые 8 зачисток комнат, Один предмет пропадает из инвентаря.#+.75 Урона за пропавший предмет", "Кошмарный Клещ",  "ru")
-    EID:addCollectible(CollectibleType.COLLECTIBLE_SPELUNKERS_PACK, "+12 бомб#Все ямы в радиусе взрыва заполняются.#При взрыве бомбы, Все меченые и двойные меченые камни взорвутся не смотря на то что они вне радиуса взрыва. #Камни с бомбами сломаются и оставят бомбу на их месте.", "Рюкзак Спелеолога",  "ru")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL, "Зачистка комнаты имеет 50% шанс оставить никель, пропадающий через 2 секунды.#При получении урона игрок теряет половину своих монет, и бросает на пол эти монеты (они пропадают через 1 секунду).#Если у игрока есть монеты, урон будет в полное сердце.", "Золотой Идол", "ru")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER, "Удаляет первые три предмета,полученных в забеге (Может удалить сюжетные предметы).#Создает по три пьедестала с предметами из того же пула за каждый потерянный предмет, из 3х предметов можно взять только 1.#The new items are from the same pools as the ones you lost.", "Пушка, Убивающая Прошлое", "ru")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BIRTHDAY_CAKE, "{{ArrowUp}} +1 Контейнер Сердца #Случайная карта/пилюля/руна, случайная монета, бомба и ключ появляются в начале каждого этажа.#Предмет еды, С Кутежником дает -.03 скорости и +.5 скорострельности.", "Именинный Торт", "ru")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON, "10% шанс выстрелить самонаводящейся слезой, накладывающей кровотечение#100% шанс при 18 удачи", "Ржавая Ложка", "ru")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NEWGROUNDS_TANK, "{{ArrowDown}}  -.3 Скорости#{{ArrowUp}} +.27 Скорострельности#{{ArrowUp}} +.5 Урона#{{ArrowUp}} +.04 Дальности#{{ArrowUp}} +.16 Скорости слезы#{{ArrowUp}} +1 Удачи#При получении урона, 10% шанс предотвратить его.", "Танк Newgrounds", "ru")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT, "При получении урона в зад, персонаж пукает и выпускает монетку.#4% шанс создать золотую кучку вместо пука с монетой.", "Алчная Жопа!", "ru")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS, "Если у вас не полное здоровье, вылечи 1 красное сердце.#При полном здоровье, выпусти большую слезу, наносящую большой урон, проходящую сквозь врагов.#Этот предмет заряжается нанесением урона.", "Фокус", "ru")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_2, "Если у вас не полное здоровье, вылечи 1 красное сердце.#При полном здоровье, выпусти большую слезу, наносящую большой урон, проходящую сквозь врагов.#Этот предмет заряжается нанесением урона", "Фокус", "ru")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_3, "Если у вас не полное здоровье, вылечи 1 красное сердце.#При полном здоровье, выпусти большую слезу, наносящую большой урон, проходящую сквозь врагов.#Этот предмет заряжается нанесением урона", "Фокус", "ru")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4, "Если у вас не полное здоровье, вылечи 1 красное сердце.#При полном здоровье, выпусти большую слезу, наносящую большой урон, проходящую сквозь врагов.#Этот предмет заряжается нанесением урона", "Фокус", "ru")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DOORWAY, "Все двери открываются, и остаются открытыми до конца этажа.#Открываются Секретные комнаты, комнаты Ангела/Дьявола, Дверь Мега Сатаны, Двери Испытания Боссов и Молчания (Если они на этом этаже).#Комнаты испытания открыты, но дверь закрывается на время прохождения испытания.#Открывает Ультра Секретную комнату и проход к ней, так же открывает проход к комнате Ошибки, открывая красные комнаты через Ультра секретную комнату до края карты.", "Проход", "ru")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_STRANGE_MARBLE, "Все враги с 10% шансом могут стать чемпионами.#Чемпионы всегда оставляют награду, и могут оставить дополнительную.", "Странный Марбл", "ru")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_IS_YOU, "Создает крестик под персонажем, который надо направлять на препятствия (Камни, Блоки и т.д.).#После этого, нужно еще раз активировать предмет для срабатывания эффекта. У каждого обьекта свой эффект.", "Это Ты",  "ru")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK, "Каждые 8 зачисток комнат, Один предмет пропадает из инвентаря.#+.75 Урона за пропавший предмет", "Кошмарный Клещ",  "ru")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK, "+12 бомб#Все ямы в радиусе взрыва заполняются.#При взрыве бомбы, Все меченые и двойные меченые камни взорвутся не смотря на то что они вне радиуса взрыва. #Камни с бомбами сломаются и оставят бомбу на их месте.", "Рюкзак Спелеолога",  "ru")
 
 end
 
@@ -1015,7 +1017,7 @@ function WarpZone:postRender(player)
         end
         
         if player:GetData().arrowTimeDelay <= 0 then
-            if Input.IsActionTriggered(ButtonAction.ACTION_SHOOTUP, controllerid) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
+            if Input.IsActionTriggered(ButtonAction.ACTION_SHOOTUP, controllerid) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) then
                 if player:GetData().arrowTimeUp > 0 then
                     player:GetData().arrowTimeDelay = totalFrameDelay
                     firePopTear(player, true)
@@ -1023,7 +1025,7 @@ function WarpZone:postRender(player)
                 else
                     player:GetData().arrowTimeUp = 30
                 end
-            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTDOWN, controllerid) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
+            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTDOWN, controllerid) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) then
                 if player:GetData().arrowTimeDown > 0 then
                     player:GetData().arrowTimeDelay = totalFrameDelay
                     firePopTear(player, true)
@@ -1031,7 +1033,7 @@ function WarpZone:postRender(player)
                 else
                     player:GetData().arrowTimeDown = 30
                 end
-            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTLEFT, controllerid) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
+            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTLEFT, controllerid) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) then
                 if player:GetData().arrowTimeLeft > 0 then
                     player:GetData().arrowTimeDelay = totalFrameDelay
                     firePopTear(player, true)
@@ -1039,7 +1041,7 @@ function WarpZone:postRender(player)
                 else
                     player:GetData().arrowTimeLeft = 30
                 end
-            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTRIGHT, controllerid) and player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
+            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTRIGHT, controllerid) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) then
                 if player:GetData().arrowTimeRight > 0 then
                     player:GetData().arrowTimeDelay = totalFrameDelay
                     firePopTear(player, true)
@@ -1058,7 +1060,7 @@ function WarpZone:postRender(player)
             player:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
             player:EvaluateItems()
         end
-        if player:HasCollectible(CollectibleType.COLLECTIBLE_BOXING_GLOVE) and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN_B then
+        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOXING_GLOVE) and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN_B then
             local maxThreshold = player:GetData().arrowHoldBox
             if Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, controllerid) or
             Input.IsActionPressed(ButtonAction.ACTION_SHOOTDOWN, controllerid) or
@@ -1079,8 +1081,8 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_RENDER, WarpZone.postRender)
 
 function WarpZone:UIOnRender(player, renderoffset)
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) then
-        local numCollectibles = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_BOW_AND_ARROW)
+    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) then
+        local numCollectibles = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW)
         
         for i = 1, numCollectibles * 3, 1 do
             if player:GetData().numArrows - i >= 0 then
@@ -1092,11 +1094,11 @@ function WarpZone:UIOnRender(player, renderoffset)
         end
     end
     local currentCharge = player:GetData().arrowHoldBox
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_BOXING_GLOVE) and currentCharge > 0 and currentCharge <= framesToCharge then
+    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOXING_GLOVE) and currentCharge > 0 and currentCharge <= framesToCharge then
         local frameToSet = math.floor(math.min(currentCharge * (100/framesToCharge), 100))
         BoxHud:SetFrame("Charging", frameToSet)
         BoxHud:Render(Isaac.WorldToScreen(player.Position) + boxRenderedPosition)
-    elseif player:HasCollectible(CollectibleType.COLLECTIBLE_BOXING_GLOVE) and currentCharge > framesToCharge then
+    elseif player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOXING_GLOVE) and currentCharge > framesToCharge then
         local frameToSet = math.floor(((currentCharge-framesToCharge))/2) % 6
         BoxHud:SetFrame("Charged", frameToSet)
         BoxHud:Render(Isaac.WorldToScreen(player.Position) + boxRenderedPosition)
@@ -1112,10 +1114,10 @@ function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
             local player =  Isaac.GetPlayer(i)
             local source_entity = source.Entity
             if source_entity and source_entity:GetData() and source_entity:GetData().FocusIndicator == nil and
-                (CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() or
-                CollectibleType.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
-                CollectibleType.COLLECTIBLE_FOCUS_3 == player:GetActiveItem() or
-                CollectibleType.COLLECTIBLE_FOCUS_4 == player:GetActiveItem()
+                (WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS == player:GetActiveItem() or
+                WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
+                WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_3 == player:GetActiveItem() or
+                WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4 == player:GetActiveItem()
                 )
             then
                 player:GetData().totalFocusDamage = player:GetData().totalFocusDamage + math.min(amount, entity.HitPoints)
@@ -1129,11 +1131,11 @@ function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
                 local newCharge = math.min(chargeThreshold, chargesToSet)
 
                 if pastCharge <= 3  and 3 < newCharge and newCharge <= 10 then
-                    player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_2, newCharge, false, ActiveSlot.SLOT_PRIMARY)
+                    player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_2, newCharge, false, ActiveSlot.SLOT_PRIMARY)
                 elseif pastCharge <= 10 and 10 < newCharge and newCharge <= 19 then
-                    player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_3, newCharge, false, ActiveSlot.SLOT_PRIMARY)
+                    player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_3, newCharge, false, ActiveSlot.SLOT_PRIMARY)
                 elseif pastCharge <=19 and newCharge and newCharge >= 20 then
-                    player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS_4, newCharge, false, ActiveSlot.SLOT_PRIMARY)
+                    player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4, newCharge, false, ActiveSlot.SLOT_PRIMARY)
                     SfxManager:Play(SoundEffect.SOUND_BATTERYCHARGE)
                 else
                     player:SetActiveCharge(newCharge)
@@ -1175,7 +1177,7 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
         return false
     end
 
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_POSSESSION) then
+    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POSSESSION) then
         local entities = Isaac.GetRoomEntities()
         numPossessed = 0
         
@@ -1189,8 +1191,8 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
         end
     end
 
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK) then
-        local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK)
+    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NEWGROUNDS_TANK) then
+        local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_NEWGROUNDS_TANK)
         if rng:RandomInt(10) == 1 and  damageflags & DamageFlag.DAMAGE_NO_PENALTIES ~= DamageFlag.DAMAGE_NO_PENALTIES then
             SfxManager:Play(SoundEffect.SOUND_SCYTHE_BREAK)
             player:SetMinDamageCooldown(60)
@@ -1198,11 +1200,11 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
         end
     end
 
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE) and damageflags & DamageFlag.DAMAGE_NO_PENALTIES ~= DamageFlag.DAMAGE_NO_PENALTIES then
+    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE) and damageflags & DamageFlag.DAMAGE_NO_PENALTIES ~= DamageFlag.DAMAGE_NO_PENALTIES then
         player:UseCard(Card.CARD_FOOL, 257)
     end
 
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_GREED_BUTT) and source ~= nil then
+    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) and source ~= nil then
         local source_entity = source.Entity
         if source_entity ~= nil and (source_entity:IsEnemy() or (source_entity.Type == EntityType.ENTITY_PROJECTILE and source_entity.Variant ~= ProjectileVariant.PROJECTILE_FIRE)) then
             local direction = player:GetHeadDirection()
@@ -1233,7 +1235,7 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
                 end
             end
             if backstab == true then
-                local gb_rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_GREED_BUTT)
+                local gb_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT)
                 local benchmark = gb_rng:RandomInt(100)
                 if benchmark < 4 then
                     local id = findFreeTile(player.Position)
@@ -1256,7 +1258,7 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
         end
     end
 
-    if player:GetNumCoins() > 0 and player:GetData().inIdolDamage ~= true and player:HasCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
+    if player:GetNumCoins() > 0 and player:GetData().inIdolDamage ~= true and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
         player:GetData().inIdolDamage = true
         if amount == 1 then
             player:TakeDamage(amount, damageflags, source, countdownframes)
@@ -1287,7 +1289,7 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
     
     for j=0, numPlayers-1, 1 do
         local player = Isaac.GetPlayer(j)
-        if (i == 1 or room) and player:HasCollectible(CollectibleType.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
+        if (i == 1 or room) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
             local coin = Isaac.Spawn(EntityType.ENTITY_PICKUP, 
                         PickupVariant.PICKUP_COIN,
                         CoinSubType.COIN_NICKEL,
@@ -1308,12 +1310,12 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
             end
         end
 
-        if player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
+        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) then
             player:GetData().roomsClearedSinceTake = player:GetData().roomsClearedSinceTake + 1
-            local roomsToSuck = math.max(10 - (2 * player:GetCollectibleNum(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK)), 1)
+            local roomsToSuck = math.max(10 - (2 * player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK)), 1)
             local itemsTakenHere = player:GetData().itemsTaken
             if player:GetData().roomsClearedSinceTake % roomsToSuck == 0 then
-                local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK)
+                local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK)
                 local shift = 0
                 for j, item_tag in ipairs(player:GetData().itemsTaken) do
                     if player:HasCollectible(item_tag) == false then
@@ -1325,12 +1327,12 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
                 
                 local pos_to_delete = rng:RandomInt(#itemsTakenHere) + 1
                 local config = Isaac.GetItemConfig():GetCollectible(player:GetData().itemsTaken[pos_to_delete])
-                if (player:GetData().itemsTaken[pos_to_delete] == CollectibleType.COLLECTIBLE_NIGHTMARE_TICK or (config.Tags & ItemConfig.TAG_QUEST == ItemConfig.TAG_QUEST)) and #itemsTakenHere > 1 then
+                if (player:GetData().itemsTaken[pos_to_delete] == WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK or (config.Tags & ItemConfig.TAG_QUEST == ItemConfig.TAG_QUEST)) and #itemsTakenHere > 1 then
                     pos_to_delete = (pos_to_delete % #itemsTakenHere) + 1
                 end
                 
                 config = Isaac.GetItemConfig():GetCollectible(player:GetData().itemsTaken[pos_to_delete])
-                if player:GetData().itemsTaken[pos_to_delete] ~= CollectibleType.COLLECTIBLE_NIGHTMARE_TICK and (config.Tags & ItemConfig.TAG_QUEST ~= ItemConfig.TAG_QUEST) then
+                if player:GetData().itemsTaken[pos_to_delete] ~= WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK and (config.Tags & ItemConfig.TAG_QUEST ~= ItemConfig.TAG_QUEST) then
                     local item_del = table.remove(player:GetData().itemsTaken, pos_to_delete)
                     table.remove(player:GetData().poolsTaken, pos_to_delete)
                     player:RemoveCollectible(item_del)
@@ -1458,16 +1460,16 @@ function WarpZone:LevelStart()
     local numPlayers = Game():GetNumPlayers()
     for i=0, numPlayers-1, 1 do
         local player = Isaac.GetPlayer(i)
-        if player:GetData().totalFocusDamage and player:GetData().totalFocusDamage > 0 and (CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() or
-        CollectibleType.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
-        CollectibleType.COLLECTIBLE_FOCUS_3 == player:GetActiveItem() or
-        CollectibleType.COLLECTIBLE_FOCUS_4 == player:GetActiveItem()) then
+        if player:GetData().totalFocusDamage and player:GetData().totalFocusDamage > 0 and (WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS == player:GetActiveItem() or
+        WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
+        WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_3 == player:GetActiveItem() or
+        WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4 == player:GetActiveItem()) then
             local one_unit_full_charge = (Game():GetLevel():GetStage() * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
             local one_unit_full_charge_prev = (math.min(Game():GetLevel():GetStage()-1, 1) * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
             player:GetData().totalFocusDamage = player:GetData().totalFocusDamage * (one_unit_full_charge/one_unit_full_charge_prev)
         end
 
-        if player:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE) then
+        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BIRTHDAY_CAKE) then
             local spawnArray = {PickupVariant.PICKUP_BOMB, PickupVariant.PICKUP_COIN, PickupVariant.PICKUP_HEART, PickupVariant.PICKUP_KEY}
 
             if RNG():RandomInt(2) == 1 then
@@ -1502,8 +1504,8 @@ function WarpZone:LevelStart()
                             nil)
         end
 
-        if player:HasCollectible(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) then
-            player:GetData().numArrows = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) * 3
+        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) then
+            player:GetData().numArrows = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) * 3
         end
     end
     bossPrepped = false
@@ -1558,9 +1560,9 @@ function WarpZone:NewRoom()
           end
     end
 
-    local marblePlayer = doesAnyoneHave(CollectibleType.COLLECTIBLE_STRANGE_MARBLE, false)
+    local marblePlayer = doesAnyoneHave(WarpZone.WarpZoneTypes.COLLECTIBLE_STRANGE_MARBLE, false)
     if marblePlayer ~= nil then
-        local marbleRNG = marblePlayer:GetCollectibleRNG(CollectibleType.COLLECTIBLE_STRANGE_MARBLE)
+        local marbleRNG = marblePlayer:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_STRANGE_MARBLE)
         for i = 0, room:GetGridSize() do
             local gridIndexPosition = room:GetGridPosition(i)
             if room:IsPositionInRoom(gridIndexPosition , 1) then
@@ -1575,7 +1577,7 @@ function WarpZone:NewRoom()
         end
     end
 
-    local georgePlayer = doesAnyoneHave(CollectibleType.COLLECTIBLE_GEORGE, false)
+    local georgePlayer = doesAnyoneHave(WarpZone.WarpZoneTypes.COLLECTIBLE_GEORGE, false)
     if georgePlayer ~= nil and room:IsFirstVisit() then
         local roomtype = room:GetType()
         local desc = Game():GetLevel():GetCurrentRoomDesc().Flags
@@ -1602,7 +1604,7 @@ function WarpZone:NewRoom()
         end
     end
     
-    local possessPlayer =  doesAnyoneHave(CollectibleType.COLLECTIBLE_POSSESSION, false)
+    local possessPlayer =  doesAnyoneHave(WarpZone.WarpZoneTypes.COLLECTIBLE_POSSESSION, false)
     if possessPlayer ~= nil and room:IsFirstVisit() then
         local entities = Isaac.GetRoomEntities()
         local charmed = false
@@ -1620,7 +1622,7 @@ function WarpZone:NewRoom()
         numPossessed = tempnumPossessed
     end
 
-    local aubreyPlayer = doesAnyoneHave(CollectibleType.COLLECTIBLE_AUBREY, false)
+    local aubreyPlayer = doesAnyoneHave(WarpZone.WarpZoneTypes.COLLECTIBLE_AUBREY, false)
     if floorBeggar < 0 and room:GetType() == RoomType.ROOM_SHOP and aubreyPlayer ~= nil then
         floorBeggar = 0
         Isaac.Spawn(
@@ -1720,7 +1722,7 @@ function WarpZone:usePastkiller(collectible, rng, entityplayer, useflags, active
         ShowAnim = true
     }
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.usePastkiller, CollectibleType.COLLECTIBLE_PASTKILLER)
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.usePastkiller, WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER)
 
 function WarpZone:UseFocus(collectible, rng, entityplayer, useflags, activeslot, customvardata)
     local player =  entityplayer:ToPlayer()
@@ -1743,7 +1745,7 @@ function WarpZone:UseFocus(collectible, rng, entityplayer, useflags, activeslot,
         player:GetData().totalFocusDamage = 0
     end
 
-    player:AddCollectible(CollectibleType.COLLECTIBLE_FOCUS, adjustedcharge, false, activeslot)
+    player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS, adjustedcharge, false, activeslot)
 
     return {
         Discharge = false,
@@ -1751,13 +1753,13 @@ function WarpZone:UseFocus(collectible, rng, entityplayer, useflags, activeslot,
         ShowAnim = true
     }
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseFocus, CollectibleType.COLLECTIBLE_FOCUS_4)
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseFocus, WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4)
 
 function WarpZone:UseDoorway(collectible, rng, entityplayer, useflags, activeslot, customvardata)
     local room = Game():GetRoom()
     local currentLevel = Game():GetLevel()
     currentLevel:DisableDevilRoom()
-    entityplayer:UseActiveItem(CollectibleType.COLLECTIBLE_DADS_KEY)
+    entityplayer:UseActiveItem(WarpZone.WarpZoneTypes.COLLECTIBLE_DADS_KEY)
     DoorwayFloor = currentLevel:GetStage()
     currentLevel:ApplyBlueMapEffect()
     
@@ -1837,13 +1839,13 @@ function WarpZone:UseDoorway(collectible, rng, entityplayer, useflags, activeslo
         ShowAnim = true
     }
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseDoorway, CollectibleType.COLLECTIBLE_DOORWAY)
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseDoorway, WarpZone.WarpZoneTypes.COLLECTIBLE_DOORWAY)
 
 function WarpZone:UseIsYou(collectible, rng, entityplayer, useflags, activeslot, customvardata)
     if entityplayer:GetData().baba_active == nil and entityplayer:GetData().reticle == nil then
         entityplayer:GetData().reticle = Isaac.Spawn(1000, 30, 0, entityplayer.Position, Vector(0, 0), entityplayer)
         entityplayer:GetData().blinkTime = 10
-        entityplayer:AnimateCollectible(CollectibleType.COLLECTIBLE_IS_YOU, "LiftItem", "PlayerPickupSparkle")
+        entityplayer:AnimateCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_IS_YOU, "LiftItem", "PlayerPickupSparkle")
         return {
             Discharge = false,
             Remove = false,
@@ -1860,7 +1862,7 @@ function WarpZone:UseIsYou(collectible, rng, entityplayer, useflags, activeslot,
         }
     end
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseIsYou, CollectibleType.COLLECTIBLE_IS_YOU)
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseIsYou, WarpZone.WarpZoneTypes.COLLECTIBLE_IS_YOU)
 
 
 
@@ -1899,7 +1901,7 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
     end
 
 
-    if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant == PickupVariant.PICKUP_COLLECTIBLE) and player:HasCollectible(CollectibleType.COLLECTIBLE_TONY) then
+    if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant == PickupVariant.PICKUP_COLLECTIBLE) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_TONY) then
         --local dmg_config = Isaac.GetItemConfig():GetCollectible(entity.SubType)
         if entity.SubType ~= 0 and player:GetData().tonyBuff > 1 and entity:GetData().collected ~= true then -- and (dmg_config.CacheFlags & CacheFlag.CACHE_DAMAGE == CacheFlag.CACHE_DAMAGE)
             entity:GetData().collected = true
@@ -1917,10 +1919,10 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
             table.insert(player:GetData().itemsTaken, entity.SubType)
             table.insert(player:GetData().poolsTaken, pool)
         end
-        if entity.SubType == CollectibleType.COLLECTIBLE_BALL_OF_TUMORS then
+        if entity.SubType == WarpZone.WarpZoneTypes.COLLECTIBLE_BALL_OF_TUMORS then
             Isaac.Spawn(EntityType.ENTITY_PICKUP, tumorVariant, 1, Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()), Vector(0,0), nil)
         end
-        if entity.SubType == CollectibleType.COLLECTIBLE_BOW_AND_ARROW then
+        if entity.SubType == WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW then
             player:GetData().numArrows = player:GetData().numArrows + 3
         end
     end
@@ -1932,22 +1934,22 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_PICKUP_COLLISION, WarpZone.OnPickupColl
 function WarpZone:EvaluateCache(entityplayer, Cache)
     local cakeBingeBonus = 0
 
-    local tank_qty =  entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK)
+    local tank_qty =  entityplayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_NEWGROUNDS_TANK)
     
     if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BINGE_EATER) then
-        cakeBingeBonus = entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_BIRTHDAY_CAKE)
+        cakeBingeBonus = entityplayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_BIRTHDAY_CAKE)
     end
 
     if Cache == CacheFlag.CACHE_FIREDELAY then
-        local waterAmount = (entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_WATER_FULL) * 2) + (entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_WATER_MID) * 1.5) + (entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_WATER_LOW) * .75)
-        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_NEWGROUNDS_TANK) then
+        local waterAmount = (entityplayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_FULL) * 2) + (entityplayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_MID) * 1.5) + (entityplayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_LOW) * .75)
+        if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NEWGROUNDS_TANK) then
             entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - tank_qty
         end
         entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - waterAmount
         entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - (cakeBingeBonus * 2)
         entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - isNil(entityplayer:GetData().bonusFireDelay, 0)
 
-        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) and entityplayer:GetData().arrowTimeDelay > 0 then
+        if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) and entityplayer:GetData().arrowTimeDelay > 0 then
             if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) then
                 entityplayer.MaxFireDelay = entityplayer.MaxFireDelay + 40
             else
@@ -1962,7 +1964,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
     if Cache == CacheFlag.CACHE_DAMAGE then
         entityplayer.Damage = entityplayer.Damage + (0.5 * tank_qty)
 
-        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
+        if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) then
             entityplayer.Damage = entityplayer.Damage + (entityplayer:GetData().itemsSucked * 0.75)
         end
         
@@ -1970,7 +1972,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
             entityplayer.Damage = entityplayer.Damage + 1
         end
 
-        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_TONY) then
+        if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_TONY) then
             entityplayer.Damage = (entityplayer.Damage * entityplayer:GetData().tonyBuff) + (entityplayer:GetData().tonyBuff * 1.428)
         end
         
@@ -1982,8 +1984,8 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
 
     if Cache == CacheFlag.CACHE_RANGE then
         entityplayer.TearRange = entityplayer.TearRange + (40 * tank_qty)
-        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_GEORGE) then
-            entityplayer.TearRange = entityplayer.TearRange + (entityplayer:GetCollectibleNum(CollectibleType.COLLECTIBLE_GEORGE) * 96)
+        if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GEORGE) then
+            entityplayer.TearRange = entityplayer.TearRange + (entityplayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_GEORGE) * 96)
         end
         entityplayer.TearRange = entityplayer.TearRange + isNil(entityplayer:GetData().bonusRange, 0)
     end
@@ -1997,7 +1999,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         entityplayer.MoveSpeed = entityplayer.MoveSpeed - (tank_qty * .3)
         entityplayer.MoveSpeed = entityplayer.MoveSpeed - (cakeBingeBonus * .03)
         entityplayer.MoveSpeed = entityplayer.MoveSpeed + isNil(entityplayer:GetData().bonusSpeed, 0)
-        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_HITOPS) then
+        if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_HITOPS) then
             entityplayer:GetData().breakCap = false
         end
     end
@@ -2018,7 +2020,7 @@ function WarpZone:postPlayerUpdate(player)
         player:GetData().fireGlove = nil
     end
     if(data.breakCap==false) then
-        player.MoveSpeed = math.min(player.MoveSpeed+player:GetCollectibleNum(CollectibleType.COLLECTIBLE_HITOPS)*0.2, 3)
+        player.MoveSpeed = math.min(player.MoveSpeed+player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_HITOPS)*0.2, 3)
         data.breakCap = nil
     end
     if Game():GetFrameCount() - isNil(player:GetData().MurderFrame, -999) < 15 then
@@ -2028,10 +2030,10 @@ function WarpZone:postPlayerUpdate(player)
         player:AddCacheFlags(CacheFlag.CACHE_SPEED)
         player:EvaluateItems()
         player:GetSprite().Color = Color(1, 1, 1, 1, 0, 0, 0)
-        player:GetEffects():RemoveCollectibleEffect(CollectibleType.COLLECTIBLE_LEO, 1)
+        player:GetEffects():RemoveCollectibleEffect(WarpZone.WarpZoneTypes.COLLECTIBLE_LEO, 1)
     end
 
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) == true or player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true  then
+    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) == true or player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) == true  then
         
         local lasers = Isaac.FindByType(EntityType.ENTITY_LASER)
         for _, laser in ipairs(lasers) do
@@ -2039,7 +2041,7 @@ function WarpZone:postPlayerUpdate(player)
             if data.Laser_Rusty == true then
                 data.Laser_Rusty = false
                 laser.Color = rustColor
-            elseif player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true then
+            elseif player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) == true then
                 laser.Color = tickColor
             end
         end
@@ -2050,7 +2052,7 @@ function WarpZone:postPlayerUpdate(player)
             if data.Laser_Rusty == true then
                 data.Laser_Rusty = false
                 laserEndpoint.Color = rustColor
-            elseif player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true then
+            elseif player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) == true then
                 laserEndpoint.Color = tickColor
             end
         end
@@ -2061,13 +2063,13 @@ function WarpZone:postPlayerUpdate(player)
             if data.Laser_Rusty == true then
                 data.Laser_Rusty = false
                 brimball.Color = rustColor
-            elseif player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true then
+            elseif player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) == true then
                 brimball.Color = tickColor
             end
         end
     end
 
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_SPELUNKERS_PACK) == true then
+    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK) == true then
 		local entities = Isaac.GetRoomEntities()
 
 		for i=1,#entities do
@@ -2088,7 +2090,7 @@ function WarpZone:postPlayerUpdate(player)
 		end
 	end
 
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_POPPOP) then
+    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) then
         if player:GetData().arrowTimeThreeFrames == 1 then
             firePopTear(player, false)
         end
@@ -2128,9 +2130,9 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpda
 function WarpZone:checkTear(entitytear)
     local tear = entitytear:ToTear()
     local player = WarpZone:GetPlayerFromTear(entitytear)
-    if player and player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) then
+    if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) then
         local chance = player.Luck * 5 + 10
-        local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_RUSTY_SPOON)
+        local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON)
         if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
             chance = chance + 20
         end
@@ -2139,11 +2141,11 @@ function WarpZone:checkTear(entitytear)
             tear:GetData().Is_Rusty = true
             tear:GetData().BleedIt = true
         end
-    elseif player and player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) then
+    elseif player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) then
         tear:GetData().NightmareColor = true
     end
 
-    if player and player:HasCollectible(CollectibleType.COLLECTIBLE_BOW_AND_ARROW) and player:GetData().numArrows > 0 then
+    if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) and player:GetData().numArrows > 0 then
         player:GetData().numArrows = player:GetData().numArrows - 1
         tear:GetData().BowArrowPiercing = 2
         local spr = tear:GetSprite()
@@ -2158,7 +2160,7 @@ function WarpZone:checkTear(entitytear)
         end
     end
 
-    if player and CollectibleType.COLLECTIBLE_FOCUS == player:GetActiveItem() and player:GetData().primeShot ~= nil then
+    if player and WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS == player:GetActiveItem() and player:GetData().primeShot ~= nil then
         SfxManager:Play(SoundEffect.SOUND_EXPLOSION_WEAK, 3)
         player:GetData().primeShot = nil
         tear:GetData().FocusShot = true
@@ -2173,9 +2175,9 @@ function WarpZone:checkLaser(entitylaser)
     local player = getPlayerFromKnifeLaser(laser)
     local var = laser.Variant
     local subt = laser.SubType
-    if player and player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) and not ((var == 1 and subt == 3) or var == 5 or var == 12) then
+    if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) and not ((var == 1 and subt == 3) or var == 5 or var == 12) then
         local chance = player.Luck * 5 + 10
-        local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_RUSTY_SPOON)
+        local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON)
         if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
             chance = chance + 20
         end
@@ -2243,7 +2245,7 @@ function WarpZone:updateTear(entitytear)
     end
     local waterAmount = 1
     if player then
-        waterAmount = waterAmount + 0.3 * ((player:GetCollectibleNum(CollectibleType.COLLECTIBLE_WATER_FULL) * 3) + (player:GetCollectibleNum(CollectibleType.COLLECTIBLE_WATER_MID) * 2) + (player:GetCollectibleNum(CollectibleType.COLLECTIBLE_WATER_LOW) * 1))
+        waterAmount = waterAmount + 0.3 * ((player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_FULL) * 3) + (player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_MID) * 2) + (player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_LOW) * 1))
     end
     if not focusshot then
         if data.resized == nil then
@@ -2292,9 +2294,9 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, WarpZone.hitEnemy)
 
 function WarpZone:OnKnifeCollide(knife, collider, low)
     local player = getPlayerFromKnifeLaser(knife)
-    if player and player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) and collider:IsVulnerableEnemy() then
+    if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) and collider:IsVulnerableEnemy() then
         local chance = player.Luck * 5 + 10
-        local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_RUSTY_SPOON)
+        local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON)
         if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
             chance = chance + 20
         end
@@ -2336,7 +2338,7 @@ function WarpZone:OnFrame(player)
                 end
             end
         end
-        if player:HasCollectible(CollectibleType.COLLECTIBLE_IS_YOU) and player:GetData().reticle ~= nil then
+        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_IS_YOU) and player:GetData().reticle ~= nil then
             local aimDir = player:GetAimDirection()
             player:GetData().reticle.Velocity = aimDir * 20
 
@@ -2368,11 +2370,11 @@ function WarpZone:OnFrame(player)
                     end
                 end
                 if stop then --and ai.player:GetSprite():IsPlaying("LiftItem")
-                    player:AnimateCollectible(CollectibleType.COLLECTIBLE_IS_YOU, "HideItem", "Empty")
+                    player:AnimateCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_IS_YOU, "HideItem", "Empty")
                 end
         end
-        --[[if player:HasCollectible(CollectibleType.COLLECTIBLE_FOOTBALL) and not player:GetData().ballCheck and room:GetFrameCount() > 0 then
-            local numberBalls = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_FOOTBALL)
+        --[[if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOOTBALL) and not player:GetData().ballCheck and room:GetFrameCount() > 0 then
+            local numberBalls = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_FOOTBALL)
             local numberCubes = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_CUBE_BABY)
             local entities = Isaac.GetRoomEntities()
             for i, entity_pos in ipairs(entities) do
@@ -2406,7 +2408,7 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, WarpZone.OnFrame)
 
 function WarpZone:OnEntitySpawn(npc)
-    local player = doesAnyoneHave(CollectibleType.COLLECTIBLE_STRANGE_MARBLE, false)
+    local player = doesAnyoneHave(WarpZone.WarpZoneTypes.COLLECTIBLE_STRANGE_MARBLE, false)
     if player ~= nil then
         local rng = RNG()
         rng:SetSeed(Random(), 1)
@@ -2419,10 +2421,10 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_NPC_INIT, WarpZone.OnEntitySpawn)
 
 
 function WarpZone:OnEntityDeath(npc)
-    local player = doesAnyoneHave(CollectibleType.COLLECTIBLE_STRANGE_MARBLE, false)
+    local player = doesAnyoneHave(WarpZone.WarpZoneTypes.COLLECTIBLE_STRANGE_MARBLE, false)
     if player ~= nil and npc:IsEnemy() and npc:IsChampion() then
         local championColor = npc:GetChampionColorIdx()
-        local rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_STRANGE_MARBLE)
+        local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_STRANGE_MARBLE)
         ChampionsToLoot[championColor](EntityRef(npc), rng, EntityRef(player))
     end
 end
@@ -2430,18 +2432,18 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_NPC_DEATH, WarpZone.OnEntityDeath)
 
 function WarpZone:UseDiogenes(collectible, rng, entityplayer, useflags, activeslot, customvardata)
 
-    entityplayer:AddCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE, 0, false, activeslot)
+    entityplayer:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE, 0, false, activeslot)
     SfxManager:Play(SoundEffect.SOUND_URN_OPEN)
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseDiogenes, CollectibleType.COLLECTIBLE_DIOGENES_POT)
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseDiogenes, WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT)
 
 
 
 function WarpZone:SheathDiogenes(collectible, rng, entityplayer, useflags, activeslot, customvardata)
-    entityplayer:AddCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT, 0, false, activeslot)
+    entityplayer:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT, 0, false, activeslot)
     SfxManager:Play(SoundEffect.SOUND_URN_CLOSE)
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.SheathDiogenes, CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE)
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.SheathDiogenes, WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE)
 
 
 local function runUpdates(tab) --This is from Fiend Folio
@@ -2556,7 +2558,7 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_FIRE_TEAR, function(_, tear)
 	local player = WarpZone:GetPlayerFromTear(tear)
     
     if player then
-        if player:HasCollectible(CollectibleType.COLLECTIBLE_DIOGENES_POT_LIVE) then
+        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE) then
             player:GetData().dioDamageOn = true
             tear:Remove()
             WarpZone:FireClub(player, player:GetFireDirection(), false)
@@ -2633,8 +2635,8 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, pre_orbital_collisi
 ---@param cache_flag integer
 local function update_cache(_, player, cache_flag)
 	if cache_flag == CacheFlag.CACHE_FAMILIARS then
-		local pop_pickups = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_LOLLIPOP)
-		local pop_rng = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_LOLLIPOP)
+		local pop_pickups = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_LOLLIPOP)
+		local pop_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_LOLLIPOP)
 		player:CheckFamiliar(Lollipop.VARIANT, pop_pickups, pop_rng)
         
         local tumor_count = player:GetData().playerTumors
@@ -2757,14 +2759,14 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.pre_tumor_
 
 
 function WarpZone:selectPickup(type, variant, subtype, position, velocity, spawner, seed)
-    local player = doesAnyoneHave(CollectibleType.COLLECTIBLE_BALL_OF_TUMORS, false)
+    local player = doesAnyoneHave(WarpZone.WarpZoneTypes.COLLECTIBLE_BALL_OF_TUMORS, false)
     if Game():GetRoom():GetFrameCount() <= 0 and not Game():GetRoom():IsFirstVisit() then
         return nil --exclude spawns when re-entering a room with items
     end
     if player ~= nil and type == EntityType.ENTITY_PICKUP then
-        local tumorRNG = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_BALL_OF_TUMORS)
+        local tumorRNG = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_BALL_OF_TUMORS)
         local rand_num = tumorRNG:RandomInt(100) + 1
-        local collectible_num = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_BALL_OF_TUMORS) * 4
+        local collectible_num = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_BALL_OF_TUMORS) * 4
         
         if rand_num <= collectible_num and (variant <= 40 or
         variant == PickupVariant.PICKUP_LIL_BATTERY) then
@@ -2922,7 +2924,7 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.BeggarUpdate)
 
 function WarpZone:UseRLHand(collectible, rng, entityplayer, useflags, activeslot, customvardata)
     local entities = Isaac.GetRoomEntities()
-    local left_rng = entityplayer:GetCollectibleRNG(CollectibleType.COLLECTIBLE_REAL_LEFT)
+    local left_rng = entityplayer:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_REAL_LEFT)
     local ischest = false
 
     for i, entity_pos in ipairs(entities) do
@@ -2968,7 +2970,7 @@ function WarpZone:UseRLHand(collectible, rng, entityplayer, useflags, activeslot
         ShowAnim = true
     }
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseRLHand, CollectibleType.COLLECTIBLE_REAL_LEFT)
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseRLHand, WarpZone.WarpZoneTypes.COLLECTIBLE_REAL_LEFT)
 
 
 function WarpZone:FootballCollide(familiar, collider, low)
@@ -2980,7 +2982,7 @@ function WarpZone:FootballCollide(familiar, collider, low)
             --collider.Friction
             --print(tostring(familiar.Velocity.X * 5) .. "  " .. tostring(familiar.Velocity.Y * 5))
             local damage = math.abs(familiar.Velocity.X + collider.Velocity.X) * 0.75 + math.abs(familiar.Velocity.Y + collider.Velocity.Y) * 0.75
-            local footrand = player:GetCollectibleRNG(CollectibleType.COLLECTIBLE_FOOTBALL)
+            local footrand = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_FOOTBALL)
             if damage > 10 and footrand:RandomInt(100) > 50 then
                 collider:AddConfusion(EntityRef(familiar), 90, true)
             end
@@ -3022,7 +3024,7 @@ function WarpZone:FindEffects(collectible, rng, entityplayer, useflags, activesl
         ShowAnim = true
     }
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.FindEffects, CollectibleType.COLLECTIBLE_TEST_ACTIVE)
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.FindEffects, WarpZone.WarpZoneTypes.COLLECTIBLE_TEST_ACTIVE)
 
 
 
@@ -3312,7 +3314,7 @@ function WarpZone:UseEmergencyMeeting(collectible, rng, player, useflags, active
     SfxManager:Play(SoundEffect.SOUND_EMERGENCY_MEETING, 2)
     ::continue::
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseEmergencyMeeting, CollectibleType.COLLECTIBLE_EMERGENCY_MEETING)
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseEmergencyMeeting, WarpZone.WarpZoneTypes.COLLECTIBLE_EMERGENCY_MEETING)
 
 
 function WarpZone:OnPlayerCollide(player, collider)
