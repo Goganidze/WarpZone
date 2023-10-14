@@ -226,9 +226,9 @@ WarpZone.WarpZoneTypes.COLLECTIBLE_EMERGENCY_MEETING = Isaac.GetItemIdByName("Em
 WarpZone.WarpZoneTypes.COLLECTIBLE_BOXING_GLOVE = Isaac.GetItemIdByName("Boxing Glove")
 
 
-TrinketType.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
-TrinketType.TRINKET_HUNKY_BOYS = Isaac.GetTrinketIdByName("Hunky Boys")
-TrinketType.TRINKET_BIBLE_THUMP = Isaac.GetTrinketIdByName("Bible Thump")
+WarpZone.WarpZoneTypes.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
+WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS = Isaac.GetTrinketIdByName("Hunky Boys")
+WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP = Isaac.GetTrinketIdByName("Bible Thump")
 
 Card.CARD_COW_TRASH_FARM = Isaac.GetCardIdByName("CowOnTrash")
 Card.CARD_LOOT_CARD = Isaac.GetCardIdByName("LootCard")
@@ -266,7 +266,7 @@ if EID then
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK, "#Every 8 room clears, one passive item is removed from your inventory#.75 Damage Up for each item removed this way", "Nightmare Tick",  "en_us")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK, "#+12 bombs#Pits within your bombs' blast radius are filled in#When your bomb explodes, the resonant force breaks tinted and super secret rocks throughout the room #Bomb rocks in the room will break apart, dropping a bomb pickup", "Spelunker's Pack",  "en_us")
 
-    EID:addTrinket(TrinketType.TRINKET_RING_SNAKE, "#Receive 2 cards at the start of each floor", "Ring of the Snake", "en_us")
+    EID:addTrinket(WarpZone.WarpZoneTypes.TRINKET_RING_SNAKE, "#Receive 2 cards at the start of each floor", "Ring of the Snake", "en_us")
 
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT, "Toggles a melee hammer strike on and off#When equipped, you receive a 1.5x damage multiplier#Getting hit while equipped teleports you to the starting room", "Diogenes's Pot",  "en_us")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE, "Toggles a melee hammer strike on and off#When equipped, you receive a 1.5x damage multiplier#Getting hit while equipped teleports you to the starting room", "Diogenes's Pot",  "en_us")
@@ -288,8 +288,8 @@ if EID then
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW, "Isaac is able to shoot large, piercing arrow tears that deal 1.5x damage, but have only 3 ammunition#Once the ammo is depleted, Isaac fires normal tears#When a tear lands, it drops a token that will replenish 1 tear when collected", "Bow and Arrow",  "en_us")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_EMERGENCY_MEETING, "On use, teleports you and all other enemies in the room to the starting room.#On arrival, all enemies, including bosses, are confused for a few seconds", "Emergency Meeting",  "en_us")
 
-    EID:addTrinket(TrinketType.TRINKET_HUNKY_BOYS, "While held, pressing the Drop Trinket button immediately drops this trinket; you don't need to hold the button#When on the ground, enemies will target the trinket for a short time.", "Hunky Boys", "en_us")
-    EID:addTrinket(TrinketType.TRINKET_BIBLE_THUMP, "Once you exit a room with this trinket, The Bible is added to several item pools.#Using The Bible or The Devil? card with this item will deal 40 damage to all enemies in the room, in addition to granting flight.#Using The Bible on Satan will kill him, and you will survive#The golden version of this trinket kills The Lamb as well.", "Bible Thump", "en_us")
+    EID:addTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS, "While held, pressing the Drop Trinket button immediately drops this trinket; you don't need to hold the button#When on the ground, enemies will target the trinket for a short time.", "Hunky Boys", "en_us")
+    EID:addTrinket(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP, "Once you exit a room with this trinket, The Bible is added to several item pools.#Using The Bible or The Devil? card with this item will deal 40 damage to all enemies in the room, in addition to granting flight.#Using The Bible on Satan will kill him, and you will survive#The golden version of this trinket kills The Lamb as well.", "Bible Thump", "en_us")
 
     EID:addCard(Card.CARD_COW_TRASH_FARM, "Rerolls all items into fly themed items#Rerolls pickups into blue flies#Does not actually become back your money", "Cow on a Trash Farm", "en_us")
     EID:addCard(Card.CARD_LOOT_CARD, "Randomly spawns a random item or trinket from any pool", "Loot Card", "en_us")
@@ -940,7 +940,7 @@ function WarpZone:OnUpdate()
         local targetPos = {}
         local random = myRNG:RandomInt(20)
         for i, entity in ipairs(entities) do
-            if entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == PickupVariant.PICKUP_TRINKET and entity.SubType == TrinketType.TRINKET_HUNKY_BOYS then
+            if entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == PickupVariant.PICKUP_TRINKET and entity.SubType == WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS then
                 if entity:GetEntityFlags() & EntityFlag.FLAG_BAITED ~= EntityFlag.FLAG_BAITED then
                     table.insert(targetPos, entity)
                 end
@@ -1003,10 +1003,10 @@ function WarpZone:postRender(player)
 	local actions = player:GetLastActionTriggers()
     local controllerid = player.ControllerIndex
     if not Game():IsPaused() then
-        if player:HasTrinket(TrinketType.TRINKET_HUNKY_BOYS) and Input.IsActionTriggered(ButtonAction.ACTION_DROP, controllerid) then
+        if player:HasTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS) and Input.IsActionTriggered(ButtonAction.ACTION_DROP, controllerid) then
             --player:DropTrinket(player.Position)
-            player:TryRemoveTrinket(TrinketType.TRINKET_HUNKY_BOYS)
-            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, TrinketType.TRINKET_HUNKY_BOYS, player.Position, Vector(0, 0), nil)
+            player:TryRemoveTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS)
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS, player.Position, Vector(0, 0), nil)
             
         end
 
@@ -1488,7 +1488,7 @@ function WarpZone:LevelStart()
             end
         end
 
-        if player:HasTrinket(TrinketType.TRINKET_RING_SNAKE) then
+        if player:HasTrinket(WarpZone.WarpZoneTypes.TRINKET_RING_SNAKE) then
             Isaac.Spawn(EntityType.ENTITY_PICKUP,
                             PickupVariant.PICKUP_TAROTCARD,
                             0,
@@ -1637,7 +1637,7 @@ function WarpZone:NewRoom()
 
     
     
-    local biblePlayer = doesAnyoneHave(TrinketType.TRINKET_BIBLE_THUMP, true)
+    local biblePlayer = doesAnyoneHave(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP, true)
 
     if biblePlayer ~= nil and bibleThumpPool == false then
         bibleThumpPool = true
@@ -3046,7 +3046,7 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_ENTITY_SPAWN, WarpZone.DisableCreepPlan
 
 
 function WarpZone:BibleExtraDamage(collectible, rng, player, useflags, activeslot, customvardata)
-    if player:HasTrinket(TrinketType.TRINKET_BIBLE_THUMP) then
+    if player:HasTrinket(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP) then
         player:UseActiveItem(CollectibleType.COLLECTIBLE_NECRONOMICON, false, false, true, false, -1, 0)
     end
 end
@@ -3054,7 +3054,7 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.BibleExtraDamage, Collec
 
 
 function WarpZone:BibleKillSatan(collectible, rng, player, useflags, activeslot, customvardata)
-    if player:HasTrinket(TrinketType.TRINKET_BIBLE_THUMP) and Game():GetLevel():GetStage() == LevelStage.STAGE5 
+    if player:HasTrinket(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP) and Game():GetLevel():GetStage() == LevelStage.STAGE5 
     and Game():GetRoom():GetType() == RoomType.ROOM_BOSS and Game():GetLevel():GetStageType() == StageType.STAGETYPE_ORIGINAL then
     
             local entities_s = Isaac.GetRoomEntities()
@@ -3064,7 +3064,7 @@ function WarpZone:BibleKillSatan(collectible, rng, player, useflags, activeslot,
                 end
             end
         return true
-    elseif player:GetTrinketMultiplier(TrinketType.TRINKET_BIBLE_THUMP) >= 2 and Game():GetLevel():GetStage() == LevelStage.STAGE6 
+    elseif player:GetTrinketMultiplier(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP) >= 2 and Game():GetLevel():GetStage() == LevelStage.STAGE6 
     and Game():GetRoom():GetType() == RoomType.ROOM_BOSS and Game():GetLevel():GetStageType() == StageType.STAGETYPE_ORIGINAL then
         local entities_s = Isaac.GetRoomEntities()
             for i, entity_s in ipairs(entities_s) do
