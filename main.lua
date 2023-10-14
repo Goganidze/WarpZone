@@ -184,6 +184,7 @@ local chargebarFrames = 235
 local BoxHud = Sprite()
 BoxHud:Load("gfx/chargebar_glove.anm2", true)
 local framesToCharge = 141
+local boxRenderedPosition = Vector(20, -27)
 
 --item defintions
 CollectibleType.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
@@ -1094,11 +1095,11 @@ function WarpZone:UIOnRender(player, renderoffset)
     if player:HasCollectible(CollectibleType.COLLECTIBLE_BOXING_GLOVE) and currentCharge > 0 and currentCharge <= framesToCharge then
         local frameToSet = math.floor(math.min(currentCharge * (100/framesToCharge), 100))
         BoxHud:SetFrame("Charging", frameToSet)
-        BoxHud:Render(Isaac.WorldToScreen(player.Position)+renderedPosition)
+        BoxHud:Render(Isaac.WorldToScreen(player.Position) + boxRenderedPosition)
     elseif player:HasCollectible(CollectibleType.COLLECTIBLE_BOXING_GLOVE) and currentCharge > framesToCharge then
         local frameToSet = math.floor(((currentCharge-framesToCharge))/2) % 6
         BoxHud:SetFrame("Charged", frameToSet)
-        BoxHud:Render(Isaac.WorldToScreen(player.Position)+renderedPosition)
+        BoxHud:Render(Isaac.WorldToScreen(player.Position) + boxRenderedPosition)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_RENDER, WarpZone.UIOnRender)
