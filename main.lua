@@ -2023,10 +2023,12 @@ function WarpZone:postPlayerUpdate(player)
     end
     if Game():GetFrameCount() - isNil(player:GetData().MurderFrame, -999) < 15 then
         player.MoveSpeed = 4
-    elseif player.MoveSpeed >= 4 then
+    elseif player:GetData().InMurderState == true then
+        player:GetData().InMurderState = false
         player:AddCacheFlags(CacheFlag.CACHE_SPEED)
         player:EvaluateItems()
         player:GetSprite().Color = Color(1, 1, 1, 1, 0, 0, 0)
+        player:GetEffects():RemoveCollectibleEffect(CollectibleType.COLLECTIBLE_LEO, 1)
     end
 
     if player:HasCollectible(CollectibleType.COLLECTIBLE_RUSTY_SPOON) == true or player:HasCollectible(CollectibleType.COLLECTIBLE_NIGHTMARE_TICK) == true  then
@@ -2101,6 +2103,23 @@ function WarpZone:postPlayerUpdate(player)
     end
     if data.WarpZone_data.HoldEntityLogic and type(data.WarpZone_data.HoldEntityLogic) == "function" then
         data.WarpZone_data.HoldEntityLogic(player)
+    end
+
+    if player:GetData().InMurderState == true then
+        local room = Game():GetRoom()
+        
+        for i = 0, room:GetGridSize() do
+            local gridIndexPosition = room:GetGridPosition(i)
+            if room:IsPositionInRoom(gridIndexPosition , 1) then
+                local gridEntity = room:GetGridEntity(i)
+                if gridEntity ~= nil 
+                and gridEntity:ToPit() ~= nil 
+                and gridEntity.Position:Distance(player.Position) < 40 then
+                    gridEntity:ToPit():MakeBridge(nil)
+                    SfxManager:Play(SoundEffect.SOUND_ROCK_CRUMBLE)
+                end
+            end
+        end
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpdate, 0)
@@ -3448,6 +3467,8 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseDemonForm2, Card.CARD
 function WarpZone:UseMurderCard(card, player, useflags)
     player:GetData().MurderFrame = Game():GetFrameCount()
     player:GetSprite().Color = Color(1, 0, 0, 1, 0, 0, 0)
+    player:GetEffects():AddCollectibleEffect(CollectibleType.COLLECTIBLE_LEO, false, 1)
+    player:GetData().InMurderState = true
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseMurderCard, Card.CARD_MURDER)
 
