@@ -2503,6 +2503,8 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_KNIFE_INIT, function(_, knife)
                     if WarpZone.isGlove == true then
                         knife:GetData().isGloveObj = 2
                         WarpZone.isGlove = false
+                    else
+                        knife:GetData().isHammer = 2
                     end
 				end
 			elseif player and player:GetData().GrabbedClub and player:GetData().GrabbedClub:Exists() then
@@ -2516,10 +2518,16 @@ end)
 
 function WarpZone:OnKnifeUpdate(knife)
     if knife:GetData().isGloveObj == 2 then
-        knife:GetSprite().Color = Color(1, 0, 0, 1, 0, 0, 0)
+        knife:GetSprite():ReplaceSpritesheet(1, "gfx/glove_shot.png")
+        --knife:GetSprite().Color = Color(1, 0, 0, 1, 0, 0, 0)
         knife.Scale = knife.Scale * 1.5
         knife:GetSprite().Scale = knife:GetSprite().Scale * 1.5
         knife:GetData().isGloveObj = 1
+        knife:GetSprite():LoadGraphics()
+    elseif knife:GetData().isHammer == 2 then
+        knife:GetSprite():ReplaceSpritesheet(1, "gfx/hammer_shot.png")
+        knife:GetData().isHammer = 1
+        knife:GetSprite():LoadGraphics()
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_KNIFE_UPDATE, WarpZone.OnKnifeUpdate)
