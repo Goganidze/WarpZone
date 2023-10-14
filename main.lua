@@ -288,6 +288,8 @@ if EID then
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BALL_OF_TUMORS, "Bombs, hearts, keys and batteries have a small chance of turning into collectible tumors#Collecting tumors powers a tumor orbital, which blocks shots and deals contact damage#With enough tumors, a second orbital will spawn", "Ball of Tumors",  "en_us")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW, "Isaac is able to shoot large, piercing arrow tears that deal 1.5x damage, but have only 3 ammunition#Once the ammo is depleted, Isaac fires normal tears#When a tear lands, it drops a token that will replenish 1 tear when collected", "Bow and Arrow",  "en_us")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_EMERGENCY_MEETING, "On use, teleports you and all other enemies in the room to the starting room.#On arrival, all enemies, including bosses, are confused for a few seconds", "Emergency Meeting",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOXING_GLOVE, "Gain a charged punching attack with a 2.35 second charge time#The punch has high knockback and stuns enemies", "Boxing Glove",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY, "On use, you fall up to the ceiling for about 5 seconds.#While in this state, gain flight, invulnerability, and +6.25 Range#Tears rain down from the top of the screen, regardless of the fired direction.", "Gravity",  "en_us")
 
     EID:addTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS, "While held, pressing the Drop Trinket button immediately drops this trinket; you don't need to hold the button#When on the ground, enemies will target the trinket for a short time.", "Hunky Boys", "en_us")
     EID:addTrinket(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP, "Once you exit a room with this trinket, The Bible is added to several item pools.#Using The Bible or The Devil? card with this item will deal 40 damage to all enemies in the room, in addition to granting flight.#Using The Bible on Satan will kill him, and you will survive#The golden version of this trinket kills The Lamb as well.", "Bible Thump", "en_us")
@@ -2059,6 +2061,7 @@ function WarpZone:postPlayerUpdate(player)
         player:AddCacheFlags(CacheFlag.CACHE_RANGE)
         player:AddCacheFlags(CacheFlag.CACHE_FLYING)
         player:EvaluateItems()
+        SfxManager:Play(SoundEffect.SOUND_THUMBSUP, 2)
     end
 
     --if Input.IsActionTriggered(ButtonAction.ACTION_ITEM, player.ControllerIndex) == true and 
@@ -3589,6 +3592,7 @@ function WarpZone:useGravity(collectible, rng, player, useflags, activeslot, cus
     player:AddCacheFlags(CacheFlag.CACHE_RANGE)
     player:AddCacheFlags(CacheFlag.CACHE_FLYING)
     player:EvaluateItems()
+    SfxManager:Play(SoundEffect.SOUND_THUMBSUP, 2)
     
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.useGravity, WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY)

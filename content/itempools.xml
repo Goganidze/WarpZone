@@ -16,6 +16,8 @@
         <Item Name="Ball of Tumors" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Bow and Arrow" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Emergency Meeting" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Boxing Glove" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Gravity" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="curse">
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -41,6 +43,8 @@
         <Item Name="Ball of Tumors" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Bow and Arrow" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Emergency Meeting" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Gravity" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Boxing Glove" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="greedCurse">
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -70,6 +74,7 @@
         <Item Name="Pop Pop" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Ball of Tumors" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Emergency Meeting" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Gravity" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="boss">
         <Item Name="Birthday Cake" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -91,6 +96,8 @@
         <Item Name="Rusty Spoon" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Bow and Arrow" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Emergency Meeting" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Gravity" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Boxing Glove" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
     <Pool Name="angel">
         <Item Name="Focus" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -102,6 +109,7 @@
     </Pool>
     <Pool Name="ultraSecret">
         <Item Name="Nightmare Tick" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Boxing Glove" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
     <Pool Name="redChest">
         <Item Name="Nightmare Tick" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -119,12 +127,17 @@
     <Pool Name="greedGoldenChest">
         <Item Name="Football" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Bow and Arrow" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Boxing Glove" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
     <Pool Name="goldenChest">
         <Item Name="Football" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Bow and Arrow" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Boxing Glove" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
     <Pool Name="woodenChest">
         <Item Name="Bow and Arrow" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+    </Pool>
+    <Pool Name="oldChest">
+        <Item Name="Boxing Glove" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 </ItemPools>
