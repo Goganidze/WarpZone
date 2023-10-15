@@ -247,7 +247,8 @@ WarpZone.WarpZoneTypes.CARD_FIEND_FIRE = Isaac.GetCardIdByName("FiendFire")
 WarpZone.WarpZoneTypes.SOUND_POP_POP = Isaac.GetSoundIdByName("PopPop_sound")
 WarpZone.WarpZoneTypes.SOUND_COW_TRASH = Isaac.GetSoundIdByName("TrashFarm")
 WarpZone.WarpZoneTypes.SOUND_EMERGENCY_MEETING = Isaac.GetSoundIdByName("EmergencyMeetingSound")
-
+WarpZone.WarpZoneTypes.SOUND_MURDER_STING = Isaac.GetSoundIdByName("MurderSting")
+WarpZone.WarpZoneTypes.SOUND_MURDER_KILL = Isaac.GetSoundIdByName("MurderKillSnd")
 
 --external item descriptions
 if EID then
@@ -426,21 +427,6 @@ local function doesAnyoneHave(itemtype, trinket)
         
     end
     return hasIt
-end
-
-local function getClosestPlayerPosition(entity)
-    local numPlayers = Game():GetNumPlayers()
-    local closeScore = 999999
-    local selectedPlayer = nil
-    
-    for i=0, numPlayers-1, 1 do
-        local player = Isaac.GetPlayer(i)
-        if math.abs((player.Position - entity.Position):LengthSquared()) < closeScore then
-            closeScore = math.abs((player.Position - entity.Position):LengthSquared())
-            selectedPlayer = player
-        end
-    end
-    return selectedPlayer
 end
 
 function WarpZone:GetPtrHashEntity(entity)
@@ -958,7 +944,7 @@ function WarpZone:OnUpdate()
                 end
             elseif entity:IsEnemy()  and random > 5 then --and not entity:IsBoss()
                 for i, target in ipairs(targetPos) do
-                    local player = getClosestPlayerPosition(entity)
+                    local player = Game():getNearestPlayer(entity.Position)
                     if player and (math.abs((target.Position - entity.Position):LengthSquared()) < math.abs((player.Position - entity.Position):LengthSquared())) or random > 15 then
                         entity.Target = target
                         entity:GetData().distracted = 3
@@ -3373,11 +3359,9 @@ function WarpZone:OnPlayerCollide(player, collider)
     end
     if collider:IsActiveEnemy() and Game():GetFrameCount() - isNil(player:GetData().MurderFrame, -999) < 15 then
         collider:Die()
-        SfxManager:Play(SoundEffect.SOUND_DEATH_BURST_LARGE, 2)
+        SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_MURDER_KILL, 2)
         return true
     end
-
-    
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_PLAYER_COLLISION, WarpZone.OnPlayerCollide)
 
@@ -3526,6 +3510,7 @@ function WarpZone:UseMurderCard(card, player, useflags)
     player:GetSprite().Color = Color(1, 0, 0, 1, 0, 0, 0)
     player:GetEffects():AddCollectibleEffect(CollectibleType.COLLECTIBLE_LEO, false, 1)
     player:GetData().InMurderState = true
+    SfxManager.Play(WarpZone.WarpZoneTypes.SOUND_MURDER_STING)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseMurderCard, WarpZone.WarpZoneTypes.CARD_MURDER)
 

@@ -8,4 +8,10 @@
     <sound name="EmergencyMeetingSound">
         <sample weight="1" path="Emergency_Meeting.wav" />
     </sound>
+    <sound name="MurderSting">
+        <sample weight="1" path="Impostor_Sting.wav" />
+    </sound>
+    <sound name="MurderKillSnd">
+        <sample weight="1" path="Impostor_Kill.wav" />
+    </sound>
 </sounds>
