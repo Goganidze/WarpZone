@@ -2046,6 +2046,10 @@ function WarpZone:postPlayerUpdate(player)
         player:GetSprite():LoadGraphics()
     end
 
+    if player:GetData().gravReticle then
+        player:GetData().gravReticle.Position = player.Position
+    end
+
     if isNil(player:GetData().InGravityState, -999) > 0 and (Game():GetFrameCount() - isNil(player:GetData().InGravityState, -999) >= 150) then
         player:PlayExtraAnimation("TeleportDown")
         player:GetSprite().Color = Color(1, 1, 1, 1, 0, 0, 0)
@@ -2054,6 +2058,10 @@ function WarpZone:postPlayerUpdate(player)
         player:AddCacheFlags(CacheFlag.CACHE_FLYING)
         player:EvaluateItems()
         SfxManager:Play(SoundEffect.SOUND_THUMBSUP, 2)
+        if player:GetData().gravReticle then
+            player:GetData().gravReticle:Remove()
+            player:GetData().gravReticle = nil
+        end
     end
 
     --if Input.IsActionTriggered(ButtonAction.ACTION_ITEM, player.ControllerIndex) == true and 
@@ -3579,7 +3587,10 @@ function WarpZone:useGravity(collectible, rng, player, useflags, activeslot, cus
     player:AddCacheFlags(CacheFlag.CACHE_FLYING)
     player:EvaluateItems()
     SfxManager:Play(SoundEffect.SOUND_THUMBSUP, 2)
-    
+    player:GetData().gravReticle = Isaac.Spawn(1000, 30, 0, player.Position, Vector(0, 0), player)
+    player:GetData().gravReticle:GetSprite():ReplaceSpritesheet(0, "gfx/gravity_lander.png")
+    player:GetData().gravReticle:GetSprite():LoadGraphics()
+    player:GetData().gravReticle.Color = Color(0.392, 0.917, 0.509, .5, 0, 0, 0)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.useGravity, WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY)
 
