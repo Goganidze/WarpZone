@@ -2093,11 +2093,11 @@ function WarpZone:postPlayerUpdate(player)
     end
 
     if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK) == true then
-		local entities = Isaac.GetRoomEntities()
+		local entities = Isaac.FindByType(EntityType.ENTITY_BOMBDROP)
 
 		for i=1,#entities do
 			--Normal bombs
-			if entities[i].Type == EntityType.ENTITY_BOMBDROP and entities[i].SpawnerType == EntityType.ENTITY_PLAYER then
+			if entities[i].SpawnerType == EntityType.ENTITY_PLAYER then
 				local sprite = entities[i]:GetSprite()
 				--If First frame
 				if entities[i].FrameCount  == 1 then
@@ -2959,37 +2959,37 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.BeggarUpdate)
 
 
 function WarpZone:UseRLHand(collectible, rng, entityplayer, useflags, activeslot, customvardata)
-    local entities = Isaac.GetRoomEntities()
+    local entities = Isaac.FindByType(EntityType.ENTITY_PICKUP)
     local left_rng = entityplayer:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_REAL_LEFT)
     local ischest = false
 
     for i, entity_pos in ipairs(entities) do
         local rand_num = left_rng:RandomInt(100) 
-        if entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_MIMICCHEST then
+        if entity_pos.Variant == PickupVariant.PICKUP_MIMICCHEST then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_HAUNTEDCHEST, 0)
             ischest = true
-        elseif entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_HAUNTEDCHEST then
+        elseif entity_pos.Variant == PickupVariant.PICKUP_HAUNTEDCHEST then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_CHEST, 0)
             ischest = true
-        elseif entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_CHEST then
+        elseif entity_pos.Variant == PickupVariant.PICKUP_CHEST then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_REDCHEST, 0)
             ischest = true
-        elseif entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_REDCHEST and rand_num > 50 then
+        elseif entity_pos.Variant == PickupVariant.PICKUP_REDCHEST and rand_num > 50 then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_LOCKEDCHEST, 0)
             ischest = true
-        elseif entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_REDCHEST then
+        elseif entity_pos.Variant == PickupVariant.PICKUP_REDCHEST then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_BOMBCHEST, 0)
             ischest = true
-        elseif entity_pos.Type == EntityType.ENTITY_PICKUP and (entity_pos.Variant == PickupVariant.PICKUP_BOMBCHEST or entity_pos.Variant == PickupVariant.PICKUP_LOCKEDCHEST) and rand_num > 50 then
+        elseif (entity_pos.Variant == PickupVariant.PICKUP_BOMBCHEST or entity_pos.Variant == PickupVariant.PICKUP_LOCKEDCHEST) and rand_num > 50 then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_WOODENCHEST, 0)
             ischest = true
-        elseif entity_pos.Type == EntityType.ENTITY_PICKUP and (entity_pos.Variant == PickupVariant.PICKUP_BOMBCHEST or entity_pos.Variant == PickupVariant.PICKUP_LOCKEDCHEST) then
+        elseif (entity_pos.Variant == PickupVariant.PICKUP_BOMBCHEST or entity_pos.Variant == PickupVariant.PICKUP_LOCKEDCHEST) then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_OLDCHEST, 0)
             ischest = true
-        elseif entity_pos.Type == EntityType.ENTITY_PICKUP and (entity_pos.Variant == PickupVariant.PICKUP_OLDCHEST or entity_pos.Variant == PickupVariant.PICKUP_WOODENCHEST) then
+        elseif (entity_pos.Variant == PickupVariant.PICKUP_OLDCHEST or entity_pos.Variant == PickupVariant.PICKUP_WOODENCHEST) then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_ETERNALCHEST, 0)
             ischest = true
-        elseif entity_pos.Type == EntityType.ENTITY_PICKUP and entity_pos.Variant == PickupVariant.PICKUP_ETERNALCHEST then
+        elseif entity_pos.Variant == PickupVariant.PICKUP_ETERNALCHEST then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_MEGACHEST, 0)
             ischest = true
         end
@@ -3093,20 +3093,16 @@ function WarpZone:BibleKillSatan(collectible, rng, player, useflags, activeslot,
     if player:HasTrinket(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP) and Game():GetLevel():GetStage() == LevelStage.STAGE5 
     and Game():GetRoom():GetType() == RoomType.ROOM_BOSS and Game():GetLevel():GetStageType() == StageType.STAGETYPE_ORIGINAL then
     
-            local entities_s = Isaac.GetRoomEntities()
+            local entities_s = Isaac.FindByType(EntityType.ENTITY_SATAN)
             for i, entity_s in ipairs(entities_s) do
-                if entity_s.Type == EntityType.ENTITY_SATAN then
-                    entity_s:Kill()
-                end
+                entity_s:Kill()
             end
         return true
     elseif player:GetTrinketMultiplier(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP) >= 2 and Game():GetLevel():GetStage() == LevelStage.STAGE6 
     and Game():GetRoom():GetType() == RoomType.ROOM_BOSS and Game():GetLevel():GetStageType() == StageType.STAGETYPE_ORIGINAL then
-        local entities_s = Isaac.GetRoomEntities()
+        local entities_s = Isaac.FindByType(EntityType.ENTITY_THE_LAMB)
             for i, entity_s in ipairs(entities_s) do
-                if entity_s.Type == EntityType.ENTITY_THE_LAMB then
-                    entity_s:Kill()
-                end
+                entity_s:Kill()
             end
         return true
     else
@@ -3169,45 +3165,42 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseLootCard, WarpZone.WarpZoneTypes.CARD_LOOT_CARD)
 
 function WarpZone:useCow(card, player, useflags)
-    local entities = Isaac.GetRoomEntities()
+    local entities = Isaac.FindByType(EntityType.ENTITY_PICKUP)
     local itemID = nil
     local cowRNG =  RNG()
     cowRNG:SetSeed(Random(), 1)
     SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_COW_TRASH, 2)
     for i, entity in ipairs(entities) do
-        if entity.Type == EntityType.ENTITY_PICKUP then
-            if entity.Variant == PickupVariant.PICKUP_COLLECTIBLE then
-                local price = entity:ToPickup().Price
-                for j=1, 10000, 1 do
-                    local ranPool = cowRNG:RandomInt(ItemPoolType.NUM_ITEMPOOLS)
-                    itemID = itemPool:GetCollectible(ranPool)
-                    local config = Isaac.GetItemConfig():GetCollectible(itemID)
-                    if config.Tags & ItemConfig.TAG_FLY == ItemConfig.TAG_FLY then
-                        break
-                    end
+        if entity.Variant == PickupVariant.PICKUP_COLLECTIBLE then
+            local price = entity:ToPickup().Price
+            for j=1, 10000, 1 do
+                local ranPool = cowRNG:RandomInt(ItemPoolType.NUM_ITEMPOOLS)
+                itemID = itemPool:GetCollectible(ranPool)
+                local config = Isaac.GetItemConfig():GetCollectible(itemID)
+                if config.Tags & ItemConfig.TAG_FLY == ItemConfig.TAG_FLY then
+                    break
                 end
-                if itemID ~= nil then
-                    entity:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_COLLECTIBLE, itemID)
-                    entity:ToPickup().Price = price
-                    Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, -1, entity.Position, entity.Velocity, player)
-                end
-            elseif entity.Variant <= 90 or entity.Variant == PickupVariant.PICKUP_TAROTCARD 
-            or entity.Variant == PickupVariant.PICKUP_REDCHEST or entity.Variant == PickupVariant.PICKUP_TRINKET then
-                player:AddBlueFlies(1, entity.Position, player)
-                --Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, -1, entity.Position, entity.Velocity, player)
-                entity:Remove()
             end
+            if itemID ~= nil then
+                entity:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_COLLECTIBLE, itemID)
+                entity:ToPickup().Price = price
+                Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, -1, entity.Position, entity.Velocity, player)
+            end
+        elseif entity.Variant <= 90 or entity.Variant == PickupVariant.PICKUP_TAROTCARD 
+        or entity.Variant == PickupVariant.PICKUP_REDCHEST or entity.Variant == PickupVariant.PICKUP_TRINKET then
+            player:AddBlueFlies(1, entity.Position, player)
+            --Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, -1, entity.Position, entity.Velocity, player)
+            entity:Remove()
         end
+        
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useCow, WarpZone.WarpZoneTypes.CARD_COW_TRASH_FARM)
 
 function WarpZone:useJester(card, player, useflags)
-    local entities = Isaac.GetRoomEntities()
+    local entities = Isaac.FindByType(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_COLLECTIBLE)
     for i, entity in ipairs(entities) do
-        if entity.Variant == PickupVariant.PICKUP_COLLECTIBLE then
-            Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, -1, entity.Position, entity.Velocity, player)
-        end
+        Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, -1, entity.Position, entity.Velocity, player)
     end
     for i=1, 6, 1 do
         player:UseCard(Card.CARD_SOUL_ISAAC, 257)
@@ -3430,15 +3423,15 @@ function WarpZone:FinishTransit(room)
 end
 
 function WarpZone:UseFiendFire(card, player, useflags)
-    local entities = Isaac.GetRoomEntities()
+    local entities = Isaac.FindByType(EntityType.ENTITY_PICKUP)
     local fireRng = RNG()
     fireRng:SetSeed(Random(), 1)
     for i, entity in ipairs(entities) do
-        if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant <= 90 or
+        if entity.Variant <= 90 or
         entity.Variant == PickupVariant.PICKUP_REDCHEST
         or entity.Variant == PickupVariant.PICKUP_TRINKET
         or entity.Variant == PickupVariant.PICKUP_TAROTCARD
-        )then
+        then
            Isaac.Spawn(EntityType.ENTITY_EFFECT,
            EffectVariant.HOT_BOMB_FIRE,
            0,
@@ -3516,7 +3509,7 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseMurderCard, WarpZone.
 
 
 function WarpZone:UseAmberChunk(card, player, useflags)
-    local entities = Isaac.GetRoomEntities()
+    local entities = Isaac.FindByType(EntityType.ENTITY_PICKUP)
     local amberRng = RNG()
     amberRng:SetSeed(Random(), 1)
 
@@ -3537,14 +3530,14 @@ function WarpZone:UseAmberChunk(card, player, useflags)
         preservedItems[next(preservedItems)]=nil
     end
     for i, entity in ipairs(entities) do --this shouldn't actually work but it seems to work anyway. i'm not gonna touch it
-        if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant <= 90 or
+        if entity.Variant <= 90 or
         entity.Variant == PickupVariant.PICKUP_REDCHEST
         or entity.Variant == PickupVariant.PICKUP_TRINKET
         or entity.Variant == PickupVariant.PICKUP_TAROTCARD
         or entity.Variant == PickupVariant.PICKUP_COLLECTIBLE
         or entity.Variant == PickupVariant.PICKUP_BIGCHEST
         or entity.Variant == PickupVariant.PICKUP_TROPHY
-        )then
+        then
             
            preservedItems[i] = {}
            preservedItems[i].Variant = entity.Variant
