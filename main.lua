@@ -1752,7 +1752,7 @@ function WarpZone:UseDoorway(collectible, rng, entityplayer, useflags, activeslo
     local room = Game():GetRoom()
     local currentLevel = Game():GetLevel()
     currentLevel:DisableDevilRoom()
-    entityplayer:UseActiveItem(WarpZone.WarpZoneTypes.COLLECTIBLE_DADS_KEY)
+    entityplayer:UseActiveItem(CollectibleType.COLLECTIBLE_DADS_KEY)
     DoorwayFloor = currentLevel:GetStage()
     currentLevel:ApplyBlueMapEffect()
     
