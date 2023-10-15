@@ -1976,7 +1976,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         end
         
         if entityplayer:GetData().dioDamageOn == true then
-            entityplayer.Damage = entityplayer.Damage * 3
+            entityplayer.Damage = entityplayer.Damage * 1.5
         end
         entityplayer.Damage = entityplayer.Damage + isNil(entityplayer:GetData().bonusDamage, 0)
     end
@@ -2590,6 +2590,7 @@ function WarpZone:OnKnifeUpdate(knife)
         knife:GetSprite():LoadGraphics()
     elseif knife:GetData().isHammer == 2 then
         knife:GetSprite():ReplaceSpritesheet(1, "gfx/hammer_shot.png")
+        knife:GetSprite().Scale = knife:GetSprite().Scale * 1.5
         knife:GetData().isHammer = 1
         knife:GetSprite():LoadGraphics()
     end
