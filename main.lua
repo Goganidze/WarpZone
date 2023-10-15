@@ -944,7 +944,7 @@ function WarpZone:OnUpdate()
                 end
             elseif entity:IsEnemy()  and random > 5 then --and not entity:IsBoss()
                 for i, target in ipairs(targetPos) do
-                    local player = Game():getNearestPlayer(entity.Position)
+                    local player = Game():GetNearestPlayer(entity.Position)
                     if player and (math.abs((target.Position - entity.Position):LengthSquared()) < math.abs((player.Position - entity.Position):LengthSquared())) or random > 15 then
                         entity.Target = target
                         entity:GetData().distracted = 3
