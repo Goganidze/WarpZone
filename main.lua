@@ -2032,7 +2032,7 @@ function WarpZone:postPlayerUpdate(player)
         player:AddCacheFlags(CacheFlag.CACHE_SPEED)
         player:EvaluateItems()
         player:GetSprite().Color = Color(1, 1, 1, 1, 0, 0, 0)
-        player:GetEffects():RemoveCollectibleEffect(WarpZone.WarpZoneTypes.COLLECTIBLE_LEO, 1)
+        player:GetEffects():RemoveCollectibleEffect(CollectibleType.COLLECTIBLE_LEO, 1)
     end
 
     if Game():GetFrameCount() - isNil(player:GetData().InGravityState, -999) == 8 then
@@ -2190,7 +2190,7 @@ function WarpZone:checkTear(entitytear)
         tear:GetData().FocusIndicator = true
     end
 
-    if player:GetData().InGravityState > 0 then
+    if isNil(player:GetData().InGravityState, -1) > 0 then
         tear:GetData().TearGravityState = true
         tear.Position = Vector(player.Position.X, 3)
         if math.abs(tear.Velocity.X) > math.abs(tear.Velocity.Y) then
