@@ -519,6 +519,12 @@ function WarpZone.AnyPlayerDo(foo)
 	end
 end
 
+function WarpZone:refreshItemsTaken()
+    WarpZone.AnyPlayerDo(function(player)
+        --do this later, it's a lot of work to achieve very little
+    end
+    )
+end
 
 
 function WarpZone:magnetoChaseCheck(pickup)
@@ -3037,6 +3043,7 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.FootballCollide, FamiliarVariant.CUBE_BABY)
 
 function WarpZone:FindEffects(collectible, rng, entityplayer, useflags, activeslot, customvardata)
+    print(Isaac:GetItemConfig():GetCollectibles().Size-1)
     local entities = Isaac.GetRoomEntities()
     local debbug = ""
     for i, entity_pos in ipairs(entities) do
