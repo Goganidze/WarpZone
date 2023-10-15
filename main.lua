@@ -3503,7 +3503,7 @@ function WarpZone:UseMurderCard(card, player, useflags)
     player:GetSprite().Color = Color(1, 0, 0, 1, 0, 0, 0)
     player:GetEffects():AddCollectibleEffect(CollectibleType.COLLECTIBLE_LEO, false, 1)
     player:GetData().InMurderState = true
-    SfxManager.Play(WarpZone.WarpZoneTypes.SOUND_MURDER_STING)
+    SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_MURDER_STING)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseMurderCard, WarpZone.WarpZoneTypes.CARD_MURDER)
 
