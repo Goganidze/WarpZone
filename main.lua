@@ -1531,7 +1531,6 @@ function WarpZone:NewRoom()
         if player:GetData().InDemonForm ~= nil then
             player:ChangePlayerType(player:GetData().InDemonForm)
             player:GetData().InDemonForm = nil
-            player:GetEffects():RemoveCollectibleEffect(CollectibleType.COLLECTIBLE_BIRTHRIGHT, 1)
         end
     end
     if Game():GetLevel():GetStage() == DoorwayFloor and (Game():GetLevel():GetCurrentRoomIndex() ~=84 or Game():GetLevel():GetStage()~= 1 or not room:IsFirstVisit()) then
@@ -2233,9 +2232,25 @@ function WarpZone:checkLaser(entitylaser)
             player:GetData().LaserBleedIt = true
         end
     end
+
+    if player and player:GetData().InDemonForm ~= nil then
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_BRIMSTONE) or player:GetData().InDemonForm == PlayerType.PLAYER_AZAZEL then
+            entitylaser.Variant = 1
+            entitylaser:GetData().IsBigLaser = true
+        end
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_LASER_INIT, WarpZone.checkLaser)
 
+
+function WarpZone:updateLaser(laser)
+    if laser:GetData().IsBigLaser == true then
+        laser.Size = laser.Size * 3
+        laser:GetSprite().Scale = laser:GetSprite().Scale * 3
+        laser:GetData().IsBigLaser = false
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_LASER_UPDATE, WarpZone.updateLaser)
 
 function WarpZone:updateTear(entitytear)
     local tear = entitytear:ToTear()
@@ -3502,10 +3517,10 @@ function WarpZone:UseDemonForm2(card, player, useflags)
         player:ChangePlayerType(PlayerType.PLAYER_AZAZEL)
         player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
         player:EvaluateItems()
-        if player:HasCollectible(CollectibleType.COLLECTIBLE_BRIMSTONE)
-        or player:GetData().InDemonForm == PlayerType.PLAYER_AZAZEL then
-            player:GetEffects():AddCollectibleEffect(CollectibleType.COLLECTIBLE_BIRTHRIGHT, false)
-        end
+        --if player:HasCollectible(CollectibleType.COLLECTIBLE_BRIMSTONE)
+        --or player:GetData().InDemonForm == PlayerType.PLAYER_AZAZEL then
+        --    player:GetEffects():AddCollectibleEffect(CollectibleType.COLLECTIBLE_BIRTHRIGHT, false)
+        --end
 
     end
 end
