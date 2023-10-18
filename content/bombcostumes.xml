@@ -1,0 +1,32 @@
+<bombcostumes anm2root="gfx/items/pick ups/bombs/">
+<!--
+	Rules are evaluated from top to bottom. A rule will only trigger if all of its conditions are true.
+	
+	Conditions:
+		- includeFlags: True if all provided flags are set
+		- excludeFlags: True if none of the provided flags are set
+	Layers (in rendering order):
+		- back
+		- body
+		- body2
+		- front
+		- front2
+		- overlay
+	GFX suffixes:
+		- suffix
+		- suffix2
+-->
+	<bomb variant="950"> <!-- Spelunker bomb -->
+		<rule body="spelunker/bomb.anm2" />
+		<rule includeFlags="125" suffix2="_gold" />
+		<rule includeFlags="28" body="spelunker/sad.anm2" front="tears.anm2" />
+		<rule includeFlags="4" body="spelunker/poison.anm2" />
+		<rule includeFlags="35" body="spelunker/glitter.anm2" overlay="glitter_sparkle.anm2" />
+		<rule includeFlags="45" body="spelunker/bomber.anm2" />
+		<rule includeFlags="36" body="spelunker/scatter.anm2" />
+		<rule includeFlags="36 4" body="spelunker/scatter_poison.anm2" />
+
+		<rule includeFlags="72" excludeFlags="28" body="spelunker/blood.anm2" />
+	</bomb>
+</bombcostumes>
+

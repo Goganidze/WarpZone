@@ -186,6 +186,9 @@ BoxHud:Load("gfx/chargebar_glove.anm2", true)
 local framesToCharge = 141
 local boxRenderedPosition = Vector(20, -27)
 
+--spelunker's bomb
+WarpZone.SPELUNKERS_PACK = {BOMBVAR = Isaac.GetEntityVariantByName("Spelunker Bomb")}
+
 --item defintions
 WarpZone.WarpZoneTypes = {}
 
@@ -799,6 +802,27 @@ local function firePopTear(player, playYV)
     end
 
     SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT, 2)
+end
+
+local FamAsPlayer = {
+    [FamiliarVariant.INCUBUS] = true,
+    [FamiliarVariant.SPRINKLER] = true,
+    [FamiliarVariant.TWISTED_BABY] = true,
+    [FamiliarVariant.BLOOD_BABY] = true,
+    [FamiliarVariant.UMBILICAL_BABY] = true,
+    [FamiliarVariant.CAINS_OTHER_EYE] = true,
+}
+function WarpZone.TryGetPlayer(spawner)
+    if not spawner then return end
+    local player
+    if spawner:ToPlayer() then
+        player = spawner:ToPlayer()
+    elseif spawner:ToFamiliar() and spawner:ToFamiliar().Player then
+        if FamAsPlayer[spawner.Variant] then
+            player = spawner:ToFamiliar().Player
+        end
+    end
+    return player
 end
 
 --if this ever makes it to workshop credit to catinsurance, holy shit
@@ -2018,6 +2042,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
 end
 WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, WarpZone.EvaluateCache)
 
+--Checking every entity here is a pretty terrible idea, since it's called for every player
 ---@param player EntityPlayer
 function WarpZone:postPlayerUpdate(player)
     local data = player:GetData()
@@ -2105,7 +2130,7 @@ function WarpZone:postPlayerUpdate(player)
         end
     end
 
-    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK) == true then
+    --[[if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK) == true then
 		local entities = Isaac.FindByType(EntityType.ENTITY_BOMBDROP)
 
 		for i=1,#entities do
@@ -2124,7 +2149,7 @@ function WarpZone:postPlayerUpdate(player)
 				end
 			end
 		end
-	end
+	end]]
 
     if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) then
         if player:GetData().arrowTimeThreeFrames == 1 then
@@ -3620,6 +3645,7 @@ ItemTranslate("WarpZone")
 local extrafiles = {
     "lua.ru",
     "lua.football",
+    "lua.bombs",
 }
 for i=1,#extrafiles do
     local module = include(extrafiles[i])
