@@ -2203,7 +2203,7 @@ function WarpZone:checkTear(entitytear)
         tear:GetData().FocusIndicator = true
     end
 
-    if isNil(player:GetData().InGravityState, -1) > 0 then
+    if player and isNil(player:GetData().InGravityState, -1) > 0 then
         tear:GetData().TearGravityState = true
         tear.Position = Vector(player.Position.X, 3)
         if math.abs(tear.Velocity.X) > math.abs(tear.Velocity.Y) then
@@ -2234,7 +2234,7 @@ function WarpZone:checkLaser(entitylaser)
     end
 
     if player and player:GetData().InDemonForm ~= nil then
-        if player:HasCollectible(CollectibleType.COLLECTIBLE_BRIMSTONE) or player:GetData().InDemonForm == PlayerType.PLAYER_AZAZEL then
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_BRIMSTONE) or player:GetData().InDemonForm == PlayerType.PLAYER_AZAZEL or player:GetData().InDemonForm == PlayerType.PLAYER_AZAZEL_B then
             entitylaser.Variant = 1
             entitylaser:GetData().IsBigLaser = true
         end
@@ -2308,14 +2308,17 @@ function WarpZone:updateTear(entitytear)
             tear:AddTearFlags(TearFlags.TEAR_SPECTRAL)
         end
     end
-    local waterAmount = 1
+    local waterAmount = 1.0
     if player then
         waterAmount = waterAmount + 0.3 * ((player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_FULL) * 3) + (player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_MID) * 2) + (player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_LOW) * 1))
     end
     if not focusshot then
         if data.resized == nil then
-            tear.Scale = tear.Scale * waterAmount
-            tear:ResetSpriteScale()
+            local product = tear.Scale * waterAmount
+            if player:HasCollectible(CollectibleType.COLLECTIBLE_DEATHS_TOUCH) then
+                product = product * 0.5
+            end
+            tear.Scale = product
             data.resized = true
         end
     end
