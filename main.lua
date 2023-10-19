@@ -9,6 +9,10 @@ myRNG:SetSeed(Random(), 1)
 local hud = game:GetHUD()
 local SfxManager = SFXManager()
 ----------------------------------
+--debug
+WarpZone.DebugSpelunkersPackEffectType = 2
+
+----------------------------------
 --save data
 local saveData = {}
 local lastIndex = 5
@@ -213,7 +217,8 @@ local framesToCharge = 141
 local boxRenderedPosition = Vector(20, -27)
 
 --spelunker's bomb
-WarpZone.SPELUNKERS_PACK = {BOMBVAR = Isaac.GetEntityVariantByName("Spelunker Bomb")}
+WarpZone.SPELUNKERS_PACK = {BOMBVAR = Isaac.GetEntityVariantByName("Spelunker Bomb"),
+    FetusBasicChance = 0.5, FetusMaxLuck = 6}
 
 --item defintions
 WarpZone.WarpZoneTypes = {}
@@ -1018,15 +1023,15 @@ function WarpZone:OnUpdate()
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.OnUpdate)
 
-function WarpZone:TriggerEffect(position)
+function WarpZone:SpelunkerBombEffect(position)
     local room = game:GetRoom()
     local numBridged = 0
     local resonate = false
 	for i=1, room:GetGridSize() do
         local ge = room:GetGridEntity(i)
         if ge and ge.Desc.Type == GridEntityType.GRID_PIT then
-            local distance = math.abs((position - ge.Position):LengthSquared())
-            if distance <= 10000 then
+            local distance = position:Distance(ge.Position)    -- math.abs((position - ge.Position):LengthSquared())
+            if distance <= 100 then --10000
                 ge:ToPit():MakeBridge(ge)
                 numBridged  = numBridged + 1
             end

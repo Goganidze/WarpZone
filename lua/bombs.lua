@@ -14,9 +14,43 @@ return function(mod)
 		[BombVariant.BOMB_ROCKET_GIGA] = true,
 	}
 
+	---@param bomb EntityBomb
+	---@param player EntityPlayer
 	function mod:postFireBomb(bomb, player)
 		bomb.Flags = bomb.Flags
 		
+		if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK) then
+			if WarpZone.DebugSpelunkersPackEffectType == 2 then
+				local spawner = bomb.SpawnerEntity
+				if not bomb.IsFetus and spawner and spawner.Index == player.Index
+				and not player:IsHoldingItem() and bomb.Position:Distance(spawner.Position)<1 then
+					player:TryHoldEntity(bomb)
+				end
+			elseif WarpZone.DebugSpelunkersPackEffectType == 1 then
+				bomb:GetData().SpelunkerBomb = true
+			end
+		end
+	end
+
+	---@param player EntityPlayer
+	function mod:postBombExplosion(bomb, player)
+		local data = bomb:GetData()
+		if data.SpelunkerBomb then
+			WarpZone:SpelunkerBombEffect(bomb.Position)
+		end
+	end
+
+	---@param player EntityPlayer
+	function mod:MegaFetusRocketInit(rocket, player)
+		local data = rocket:GetData()
+		local rng = rocket:GetDropRNG()
+		if WarpZone.DebugSpelunkersPackEffectType == 1 and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK) then
+			local rchance = (1-WarpZone.SPELUNKERS_PACK.FetusBasicChance) * math.max(0, player.Luck / WarpZone.SPELUNKERS_PACK.FetusMaxLuck)
+			local luck = rchance >= 0.5 or WarpZone.SPELUNKERS_PACK.FetusBasicChance+rchance < rng:RandomFloat()
+			if luck then
+				data.SpelunkerBomb = true
+			end
+		end
 	end
 
 	--стырено из ff
@@ -39,9 +73,9 @@ return function(mod)
 	function mod:testForPostFireBomb(ent)
 		for _, bomb in pairs(bombsToBePostFired) do
 			--local player = WarpZone.TryGetPlayer(bomb.SpawnerEntity)
-			--if player then
+			if bomb[2] then
 				mod:postFireBomb(bomb[1], bomb[2])
-			--end
+			end
 		end
 
 		bombsToBePostFired = {}
@@ -60,6 +94,7 @@ return function(mod)
 			if not player then
 				return
 			end
+			bomb:GetData().WarpZone_Player = player
 			bombsToBePostFired[bomb.InitSeed] = {bomb, player}
 		end
 	end)
@@ -70,5 +105,28 @@ return function(mod)
 		end
 	end, EntityType.ENTITY_BOMBDROP)
 	
+	mod:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, function(_, bomb)
+		mod:postBombExplosion(bomb, bomb:GetData().WarpZone_Player)
+	end,EntityType.ENTITY_BOMBDROP)
 
+	mod:AddCallback(ModCallbacks.MC_POST_EFFECT_UPDATE, function(_, rocket)
+		if rocket.FrameCount <= 1 
+		and rocket.Parent and rocket.Parent.Type == EntityType.ENTITY_EFFECT and rocket.Parent.Variant == EffectVariant.TARGET then
+			local player = WarpZone.TryGetPlayer(rocket.Parent.SpawnerEntity)
+			if player then
+				rocket:GetData().WarpZone_RocketPlayer = player
+				mod:MegaFetusRocketInit(rocket, player)
+			end
+		end
+	end, EffectVariant.ROCKET)
+
+	mod:AddCallback(ModCallbacks.MC_POST_EFFECT_INIT, function(_, explosion)
+		if explosion.SpawnerEntity and explosion.SpawnerType == EntityType.ENTITY_EFFECT 
+		and explosion.SpawnerVariant == EffectVariant.ROCKET then
+			local spawnerData = explosion.SpawnerEntity:GetData()
+			if spawnerData.WarpZone_RocketPlayer then
+				mod:postBombExplosion(explosion.SpawnerEntity, spawnerData.WarpZone_RocketPlayer)
+			end
+		end
+	end, EffectVariant.BOMB_EXPLOSION)
 end
