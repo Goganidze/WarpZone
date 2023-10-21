@@ -294,6 +294,7 @@ WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES = Isaac.GetItemIdByName("Johnn
 WarpZone.WarpZoneTypes.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
 WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS = Isaac.GetTrinketIdByName("Hunky Boys")
 WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP = Isaac.GetTrinketIdByName("Bible Thump")
+WarpZone.WarpZoneTypes.TRINKET_CHEEP_CHEEP = Isaac.GetTrinketIdByName("Cheep Cheep")
 
 WarpZone.WarpZoneTypes.CARD_COW_TRASH_FARM = Isaac.GetCardIdByName("CowOnTrash")
 WarpZone.WarpZoneTypes.CARD_LOOT_CARD = Isaac.GetCardIdByName("LootCard")
@@ -359,6 +360,7 @@ if EID then
 
     EID:addTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS, "While held, pressing the Drop Trinket button immediately drops this trinket; you don't need to hold the button#When on the ground, enemies will target the trinket for a short time.", "Hunky Boys", "en_us")
     EID:addTrinket(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP, "Once you exit a room with this trinket, The Bible is added to several item pools.#Using The Bible or The Devil? card with this item will deal 40 damage to all enemies in the room, in addition to granting flight.#Using The Bible on Satan will kill him, and you will survive#The golden version of this trinket kills The Lamb as well.", "Bible Thump", "en_us")
+    EID:addTrinket(WarpZone.WarpZoneTypes.TRINKET_CHEEP_CHEEP, "On entering a room, a random enemy is targeted by other enemies and has a fear effect for 3 seconds.#If the effect is golden, the target also bleeds.", "Cheep Cheep", "en_us")
 
     EID:addCard(WarpZone.WarpZoneTypes.CARD_COW_TRASH_FARM, "Rerolls all items into fly themed items#Rerolls pickups into blue flies#Does not actually become back your money", "Cow on a Trash Farm", "en_us")
     EID:addCard(WarpZone.WarpZoneTypes.CARD_LOOT_CARD, "Randomly spawns a random item or trinket from any pool", "Loot Card", "en_us")
@@ -1813,6 +1815,23 @@ function WarpZone:NewRoom()
         end
         numPossessed = tempnumPossessed
     end
+
+    local cheepPlayer = doesAnyoneHave(WarpZone.WarpZoneTypes.COLLECTIBLE_CHEEP_CHEEP, true)
+    if cheepPlayer ~= nil then
+        local entities = Isaac.GetRoomEntities()
+        for i=1, #entities do
+            local entity_pos = entities[i]
+            if entity_pos:IsVulnerableEnemy() and not entity_pos:IsBoss() and not entity_pos:HasEntityFlags(EntityFlag.FLAG_BAITED) then
+                entity_pos:AddFear(EntityRef(possessPlayer), 90)
+                entity_pos:AddEntityFlags(EntityFlag.FLAG_BAITED)
+                if cheepPlayer:GetTrinketMultiplier(WarpZone.WarpZoneTypes.COLLECTIBLE_CHEEP_CHEEP) >= 2 then
+                    entity_pos:AddEntityFlags(EntityFlag.FLAG_BLEED_OUT)
+                end
+                break
+            end
+        end
+    end
+
 
     local aubreyPlayer = doesAnyoneHave(WarpZone.WarpZoneTypes.COLLECTIBLE_AUBREY, false)
     if floorBeggar < 0 and room:GetType() == RoomType.ROOM_SHOP and aubreyPlayer ~= nil then
