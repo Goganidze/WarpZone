@@ -3613,24 +3613,18 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useBlank, WarpZone.WarpZ
 
 function WarpZone:useBlank2(card, player, useflags)
     WarpZone:useBlank(card, player, useflags)
-    Isaac.Spawn(EntityType.ENTITY_PICKUP,
-            PickupVariant.PICKUP_TAROTCARD,
-            WarpZone.WarpZoneTypes.CARD_BLANK,
-            game:GetRoom():FindFreePickupSpawnPosition(player.Position),
-            Vector(0,0),
-            nil)
+    if useflags & 2208 == 0 then
+        player:AddCard(WarpZone.WarpZoneTypes.CARD_BLANK)
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useBlank2, WarpZone.WarpZoneTypes.CARD_BLANK_2)
 
 
 function WarpZone:useBlank3(card, player, useflags)
     WarpZone:useBlank(card, player, useflags)
-    Isaac.Spawn(EntityType.ENTITY_PICKUP,
-            PickupVariant.PICKUP_TAROTCARD,
-            WarpZone.WarpZoneTypes.CARD_BLANK_2,
-            game:GetRoom():FindFreePickupSpawnPosition(player.Position),
-            Vector(0,0),
-            nil)
+    if useflags & 2208 == 0 then
+        player:AddCard(WarpZone.WarpZoneTypes.CARD_BLANK_2)
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useBlank3, WarpZone.WarpZoneTypes.CARD_BLANK_3)
 
