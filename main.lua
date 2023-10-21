@@ -1816,7 +1816,7 @@ function WarpZone:NewRoom()
         numPossessed = tempnumPossessed
     end
 
-    local cheepPlayer = doesAnyoneHave(WarpZone.WarpZoneTypes.COLLECTIBLE_CHEEP_CHEEP, true)
+    local cheepPlayer = doesAnyoneHave(WarpZone.WarpZoneTypes.TRINKET_CHEEP_CHEEP, true)
     if cheepPlayer ~= nil then
         local entities = Isaac.GetRoomEntities()
         for i=1, #entities do
