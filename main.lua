@@ -1210,7 +1210,7 @@ function WarpZone:postRender(player)
         then
             local dir = player:GetLastDirection()
             print(dir)
-            dir = dir * 18
+            dir = dir * 16
             local tear = player:FireTear(player.Position, dir)
             SfxManager:Play(SoundEffect.SOUND_EXPLOSION_WEAK, 3)
             data.primeShot = nil
