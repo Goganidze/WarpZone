@@ -1090,7 +1090,24 @@ function WarpZone:OnUpdate()
         end
     end
     WarpZone:refreshItemsTaken()
-    
+
+    local marblePlayer = doesAnyoneHave(WarpZone.WarpZoneTypes.COLLECTIBLE_STRANGE_MARBLE, false)
+    if marblePlayer ~= nil then
+        local fires = Isaac.FindByType(EntityType.ENTITY_FIREPLACE)
+        for i, fire in ipairs(fires) do
+            local data = fire:GetData()
+            if not data.WarpZone_data then
+                data.WarpZone_data = {}
+            end
+            if (fire:GetSprite():IsPlaying("Dissapear") or fire:GetSprite():IsPlaying("Dissapear2") or fire:GetSprite():IsPlaying("Dissapear3")) and
+                data.WarpZone_data.FireMined ~= true and fire:ToNPC() and fire:ToNPC():IsChampion() == true then
+                data.WarpZone_data.FireMined = true
+                local championColor = fire:ToNPC():GetChampionColorIdx()
+                local rng = marblePlayer:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_STRANGE_MARBLE)
+                ChampionsToLoot[championColor](EntityRef(fire), rng, EntityRef(marblePlayer))
+            end
+        end
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.OnUpdate)
 
