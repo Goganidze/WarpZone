@@ -471,6 +471,26 @@ local function tableContains(table_, value, removeValue)
     return contains
 end
 
+function WarpZone:refreshItemsTaken()
+    WarpZone.AnyPlayerDo(function(player)
+        if player:GetData().LastTotalItems ~= player:GetCollectibleCount() then
+            player:GetData().LastTotalItems = player:GetCollectibleCount()
+            local itemConfig = Isaac:GetItemConfig()
+            for itemID=1, itemConfig:GetCollectibles().Size-1 do
+                local item = itemConfig:GetCollectible(itemID)
+                local pool = Game():GetItemPool():GetLastPool()
+                if item and item.Type ~= ItemType.ITEM_ACTIVE and not item:HasTags(ItemConfig.TAG_QUEST) and player:HasCollectible(itemID, true) then
+                    if tableContains(player:GetData().itemsTaken, itemID) == false then
+                        table.insert(player:GetData().itemsTaken, itemID)
+                        table.insert(player:GetData().poolsTaken, pool)
+                    end
+                end
+            end
+        end
+    end
+    )
+end
+
 local function doesAnyoneHave(itemtype, trinket)
     local numPlayers = Game():GetNumPlayers()
     local hasIt = nil
@@ -580,12 +600,7 @@ function WarpZone.AnyPlayerDo(foo)
 	end
 end
 
-function WarpZone:refreshItemsTaken()
-    WarpZone.AnyPlayerDo(function(player)
-        --do this later, it's a lot of work to achieve very little
-    end
-    )
-end
+
 
 
 function WarpZone:magnetoChaseCheck(pickup)
@@ -1047,6 +1062,8 @@ function WarpZone:OnUpdate()
             end
         end
     end
+    WarpZone:refreshItemsTaken()
+    
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.OnUpdate)
 
@@ -2025,13 +2042,7 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
     end
 
     if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant == PickupVariant.PICKUP_COLLECTIBLE) and entity:ToPickup():GetData().Logged ~= true then
-        local config = Isaac.GetItemConfig():GetCollectible(entity.SubType)
         entity:ToPickup():GetData().Logged = true
-        local pool = Game():GetItemPool():GetLastPool()
-        if config.Type ~= ItemType.ITEM_ACTIVE then
-            table.insert(player:GetData().itemsTaken, entity.SubType)
-            table.insert(player:GetData().poolsTaken, pool)
-        end
         if entity.SubType == WarpZone.WarpZoneTypes.COLLECTIBLE_BALL_OF_TUMORS then
             Isaac.Spawn(EntityType.ENTITY_PICKUP, tumorVariant, 1, Game():GetRoom():FindFreePickupSpawnPosition(Game():GetRoom():GetCenterPos()), Vector(0,0), nil)
         end

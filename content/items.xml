@@ -41,4 +41,5 @@
     <trinket name="Ring of the Snake" description="Starting hand +2" gfx="Trinket_01_RingSnake.png" />
     <trinket name="Hunky Boys" description="You don't care for them...but do they?" gfx="Trinket_02_HunkyBoys.png" />
     <trinket name="Bible Thump" description="God has no mercy" gfx="Trinket_03_BibleThump.png" />
+    <trinket name="Cheep Cheep" description="You're just a little chicken!" gfx="Trinket_04_CheepCheep.png" />
 </items>
