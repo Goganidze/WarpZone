@@ -20,13 +20,14 @@ return function(mod)
 		bomb.Flags = bomb.Flags
 		
 		if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK) then
-			if WarpZone.DebugSpelunkersPackEffectType == 2 then
+			if WarpZone.SpelunkersPackEffectType == 2 or WarpZone.SpelunkersPackEffectType == 3 then
 				local spawner = bomb.SpawnerEntity
 				if not bomb.IsFetus and spawner and spawner.Index == player.Index
 				and not player:IsHoldingItem() and bomb.Position:Distance(spawner.Position)<1 then
 					player:TryHoldEntity(bomb)
 				end
-			elseif WarpZone.DebugSpelunkersPackEffectType == 1 then
+			end
+			if WarpZone.SpelunkersPackEffectType == 1 or WarpZone.SpelunkersPackEffectType == 3 then
 				bomb:GetData().SpelunkerBomb = true
 			end
 		end
@@ -37,6 +38,7 @@ return function(mod)
 		local data = bomb:GetData()
 		if data.SpelunkerBomb then
 			WarpZone:SpelunkerBombEffect(bomb.Position)
+			game:MakeShockwave(bomb.Position,0.02,0.06,4)
 		end
 	end
 
@@ -44,7 +46,8 @@ return function(mod)
 	function mod:MegaFetusRocketInit(rocket, player)
 		local data = rocket:GetData()
 		local rng = rocket:GetDropRNG()
-		if WarpZone.DebugSpelunkersPackEffectType == 1 and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK) then
+		if WarpZone.SpelunkersPackEffectType == 1 or WarpZone.SpelunkersPackEffectType == 3 
+		and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK) then
 			local rchance = (1-WarpZone.SPELUNKERS_PACK.FetusBasicChance) * math.max(0, player.Luck / WarpZone.SPELUNKERS_PACK.FetusMaxLuck)
 			local luck = rchance >= 0.5 or WarpZone.SPELUNKERS_PACK.FetusBasicChance+rchance < rng:RandomFloat()
 			if luck then
