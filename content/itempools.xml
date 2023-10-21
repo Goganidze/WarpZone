@@ -3,7 +3,7 @@
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
 		<Item Name="Gun that can kill the Past" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Rusty Spoon" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
-        <Item Name="Focus" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="   Focus   " Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Is You" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="George" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Aubrey" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -28,7 +28,7 @@
 	<Pool Name="secret">
 		<Item Name="Gun that can kill the Past" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Greed Butt" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
-        <Item Name="Focus" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="   Focus   " Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
 	</Pool>
 	<Pool Name="greedTreasure">
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -100,11 +100,11 @@
         <Item Name="Boxing Glove" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
     <Pool Name="angel">
-        <Item Name="Focus" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="   Focus   " Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Possession" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
     <Pool Name="greedAngel">
-        <Item Name="Focus" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="   Focus   " Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Possession" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
     <Pool Name="ultraSecret">

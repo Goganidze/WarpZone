@@ -2750,8 +2750,6 @@ function WarpZone:UseDiogenes(collectible, rng, entityplayer, useflags, activesl
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseDiogenes, WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT)
 
-
-
 function WarpZone:SheathDiogenes(collectible, rng, entityplayer, useflags, activeslot, customvardata)
     swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT, ActiveSlot.SLOT_PRIMARY, entityplayer, 0)
     SfxManager:Play(SoundEffect.SOUND_URN_CLOSE)
