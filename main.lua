@@ -496,13 +496,15 @@ end
 function WarpZone:refreshItemsTaken()
     WarpZone.AnyPlayerDo(function(player)
         local data = player:GetData()
-        if data.WarpZoneData.LastTotalItems ~= player:GetCollectibleCount() then
-            data.WarpZoneData.LastTotalItems = player:GetCollectibleCount()
+        if data.WarpZone_data.LastTotalItems ~= player:GetCollectibleCount() then
+            data.WarpZone_data.LastTotalItems = player:GetCollectibleCount()
             local itemConfig = Isaac:GetItemConfig()
             for itemID=1, itemConfig:GetCollectibles().Size-1 do
                 local item = itemConfig:GetCollectible(itemID)
                 local pool = game:GetItemPool():GetLastPool()
                 if item and item.Type ~= ItemType.ITEM_ACTIVE and not item:HasTags(ItemConfig.TAG_QUEST) and player:HasCollectible(itemID, true) then
+                    data.itemsTaken = isNil(data.itemsTaken, {})
+                    data.poolsTaken = isNil(data.poolsTaken, {})
                     if tableContains(data.itemsTaken, itemID) == false then
                         table.insert(data.itemsTaken, itemID)
                         table.insert(data.poolsTaken, pool)
@@ -1199,6 +1201,23 @@ function WarpZone:postRender(player)
                 data.fireGlove = true
             end
         end
+
+        if player and WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS == player:GetActiveItem() 
+        and data.primeShot ~= nil and (Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, controllerid) or
+        Input.IsActionPressed(ButtonAction.ACTION_SHOOTDOWN, controllerid) or
+        Input.IsActionPressed(ButtonAction.ACTION_SHOOTLEFT, controllerid) or
+        Input.IsActionPressed(ButtonAction.ACTION_SHOOTRIGHT, controllerid))
+        then
+            local dir = player:GetLastDirection()
+            print(dir)
+            dir = dir * 18
+            local tear = player:FireTear(player.Position, dir)
+            SfxManager:Play(SoundEffect.SOUND_EXPLOSION_WEAK, 3)
+            data.primeShot = nil
+            tear:GetData().FocusShot = true
+            tear:GetData().FocusIndicator = true
+        end
+
     end
 
 end
@@ -2387,13 +2406,6 @@ function WarpZone:checkTear(entitytear)
             tear.Child:ToEffect().MinRadius = arrowTrail.MinRadius
             tear.Child:ToEffect():FollowParent(tear)
         end
-    end
-
-    if player and WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS == player:GetActiveItem() and data.primeShot ~= nil then
-        SfxManager:Play(SoundEffect.SOUND_EXPLOSION_WEAK, 3)
-        data.primeShot = nil
-        tear:GetData().FocusShot = true
-        tear:GetData().FocusIndicator = true
     end
 
     if player and isNil(data.InGravityState, -1) > 0 then
