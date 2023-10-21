@@ -10,11 +10,23 @@ local hud = game:GetHUD()
 local SfxManager = SFXManager()
 local debug_str = "untested"
 ----------------------------------
+--debug
+WarpZone.DebugSpelunkersPackEffectType = 2
+
+----------------------------------
 --save data
 local saveData = {}
 local lastIndex = 5
 
 local defaultData = {}
+defaultData.WarpZone_data = {
+    arrowTimeUp = 0,
+    arrowTimeDown = 0,
+    arrowTimeLeft = 0,
+    arrowTimeRight = 0,
+    arrowTimeThreeFrames = 0,
+    arrowTimeDelay = 0,
+}
 defaultData.numArrows = 0
 defaultData.playerTumors = 0
 defaultData.tonyBuff = 1.7
@@ -25,12 +37,12 @@ defaultData.itemsTaken = {}
 defaultData.poolsTaken = {}
 defaultData.totalFocusDamage = 0
 defaultData.roomsSinceBreak = 0
-defaultData.arrowTimeUp = 0
-defaultData.arrowTimeDown = 0
-defaultData.arrowTimeLeft = 0
-defaultData.arrowTimeRight = 0
-defaultData.arrowTimeThreeFrames = 0
-defaultData.arrowTimeDelay = 0
+--defaultData.arrowTimeUp = 0
+--defaultData.arrowTimeDown = 0
+--defaultData.arrowTimeLeft = 0
+--defaultData.arrowTimeRight = 0
+--defaultData.arrowTimeThreeFrames = 0
+--defaultData.arrowTimeDelay = 0
 defaultData.ballCheck = true
 defaultData.blinkTime = 10
 defaultData.timeSinceTheSpacebarWasLastPressed = 0
@@ -42,12 +54,30 @@ defaultData.bonusLuck = 0
 defaultData.inDemonForm = nil
 defaultData.arrowHoldBox = 0
 
+local function TabDeepCopy(tbl)
+    local t = {}
+	if type(tbl) ~= "table" then error("[1] is not a table",2) end
+    for k, v in pairs(tbl) do
+        if type(v) == "table" then
+            t[k] = TabDeepCopy(v)
+        else
+            t[k] = v
+        end
+    end
+
+    return t
+end
+
 
 local numPlayersG = Game():GetNumPlayers()
 for i=0, numPlayersG-1, 1 do
     local player = Isaac.GetPlayer(i)
     for k,v in pairs(defaultData) do
-        player:GetData()[k] = v
+        if type(v) == "table" then
+            player:GetData()[k] = TabDeepCopy(v)
+        else
+            player:GetData()[k] = v
+        end
     end
 end
 
@@ -187,9 +217,14 @@ BoxHud:Load("gfx/chargebar_glove.anm2", true)
 local framesToCharge = 141
 local boxRenderedPosition = Vector(20, -27)
 
+
 --johnny knives
 local KnifeVariantHappy = Isaac.GetEntityVariantByName("JohnnyHappy")
 local KnifeVariantSad = Isaac.GetEntityVariantByName("JohnnySad")
+
+--spelunker's bomb
+WarpZone.SPELUNKERS_PACK = {BOMBVAR = Isaac.GetEntityVariantByName("Spelunker Bomb"),
+    FetusBasicChance = 0.5, FetusMaxLuck = 6}
 
 --item defintions
 WarpZone.WarpZoneTypes = {}
@@ -807,7 +842,13 @@ end
 local function firePopTear(player, playYV)
     --local direction = player:GetAimDirection() * 15
     local direction = player:GetLastDirection() * 15
+    ---@type EntityTear
     local tear = player:FireTear(player.Position, direction, false, false, true, nil, 1)
+    local spr = tear:GetSprite()
+    tear:ChangeVariant(TearVariant.CUPID_BLUE)
+    spr:Load("gfx/promo/gfuel/bullet tear.anm2",true)
+    spr:Play(spr:GetDefaultAnimation())
+    tear:ResetSpriteScale()
     tear.Scale = tear.Scale * 1.75
     if player:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) then
         tear.CollisionDamage = tear.CollisionDamage * 5
@@ -819,6 +860,27 @@ local function firePopTear(player, playYV)
     end
 
     SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT, 2)
+end
+
+local FamAsPlayer = {
+    [FamiliarVariant.INCUBUS] = true,
+    [FamiliarVariant.SPRINKLER] = true,
+    [FamiliarVariant.TWISTED_BABY] = true,
+    [FamiliarVariant.BLOOD_BABY] = true,
+    [FamiliarVariant.UMBILICAL_BABY] = true,
+    [FamiliarVariant.CAINS_OTHER_EYE] = true,
+}
+function WarpZone.TryGetPlayer(spawner)
+    if not spawner then return end
+    local player
+    if spawner:ToPlayer() then
+        player = spawner:ToPlayer()
+    elseif spawner:ToFamiliar() and spawner:ToFamiliar().Player then
+        if FamAsPlayer[spawner.Variant] then
+            player = spawner:ToFamiliar().Player
+        end
+    end
+    return player
 end
 
 --if this ever makes it to workshop credit to catinsurance, holy shit
@@ -982,15 +1044,15 @@ function WarpZone:OnUpdate()
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.OnUpdate)
 
-function WarpZone:TriggerEffect(position)
-    local room = Game():GetRoom()
+function WarpZone:SpelunkerBombEffect(position)
+    local room = game:GetRoom()
     local numBridged = 0
     local resonate = false
 	for i=1, room:GetGridSize() do
         local ge = room:GetGridEntity(i)
         if ge and ge.Desc.Type == GridEntityType.GRID_PIT then
-            local distance = math.abs((position - ge.Position):LengthSquared())
-            if distance <= 10000 then
+            local distance = position:Distance(ge.Position)    -- math.abs((position - ge.Position):LengthSquared())
+            if distance <= 100 then --10000
                 ge:ToPit():MakeBridge(ge)
                 numBridged  = numBridged + 1
             end
@@ -1010,14 +1072,15 @@ function WarpZone:TriggerEffect(position)
         SfxManager:Play(SoundEffect.SOUND_ROCK_CRUMBLE)
     end
     if resonate then
-        Game():ShakeScreen(2)
+        game:ShakeScreen(2)
     end
 end
 
 function WarpZone:postRender(player)
 	local actions = player:GetLastActionTriggers()
+    local data = player:GetData()
     local controllerid = player.ControllerIndex
-    if not Game():IsPaused() then
+    if not game:IsPaused() then
         if player:HasTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS) and Input.IsActionTriggered(ButtonAction.ACTION_DROP, controllerid) then
             --player:DropTrinket(player.Position)
             player:TryRemoveTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS)
@@ -1026,68 +1089,68 @@ function WarpZone:postRender(player)
         end
 
         if actions & ActionTriggers.ACTIONTRIGGER_ITEMACTIVATED > 0 then
-            player:GetData().timeSinceTheSpacebarWasLastPressed = 0
+            data.timeSinceTheSpacebarWasLastPressed = 0
         else
-            player:GetData().timeSinceTheSpacebarWasLastPressed = player:GetData().timeSinceTheSpacebarWasLastPressed + 1
+            data.timeSinceTheSpacebarWasLastPressed = data.timeSinceTheSpacebarWasLastPressed + 1
         end
         
-        if player:GetData().arrowTimeDelay <= 0 then
+        if data.WarpZone_data.arrowTimeDelay <= 0 then
             if Input.IsActionTriggered(ButtonAction.ACTION_SHOOTUP, controllerid) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) then
-                if player:GetData().arrowTimeUp > 0 then
-                    player:GetData().arrowTimeDelay = totalFrameDelay
+                if data.WarpZone_data.arrowTimeUp > 0 then
+                    data.WarpZone_data.arrowTimeDelay = totalFrameDelay
                     firePopTear(player, true)
-                    player:GetData().arrowTimeThreeFrames = 6
+                    data.WarpZone_data.arrowTimeThreeFrames = 6
                 else
-                    player:GetData().arrowTimeUp = 30
+                    data.WarpZone_data.arrowTimeUp = 30
                 end
             elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTDOWN, controllerid) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) then
-                if player:GetData().arrowTimeDown > 0 then
-                    player:GetData().arrowTimeDelay = totalFrameDelay
+                if data.WarpZone_data.arrowTimeDown > 0 then
+                    data.WarpZone_data.arrowTimeDelay = totalFrameDelay
                     firePopTear(player, true)
-                    player:GetData().arrowTimeThreeFrames = 6
+                    data.WarpZone_data.arrowTimeThreeFrames = 6
                 else
-                    player:GetData().arrowTimeDown = 30
+                    data.WarpZone_data.arrowTimeDown = 30
                 end
             elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTLEFT, controllerid) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) then
-                if player:GetData().arrowTimeLeft > 0 then
-                    player:GetData().arrowTimeDelay = totalFrameDelay
+                if data.WarpZone_data.arrowTimeLeft > 0 then
+                    data.WarpZone_data.arrowTimeDelay = totalFrameDelay
                     firePopTear(player, true)
-                    player:GetData().arrowTimeThreeFrames = 6
+                    data.WarpZone_data.arrowTimeThreeFrames = 6
                 else
-                    player:GetData().arrowTimeLeft = 30
+                    data.WarpZone_data.arrowTimeLeft = 30
                 end
             elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTRIGHT, controllerid) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) then
-                if player:GetData().arrowTimeRight > 0 then
-                    player:GetData().arrowTimeDelay = totalFrameDelay
+                if data.WarpZone_data.arrowTimeRight > 0 then
+                    data.WarpZone_data.arrowTimeDelay = totalFrameDelay
                     firePopTear(player, true)
-                    player:GetData().arrowTimeThreeFrames = 6
+                    data.WarpZone_data.arrowTimeThreeFrames = 6
                 else
-                    player:GetData().arrowTimeRight = 30
+                    data.WarpZone_data.arrowTimeRight = 30
                 end
             end
         end
-        player:GetData().arrowTimeUp = player:GetData().arrowTimeUp - 1
-        player:GetData().arrowTimeDown = player:GetData().arrowTimeDown - 1
-        player:GetData().arrowTimeLeft = player:GetData().arrowTimeLeft - 1
-        player:GetData().arrowTimeRight = player:GetData().arrowTimeRight - 1
-        player:GetData().arrowTimeDelay = player:GetData().arrowTimeDelay - 1
-        if player:GetData().arrowTimeDelay == 0 or player:GetData().arrowTimeDelay == totalFrameDelay-1 then
+        data.WarpZone_data.arrowTimeUp = data.WarpZone_data.arrowTimeUp - 1
+        data.WarpZone_data.arrowTimeDown = data.WarpZone_data.arrowTimeDown - 1
+        data.WarpZone_data.arrowTimeLeft = data.WarpZone_data.arrowTimeLeft - 1
+        data.WarpZone_data.arrowTimeRight = data.WarpZone_data.arrowTimeRight - 1
+        data.WarpZone_data.arrowTimeDelay = data.WarpZone_data.arrowTimeDelay - 1
+        if data.WarpZone_data.arrowTimeDelay == 0 or data.WarpZone_data.arrowTimeDelay == totalFrameDelay-1 then
             player:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
             player:EvaluateItems()
         end
         if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOXING_GLOVE) and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN_B then
-            local maxThreshold = player:GetData().arrowHoldBox
+            local maxThreshold = data.arrowHoldBox
             if Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, controllerid) or
             Input.IsActionPressed(ButtonAction.ACTION_SHOOTDOWN, controllerid) or
             Input.IsActionPressed(ButtonAction.ACTION_SHOOTLEFT, controllerid) or
             Input.IsActionPressed(ButtonAction.ACTION_SHOOTRIGHT, controllerid) then
-                player:GetData().arrowHoldBox = player:GetData().arrowHoldBox + 1
+                data.arrowHoldBox = data.arrowHoldBox + 1
             else
-                player:GetData().arrowHoldBox = 0
+                data.arrowHoldBox = 0
             end
             
-            if maxThreshold > framesToCharge and player:GetData().arrowHoldBox == 0 then
-                player:GetData().fireGlove = true
+            if maxThreshold > framesToCharge and data.arrowHoldBox == 0 then
+                data.fireGlove = true
             end
         end
     end
@@ -1438,7 +1501,11 @@ function WarpZone:OnGameStart(isSave)
         for i=0, numPlayers-1, 1 do
             local player = Isaac.GetPlayer(i)
             for k,v in pairs(defaultData) do
-                player:GetData()[k] = v
+                if type(v) == "table" then
+                    player:GetData()[k] = TabDeepCopy(v)
+                else
+                    player:GetData()[k] = v
+                end
             end
         end
     end
@@ -1487,7 +1554,11 @@ function WarpZone:multiPlayerInit(player)
     local numPlayers = Game():GetNumPlayers()
     if Game():GetRoom():GetFrameCount() > 0 and numPlayers > 0 then
         for k,v in pairs(defaultData) do
-            player:GetData()[k] = v
+            if type(v) == "table" then
+                player:GetData()[k] = TabDeepCopy(v)
+            else
+                player:GetData()[k] = v
+            end
         end
     end
 end
@@ -1986,7 +2057,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - (cakeBingeBonus * 2)
         entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - isNil(entityplayer:GetData().bonusFireDelay, 0)
 
-        if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) and entityplayer:GetData().arrowTimeDelay > 0 then
+        if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) and entityplayer:GetData().WarpZone_data.arrowTimeDelay > 0 then
             if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) then
                 entityplayer.MaxFireDelay = entityplayer.MaxFireDelay + 40
             else
@@ -2060,9 +2131,11 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
 end
 WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, WarpZone.EvaluateCache)
 
+--Checking every entity here is a pretty terrible idea, since it's called for every player
 ---@param player EntityPlayer
 function WarpZone:postPlayerUpdate(player)
     local data = player:GetData()
+    local spr = player:GetSprite()
 
     if data.fireGlove == true then
         WarpZone:fireGlove(player)
@@ -2072,36 +2145,36 @@ function WarpZone:postPlayerUpdate(player)
         player.MoveSpeed = math.min(player.MoveSpeed+player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_HITOPS)*0.2, 3)
         data.breakCap = nil
     end
-    if Game():GetFrameCount() - isNil(player:GetData().MurderFrame, -999) < 15 then
+    if game:GetFrameCount() - isNil(data.MurderFrame, -999) < 15 then
         player.MoveSpeed = 4
-    elseif player:GetData().InMurderState == true then
-        player:GetData().InMurderState = false
+    elseif data.InMurderState == true then
+        data.InMurderState = false
         player:AddCacheFlags(CacheFlag.CACHE_SPEED)
         player:EvaluateItems()
-        player:GetSprite().Color = Color(1, 1, 1, 1, 0, 0, 0)
+        spr.Color = Color(1, 1, 1, 1, 0, 0, 0)
         player:GetEffects():RemoveCollectibleEffect(CollectibleType.COLLECTIBLE_LEO, 1)
     end
 
-    if Game():GetFrameCount() - isNil(player:GetData().InGravityState, -999) == 8 then
-        player:GetSprite().Color = Color(1, 1, 1, 0, 1, 1, 1)
-        player:GetSprite():LoadGraphics()
+    if game:GetFrameCount() - isNil(data.InGravityState, -999) == 8 then
+        spr.Color = Color(1, 1, 1, 0, 1, 1, 1)
+        spr:LoadGraphics()
     end
 
-    if player:GetData().gravReticle then
-        player:GetData().gravReticle.Position = player.Position
+    if data.gravReticle then
+        data.gravReticle.Position = player.Position
     end
 
-    if isNil(player:GetData().InGravityState, -999) > 0 and (Game():GetFrameCount() - isNil(player:GetData().InGravityState, -999) >= 150) then
+    if isNil(data.InGravityState, -999) > 0 and (game:GetFrameCount() - isNil(data.InGravityState, -999) >= 150) then
         player:PlayExtraAnimation("TeleportDown")
-        player:GetSprite().Color = Color(1, 1, 1, 1, 0, 0, 0)
-        player:GetData().InGravityState = -1
+        spr.Color = Color(1, 1, 1, 1, 0, 0, 0)
+        data.InGravityState = -1
         player:AddCacheFlags(CacheFlag.CACHE_RANGE)
         player:AddCacheFlags(CacheFlag.CACHE_FLYING)
         player:EvaluateItems()
         SfxManager:Play(SoundEffect.SOUND_THUMBSUP, 2)
-        if player:GetData().gravReticle then
-            player:GetData().gravReticle:Remove()
-            player:GetData().gravReticle = nil
+        if data.gravReticle then
+            data.gravReticle:Remove()
+            data.gravReticle = nil
         end
     end
 
@@ -2147,7 +2220,7 @@ function WarpZone:postPlayerUpdate(player)
         end
     end
 
-    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK) == true then
+    --[[if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK) == true then
 		local entities = Isaac.FindByType(EntityType.ENTITY_BOMBDROP)
 
 		for i=1,#entities do
@@ -2166,13 +2239,13 @@ function WarpZone:postPlayerUpdate(player)
 				end
 			end
 		end
-	end
+	end]]
 
     if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) then
-        if player:GetData().arrowTimeThreeFrames == 1 then
+        if player:GetData().WarpZone_data.arrowTimeThreeFrames == 1 then
             firePopTear(player, false)
         end
-        player:GetData().arrowTimeThreeFrames = player:GetData().arrowTimeThreeFrames-1
+        player:GetData().WarpZone_data.arrowTimeThreeFrames = player:GetData().WarpZone_data.arrowTimeThreeFrames-1
     end
 
     data.WarpZone_data = data.WarpZone_data or {}
@@ -3768,6 +3841,7 @@ ItemTranslate("WarpZone")
 local extrafiles = {
     "lua.ru",
     "lua.football",
+    "lua.bombs",
 }
 for i=1,#extrafiles do
     local module = include(extrafiles[i])
