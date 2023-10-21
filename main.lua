@@ -495,16 +495,17 @@ end
 
 function WarpZone:refreshItemsTaken()
     WarpZone.AnyPlayerDo(function(player)
-        if player:GetData().LastTotalItems ~= player:GetCollectibleCount() then
-            player:GetData().LastTotalItems = player:GetCollectibleCount()
+        local data = player:GetData()
+        if data.WarpZoneData.LastTotalItems ~= player:GetCollectibleCount() then
+            data.WarpZoneData.LastTotalItems = player:GetCollectibleCount()
             local itemConfig = Isaac:GetItemConfig()
             for itemID=1, itemConfig:GetCollectibles().Size-1 do
                 local item = itemConfig:GetCollectible(itemID)
-                local pool = Game():GetItemPool():GetLastPool()
+                local pool = game:GetItemPool():GetLastPool()
                 if item and item.Type ~= ItemType.ITEM_ACTIVE and not item:HasTags(ItemConfig.TAG_QUEST) and player:HasCollectible(itemID, true) then
-                    if tableContains(player:GetData().itemsTaken, itemID) == false then
-                        table.insert(player:GetData().itemsTaken, itemID)
-                        table.insert(player:GetData().poolsTaken, pool)
+                    if tableContains(data.itemsTaken, itemID) == false then
+                        table.insert(data.itemsTaken, itemID)
+                        table.insert(data.poolsTaken, pool)
                     end
                 end
             end
