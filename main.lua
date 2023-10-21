@@ -1992,8 +1992,6 @@ function WarpZone:UseDoorway(collectible, rng, entityplayer, useflags, activeslo
     entityplayer:UseActiveItem(CollectibleType.COLLECTIBLE_DADS_KEY)
     DoorwayFloor = currentLevel:GetStage()
     currentLevel:ApplyBlueMapEffect()
-    
-
 
     local rooms = currentLevel:GetRooms()
 
@@ -2482,6 +2480,41 @@ function WarpZone:checkLaser(entitylaser)
             entitylaser:GetData().IsBigLaser = true
         end
     end
+    --print(tostring(laser.SubType).." subtype, and damage is ".. tostring(laser.CollisionDamage))
+    if player and isNil(player:GetData().InGravityState, -1) > 0 and player:GetData().LaserRedirect ~= true then
+        --print("trig")
+        laser:GetData().TearGravityState = true
+        local newPos = Vector(player.Position.X, 3)
+        
+        local offset = Vector(0, 0)
+        player:GetData().LaserRedirect = true
+        if player:HasCollectible(CollectibleType.COLLECTIBLE_TECH_X) then
+            local velocity = laser.Velocity
+            if math.abs(velocity.X) > math.abs(velocity.Y) then
+                velocity = Vector(math.abs(velocity.Y), velocity.X)
+            end
+            velocity = Vector(velocity.X, (math.abs(velocity.Y)* 1.25))
+            player:FireTechXLaser(newPos, velocity, laser.Radius, player, 1)
+        elseif player:HasCollectible(CollectibleType.COLLECTIBLE_TECHNOLOGY_2) then
+            local newLaser = EntityLaser.ShootAngle(laser.Variant, newPos, 90, 1, offset, player)
+            newLaser.CollisionDamage = player.Damage / 7
+            if SfxManager:IsPlaying(SoundEffect.SOUND_REDLIGHTNING_ZAP) then
+                SfxManager:Stop(SoundEffect.SOUND_REDLIGHTNING_ZAP)
+            end
+            if SfxManager:IsPlaying(SoundEffect.SOUND_REDLIGHTNING_ZAP_WEAK) then
+                SfxManager:Stop(SoundEffect.SOUND_REDLIGHTNING_ZAP_WEAK)
+            end
+            
+        else
+            local newLaser = EntityLaser.ShootAngle(laser.Variant, newPos, 90, 1, offset, player)
+            newLaser.CollisionDamage = player.Damage
+        end
+
+        
+        laser:Remove()
+        
+    end
+    player:GetData().LaserRedirect = false
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_LASER_INIT, WarpZone.checkLaser)
 
@@ -3823,23 +3856,6 @@ function WarpZone:UseFiendFire(card, player, useflags)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseFiendFire, WarpZone.WarpZoneTypes.CARD_FIEND_FIRE)
 
---function WarpZone:UseDemonForm(card, player, useflags)
---    local formRng = RNG()
---    formRng:SetSeed(Random(), 1)
---    local chosenStat = formRng:RandomInt(5)
---    if chosenStat == 0 then
---        player:UseActiveItem(CollectibleType.COLLECTIBLE_MEGA_BLAST)
---    elseif chosenStat == 1 then
---        player:UseActiveItem(CollectibleType.COLLECTIBLE_BOOK_OF_BELIAL)
---    elseif chosenStat == 2 then
---        player:UseActiveItem(CollectibleType.COLLECTIBLE_THE_NAIL)
---    elseif chosenStat == 3 then
---        player:UseActiveItem(CollectibleType.COLLECTIBLE_SULFUR)
---    elseif chosenStat == 4 then
---        player:UseCard(WarpZone.WarpZoneTypes.CARD_EMPRESS, 256)
---    end
---end
-
 function WarpZone:UseDemonForm2(card, player, useflags)
     SfxManager:Play(SoundEffect.SOUND_SATAN_GROW)
     if player:GetData().WarpZone_data.InDemonForm == nil then
@@ -3847,10 +3863,6 @@ function WarpZone:UseDemonForm2(card, player, useflags)
         player:ChangePlayerType(PlayerType.PLAYER_AZAZEL)
         player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
         player:EvaluateItems()
-        --if player:HasCollectible(CollectibleType.COLLECTIBLE_BRIMSTONE)
-        --or player:GetData().InDemonForm == PlayerType.PLAYER_AZAZEL then
-        --    player:GetEffects():AddCollectibleEffect(CollectibleType.COLLECTIBLE_BIRTHRIGHT, false)
-        --end
 
     end
 end
