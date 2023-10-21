@@ -1824,7 +1824,7 @@ function WarpZone:NewRoom()
             if entity_pos:IsVulnerableEnemy() and not entity_pos:IsBoss() and not entity_pos:HasEntityFlags(EntityFlag.FLAG_BAITED) then
                 entity_pos:AddFear(EntityRef(possessPlayer), 90)
                 entity_pos:AddEntityFlags(EntityFlag.FLAG_BAITED)
-                if cheepPlayer:GetTrinketMultiplier(WarpZone.WarpZoneTypes.COLLECTIBLE_CHEEP_CHEEP) >= 2 then
+                if cheepPlayer:GetTrinketMultiplier(WarpZone.WarpZoneTypes.TRINKET_CHEEP_CHEEP) >= 2 then
                     entity_pos:AddEntityFlags(EntityFlag.FLAG_BLEED_OUT)
                 end
                 break
