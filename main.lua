@@ -409,6 +409,12 @@ end
 
 --util functions
 
+local function swapOutActive(activeToAdd, slot, player, charge)
+    local activeToRemove = player:GetActiveItem(slot)
+    player:RemoveCollectible(activeToRemove, true, slot, true)
+    player:AddCollectible(activeToAdd, charge, false, slot)
+end
+
 local function isNil(value, replacement)
     if value == nil then
         return replacement
@@ -1209,11 +1215,11 @@ function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
                 local newCharge = math.min(chargeThreshold, chargesToSet)
 
                 if pastCharge <= 3  and 3 < newCharge and newCharge <= 10 then
-                    player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_2, newCharge, false, ActiveSlot.SLOT_PRIMARY)
+                    swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_2, ActiveSlot.SLOT_PRIMARY, player, newCharge)
                 elseif pastCharge <= 10 and 10 < newCharge and newCharge <= 19 then
-                    player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_3, newCharge, false, ActiveSlot.SLOT_PRIMARY)
+                    swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_3, ActiveSlot.SLOT_PRIMARY, player, newCharge)
                 elseif pastCharge <=19 and newCharge and newCharge >= 20 then
-                    player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4, newCharge, false, ActiveSlot.SLOT_PRIMARY)
+                    swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4, ActiveSlot.SLOT_PRIMARY, player, newCharge)
                     SfxManager:Play(SoundEffect.SOUND_BATTERYCHARGE)
                 else
                     player:SetActiveCharge(newCharge)
@@ -1853,8 +1859,7 @@ function WarpZone:UseFocus(collectible, rng, entityplayer, useflags, activeslot,
         player:GetData().totalFocusDamage = 0
     end
 
-    player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS, adjustedcharge, false, activeslot)
-
+    swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS, ActiveSlot.SLOT_PRIMARY, player, adjustedcharge)
     return {
         Discharge = false,
         Remove = false,
@@ -2631,8 +2636,7 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_POST_NPC_DEATH, WarpZone.OnEntityDeath)
 
 function WarpZone:UseDiogenes(collectible, rng, entityplayer, useflags, activeslot, customvardata)
-
-    entityplayer:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE, 0, false, activeslot)
+    swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE, ActiveSlot.SLOT_PRIMARY, entityplayer, 0)
     SfxManager:Play(SoundEffect.SOUND_URN_OPEN)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseDiogenes, WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT)
@@ -2640,7 +2644,7 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseDiogenes, WarpZone.Wa
 
 
 function WarpZone:SheathDiogenes(collectible, rng, entityplayer, useflags, activeslot, customvardata)
-    entityplayer:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT, 0, false, activeslot)
+    swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT, ActiveSlot.SLOT_PRIMARY, entityplayer, 0)
     SfxManager:Play(SoundEffect.SOUND_URN_CLOSE)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.SheathDiogenes, WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE)
@@ -3748,10 +3752,7 @@ function WarpZone:UseDemonForm2(card, player, useflags)
 
     end
 end
-
-
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseDemonForm2, WarpZone.WarpZoneTypes.CARD_DEMON_FORM)
-
 
 function WarpZone:UseMurderCard(card, player, useflags)
     player:GetData().MurderFrame = Game():GetFrameCount()
