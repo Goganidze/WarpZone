@@ -306,7 +306,7 @@ local ITver = Modver or 1.08
 	function ITrsl.RenderPocketItemName()
 		local hud = game:GetHUD()
 		local shakeOffset = game.ScreenShakeOffset
-		if hud:IsVisible() and IT.MenuData.pickup_renderTranslate ~= true then
+		if game:GetFrameCount()>10 and hud:IsVisible() and IT.MenuData.pickup_renderTranslate ~= true then
 			local fontSize, SizeOffset = 0.5, 0
 			if IT.MenuData.FontSize == true then
 				fontSize, SizeOffset = 1, -3
