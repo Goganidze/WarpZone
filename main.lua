@@ -1298,7 +1298,7 @@ function WarpZone:postRender(player)
             local dir = player:GetLastDirection()
             print(dir)
             dir = dir * 16
-            local tear = player:FireTear(player.Position, dir)
+            local tear = player:FireTear(player.Position, dir, false, true, true, player)
             SfxManager:Play(SoundEffect.SOUND_EXPLOSION_WEAK, 3)
             data.primeShot = nil
             tear:GetData().FocusShot = true
@@ -2029,6 +2029,9 @@ function WarpZone:UseFocus(collectible, rng, entityplayer, useflags, activeslot,
     if not player:HasFullHearts() then
         player:AddHearts(2)
         SfxManager:Play(SoundEffect.SOUND_DEATH_CARD, 3)
+        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) then
+            player:AddHearts(2)
+        end
     else
         SfxManager:Play(SoundEffect.SOUND_ANGEL_WING, 2)
         entityplayer:GetData().primeShot = true
@@ -2271,7 +2274,11 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         end
         
         if data.WarpZone_data.dioDamageOn == true then
-            entityplayer.Damage = entityplayer.Damage * 1.5
+            if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) then
+                entityplayer.Damage = entityplayer.Damage * 2
+            else
+                entityplayer.Damage = entityplayer.Damage * 1.5
+            end
         end
         entityplayer.Damage = entityplayer.Damage + isNil(data.WarpZone_data.bonusDamage, 0)
     end
@@ -2618,6 +2625,9 @@ function WarpZone:updateTear(entitytear)
 
             tear.Scale = tear.Scale * 3.5
             tear.CollisionDamage = tear.CollisionDamage + 185
+            if player and player:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) then
+                tear.CollisionDamage = tear.CollisionDamage + 92
+            end
             tear:ResetSpriteScale()
         end
         
