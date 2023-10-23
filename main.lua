@@ -2,7 +2,7 @@
 local Vector = Vector
 local game = Game()
 WarpZone = RegisterMod("WarpZone", 1)
-local WarpZone = WarpZone
+--local WarpZone = WarpZone
 local json = require("json")
 local myRNG = RNG()
 myRNG:SetSeed(Random(), 1)
@@ -15,6 +15,7 @@ WarpZone.SaveFile = {}
 
 --debug
 WarpZone.SpelunkersPackEffectType = 1
+WarpZone.JohnnysKnivesEffectType = 1
 
 ----------------------------------
 --save data
@@ -23,10 +24,10 @@ local lastIndex = 5
 
 local defaultData = {}
 defaultData.WarpZone_data = {
-    arrowTimeUp = 0,
-    arrowTimeDown = 0,
-    arrowTimeLeft = 0,
-    arrowTimeRight = 0,
+    --arrowTimeUp = 0,
+    --arrowTimeDown = 0,
+    --arrowTimeLeft = 0,
+    --arrowTimeRight = 0,
     arrowTimeThreeFrames = 0,
     arrowTimeDelay = 0,
 }
@@ -56,6 +57,12 @@ defaultData.WarpZone_data.bonusRange = 0
 defaultData.WarpZone_data.bonusLuck = 0
 defaultData.WarpZone_data.inDemonForm = nil
 defaultData.WarpZone_data.arrowHoldBox = 0
+defaultData.WarpZone_unsavedata = {
+    arrowTimeUp = 0,
+    arrowTimeDown = 0,
+    arrowTimeLeft = 0,
+    arrowTimeRight = 0,
+}
 
 local function TabDeepCopy(tbl)
     local t = {}
@@ -243,6 +250,9 @@ local boxRenderedPosition = Vector(20, -27)
 --johnny knives
 local KnifeVariantHappy = Isaac.GetEntityVariantByName("JohnnyHappy")
 local KnifeVariantSad = Isaac.GetEntityVariantByName("JohnnySad")
+WarpZone.JOHNNYS_KNIVES = {
+    ENT = {HAPPY = KnifeVariantHappy, SAD = KnifeVariantSad},
+}
 
 --spelunker's bomb
 WarpZone.SPELUNKERS_PACK = {BOMBVAR = Isaac.GetEntityVariantByName("Spelunker Bomb"),
@@ -1143,6 +1153,23 @@ function WarpZone:SpelunkerBombEffect(position)
     end
 end
 
+WarpZone.DoubleTapCallback = {
+    {function(player, direction) --pop pop
+        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) then
+            local data = player:GetData()
+            data.WarpZone_unsavedata = data.WarpZone_unsavedata or {}
+            --if data.WarpZone_unsavedata.arrowTimeDelay <= 0 then
+                data.WarpZone_data.arrowTimeDelay = totalFrameDelay
+                firePopTear(player, true)
+                data.WarpZone_data.arrowTimeThreeFrames = 6
+                --return true --reset delay
+            --end
+        end
+    end, totalFrameDelay}
+}
+
+
+---@param player EntityPlayer
 function WarpZone:postRender(player)
 	local actions = player:GetLastActionTriggers()
     local data = player:GetData()
@@ -1161,45 +1188,84 @@ function WarpZone:postRender(player)
             data.WarpZone_data.timeSinceTheSpacebarWasLastPressed = data.WarpZone_data.timeSinceTheSpacebarWasLastPressed + 1
         end
         
-        if data.WarpZone_data.arrowTimeDelay <= 0 then
-            if Input.IsActionTriggered(ButtonAction.ACTION_SHOOTUP, controllerid) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) then
-                if data.WarpZone_data.arrowTimeUp > 0 then
-                    data.WarpZone_data.arrowTimeDelay = totalFrameDelay
-                    firePopTear(player, true)
-                    data.WarpZone_data.arrowTimeThreeFrames = 6
+        if player.ControlsEnabled then
+            data.WarpZone_unsavedata.DoubleTapDelays = data.WarpZone_unsavedata.DoubleTapDelays or {}
+            for i=1, #WarpZone.DoubleTapCallback do
+                local callback = WarpZone.DoubleTapCallback[i]
+                if not data.WarpZone_unsavedata.DoubleTapDelays[i] then
+                    data.WarpZone_unsavedata.DoubleTapDelays[i] = callback[2]
                 else
-                    data.WarpZone_data.arrowTimeUp = 30
+                    data.WarpZone_unsavedata.DoubleTapDelays[i] = data.WarpZone_unsavedata.DoubleTapDelays[i] - 1
                 end
-            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTDOWN, controllerid) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) then
-                if data.WarpZone_data.arrowTimeDown > 0 then
-                    data.WarpZone_data.arrowTimeDelay = totalFrameDelay
-                    firePopTear(player, true)
-                    data.WarpZone_data.arrowTimeThreeFrames = 6
+            end
+
+        --if data.WarpZone_data.arrowTimeDelay <= 0 then
+            if Input.IsActionTriggered(ButtonAction.ACTION_SHOOTUP, controllerid) then --and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP)
+                if data.WarpZone_unsavedata.arrowTimeUp > 0 then
+                    --data.WarpZone_data.arrowTimeDelay = totalFrameDelay
+                    --firePopTear(player, true)
+                    --data.WarpZone_data.arrowTimeThreeFrames = 6
+                    for i=1, #WarpZone.DoubleTapCallback do
+                        local callback = WarpZone.DoubleTapCallback[i]
+                        if data.WarpZone_unsavedata.DoubleTapDelays[i] <= 0 then
+                            callback[1](player, Vector(0,-1))
+                            data.WarpZone_unsavedata.DoubleTapDelays[i] = callback[2]
+                        end
+                    end
                 else
-                    data.WarpZone_data.arrowTimeDown = 30
+                    data.WarpZone_unsavedata.arrowTimeUp = 30
                 end
-            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTLEFT, controllerid) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) then
-                if data.WarpZone_data.arrowTimeLeft > 0 then
-                    data.WarpZone_data.arrowTimeDelay = totalFrameDelay
-                    firePopTear(player, true)
-                    data.WarpZone_data.arrowTimeThreeFrames = 6
+            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTDOWN, controllerid) then
+                if data.WarpZone_unsavedata.arrowTimeDown > 0 then
+                    --data.WarpZone_data.arrowTimeDelay = totalFrameDelay
+                    --firePopTear(player, true)
+                    --data.WarpZone_data.arrowTimeThreeFrames = 6
+                    for i=1, #WarpZone.DoubleTapCallback do
+                        local callback = WarpZone.DoubleTapCallback[i]
+                        if data.WarpZone_unsavedata.DoubleTapDelays[i] <= 0 then
+                            callback[1](player, Vector(0,1))
+                            data.WarpZone_unsavedata.DoubleTapDelays[i] = callback[2]
+                        end
+                    end
                 else
-                    data.WarpZone_data.arrowTimeLeft = 30
+                    data.WarpZone_unsavedata.arrowTimeDown = 30
                 end
-            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTRIGHT, controllerid) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) then
-                if data.WarpZone_data.arrowTimeRight > 0 then
-                    data.WarpZone_data.arrowTimeDelay = totalFrameDelay
-                    firePopTear(player, true)
-                    data.WarpZone_data.arrowTimeThreeFrames = 6
+            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTLEFT, controllerid) then
+                if data.WarpZone_unsavedata.arrowTimeLeft > 0 then
+                    --data.WarpZone_data.arrowTimeDelay = totalFrameDelay
+                    --firePopTear(player, true)
+                    --data.WarpZone_data.arrowTimeThreeFrames = 6
+                    for i=1, #WarpZone.DoubleTapCallback do
+                        local callback = WarpZone.DoubleTapCallback[i]
+                        if data.WarpZone_unsavedata.DoubleTapDelays[i] <= 0 then
+                            callback[1](player, Vector(1,0))
+                            data.WarpZone_unsavedata.DoubleTapDelays[i] = callback[2]
+                        end
+                    end
                 else
-                    data.WarpZone_data.arrowTimeRight = 30
+                    data.WarpZone_unsavedata.arrowTimeLeft = 30
+                end
+            elseif Input.IsActionTriggered(ButtonAction.ACTION_SHOOTRIGHT, controllerid) then
+                if data.WarpZone_unsavedata.arrowTimeRight > 0 then
+                    --data.WarpZone_data.arrowTimeDelay = totalFrameDelay
+                    --firePopTear(player, true)
+                    --data.WarpZone_data.arrowTimeThreeFrames = 6
+                    for i=1, #WarpZone.DoubleTapCallback do
+                        local callback = WarpZone.DoubleTapCallback[i]
+                        if data.WarpZone_unsavedata.DoubleTapDelays[i] <= 0 then
+                            callback[1](player, Vector(-1,0))
+                            data.WarpZone_unsavedata.DoubleTapDelays[i] = callback[2]
+                        end
+                    end
+                else
+                    data.WarpZone_unsavedata.arrowTimeRight = 30
                 end
             end
         end
-        data.WarpZone_data.arrowTimeUp = data.WarpZone_data.arrowTimeUp - 1
-        data.WarpZone_data.arrowTimeDown = data.WarpZone_data.arrowTimeDown - 1
-        data.WarpZone_data.arrowTimeLeft = data.WarpZone_data.arrowTimeLeft - 1
-        data.WarpZone_data.arrowTimeRight = data.WarpZone_data.arrowTimeRight - 1
+        data.WarpZone_unsavedata.arrowTimeUp = data.WarpZone_unsavedata.arrowTimeUp - 1
+        data.WarpZone_unsavedata.arrowTimeDown = data.WarpZone_unsavedata.arrowTimeDown - 1
+        data.WarpZone_unsavedata.arrowTimeLeft = data.WarpZone_unsavedata.arrowTimeLeft - 1
+        data.WarpZone_unsavedata.arrowTimeRight = data.WarpZone_unsavedata.arrowTimeRight - 1
         data.WarpZone_data.arrowTimeDelay = data.WarpZone_data.arrowTimeDelay - 1
         if data.WarpZone_data.arrowTimeDelay == 0 or data.WarpZone_data.arrowTimeDelay == totalFrameDelay-1 then
             player:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
@@ -1326,7 +1392,7 @@ function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
             end
         end
 
-        if source and source.Entity and source.Entity.Type == EntityType.ENTITY_FAMILIAR and (source.Entity.Variant == KnifeVariantHappy or source.Entity.Variant == KnifeVariantSad) then
+        --[[if source and source.Entity and source.Entity.Type == EntityType.ENTITY_FAMILIAR and (source.Entity.Variant == KnifeVariantHappy or source.Entity.Variant == KnifeVariantSad) then
             if amount >= entity.HitPoints then
                 local creepEntity = Isaac.Spawn(
                     EntityType.ENTITY_EFFECT,
@@ -1342,7 +1408,7 @@ function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
                 creepEntity:GetSprite().Scale = creepEntity:GetSprite().Scale * massMultiplier
                 creepEntity:GetSprite():Load("1000.022_creep (red).anm2")
             end
-        end
+        end]]
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.EnemyHit)
@@ -2357,10 +2423,10 @@ function WarpZone:postPlayerUpdate(player)
 	end]]
 
     if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) then
-        if player:GetData().WarpZone_data.arrowTimeThreeFrames == 1 then
+        if data.WarpZone_data.arrowTimeThreeFrames == 1 then
             firePopTear(player, false)
         end
-        player:GetData().WarpZone_data.arrowTimeThreeFrames = player:GetData().WarpZone_data.arrowTimeThreeFrames-1
+        data.WarpZone_data.arrowTimeThreeFrames = data.WarpZone_data.arrowTimeThreeFrames-1
     end
 
     data.WarpZone_data = data.WarpZone_data or {}
@@ -2373,7 +2439,7 @@ function WarpZone:postPlayerUpdate(player)
         data.WarpZone_data.HoldEntityLogic(player)
     end
 
-    if player:GetData().InMurderState == true then
+    if data.InMurderState == true then
         local room = game:GetRoom()
         
         for i = 0, room:GetGridSize() do
@@ -2392,13 +2458,15 @@ function WarpZone:postPlayerUpdate(player)
 
     if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES) then
         local creeps = Isaac.FindByType(EntityType.ENTITY_EFFECT, EffectVariant.PLAYER_CREEP_RED)
-        local pastvalue = isNil(player:GetData().JohnnyCreepTearBonus, false)
-        player:GetData().JohnnyCreepTearBonus = false
-        for i, creep in ipairs(creeps) do
+        local pastvalue = isNil(data.JohnnyCreepTearBonus, false)
+        data.JohnnyCreepTearBonus = false
+        --for i, creep in ipairs(creeps) do
+        for i=1, #creeps do
+            local creep = creeps[i]
             if (creep.Position-player.Position):Length() <= (creep.Size)/2 + 10 then
-                player:GetData().JohnnyCreepTearBonus = true
+                data.JohnnyCreepTearBonus = true
             end
-            if pastvalue ~= player:GetData().JohnnyCreepTearBonus then
+            if pastvalue ~= data.JohnnyCreepTearBonus then
                 player:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
                 player:EvaluateItems()
             end
@@ -3019,11 +3087,11 @@ local function update_cache(_, player, cache_flag)
         local john_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES)
         
         local myRNG4 = RNG()
-        myRNG4:SetSeed(Random(), 1)
+        --myRNG4:SetSeed(Random(), 1)
         local myRNG5 = RNG()
-        myRNG5:SetSeed(Random(), 1)
-		player:CheckFamiliar(KnifeVariantHappy, john_pickups, myRNG4)
-        player:CheckFamiliar(KnifeVariantSad, john_pickups, myRNG5)
+        --myRNG5:SetSeed(Random(), 1)
+		player:CheckFamiliar(KnifeVariantHappy, john_pickups, john_rng)
+        player:CheckFamiliar(KnifeVariantSad, john_pickups, john_rng)
     end
 end
 
@@ -3083,7 +3151,7 @@ WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_tumor_l, L
 
 
 
-function WarpZone:UpdateKnifeHappy(knife, renderoffset)
+--[[function WarpZone:UpdateKnifeHappy(knife, renderoffset)
     local player = knife.Player
     local direction = player:GetHeadDirection()
     local dir_vector = getVectorFromDirection(direction)
@@ -3129,29 +3197,29 @@ function WarpZone:UpdateKnifeSad(knife, renderoffset)
         knife.Position = player.Position + offset
         knife.SpriteRotation = dir_vector:GetAngleDegrees() - (90 + rotationSpace)
     end
-end
+end]]
 
-WarpZone:AddCallback(ModCallbacks.MC_POST_FAMILIAR_RENDER, WarpZone.UpdateKnifeHappy, KnifeVariantHappy)
-WarpZone:AddCallback(ModCallbacks.MC_POST_FAMILIAR_RENDER, WarpZone.UpdateKnifeSad, KnifeVariantSad)
+--WarpZone:AddCallback(ModCallbacks.MC_POST_FAMILIAR_RENDER, WarpZone.UpdateKnifeHappy, KnifeVariantHappy)
+--WarpZone:AddCallback(ModCallbacks.MC_POST_FAMILIAR_RENDER, WarpZone.UpdateKnifeSad, KnifeVariantSad)
 
 
-function WarpZone:OnJohnnyTouch(knife, collider, low)
+--[[function WarpZone:OnJohnnyTouch(knife, collider, low)
     if collider and collider:IsVulnerableEnemy() then
         local damage = 6
         local frameCount = Game():GetFrameCount()
         
         if frameCount % 2 == 0 then
             if collider.HitPoints < damage then
-                collider:GetData().KilledByJohnny = true
-                print(collider.Mass)
+                --collider:GetData().KilledByJohnny = true
+                --print(collider.Mass)
                 --print("kill1")
             end
             collider:TakeDamage(damage, 0, EntityRef(knife), 0)
         end
     end
-end
-WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.OnJohnnyTouch, KnifeVariantHappy)
-WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.OnJohnnyTouch, KnifeVariantSad)
+end]]
+--WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.OnJohnnyTouch, KnifeVariantHappy)
+--WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.OnJohnnyTouch, KnifeVariantSad)
 
 
 --function WarpZone:OnJohnnyKill(entity)
@@ -3955,6 +4023,7 @@ local extrafiles = {
     "lua.ru",
     "lua.football",
     "lua.bombs",
+    "lua.johnnys_knives"
 }
 for i=1,#extrafiles do
     local module = include(extrafiles[i])
