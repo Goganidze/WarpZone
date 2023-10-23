@@ -119,8 +119,20 @@ local strings = {
 		ru = "бомбы в руки",
 	},
 	sbm_var3 = {
-		en = "mode",
-		ru = "both",
+		en = "both",
+		ru = "оба",
+	},
+	johnnysknives_mode = {
+		en = "johnnys knives",
+		ru = "johnnys knives",
+	},
+	jk_var1 = {
+		en = "when firing",
+		ru = "при стрельбе",
+	},
+	jk_var2 = {
+		en = "double tab",
+		ru = "двойное тык",
 	},
 }
 local function GetStr(str)
@@ -164,6 +176,20 @@ WarpZone.DSSdirectory = {
 				store = function(var)
 					WarpZone.MenuData.SpelunkerBombMode = var 
 					WarpZone.SpelunkersPackEffectType = var
+				end,
+			},
+			{str = '', nosel = true, fsize = 3},
+			{
+				str = GetStr('johnnysknives_mode'),
+				choices = {GetStr('jk_var1'),GetStr('jk_var2')}, 
+				variable = 'JohnnysKnivesMode',
+				setting = 1,
+				load = function()
+					return WarpZone.MenuData.JohnnysKnivesMode or 1
+				end,
+				store = function(var)
+					WarpZone.MenuData.JohnnysKnivesMode = var 
+					WarpZone.JohnnysKnivesEffectType = var
 				end,
 			},
 		},
