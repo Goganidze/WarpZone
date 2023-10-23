@@ -2498,13 +2498,7 @@ function WarpZone:checkLaser(entitylaser)
         elseif player:HasCollectible(CollectibleType.COLLECTIBLE_TECHNOLOGY_2) then
             local newLaser = EntityLaser.ShootAngle(laser.Variant, newPos, 90, 1, offset, player)
             newLaser.CollisionDamage = player.Damage / 7
-            if SfxManager:IsPlaying(SoundEffect.SOUND_REDLIGHTNING_ZAP) then
-                SfxManager:Stop(SoundEffect.SOUND_REDLIGHTNING_ZAP)
-            end
-            if SfxManager:IsPlaying(SoundEffect.SOUND_REDLIGHTNING_ZAP_WEAK) then
-                SfxManager:Stop(SoundEffect.SOUND_REDLIGHTNING_ZAP_WEAK)
-            end
-            
+            newLaser:GetData().SuppressZaps = true  
         else
             local newLaser = EntityLaser.ShootAngle(laser.Variant, newPos, 90, 1, offset, player)
             newLaser.CollisionDamage = player.Damage
@@ -2524,6 +2518,10 @@ function WarpZone:updateLaser(laser)
         laser.Size = laser.Size * 3
         laser:GetSprite().Scale = laser:GetSprite().Scale * 3
         laser:GetData().IsBigLaser = false
+    end
+    if laser:GetData().SuppressZaps == true then
+        SfxManager:Stop(SoundEffect.SOUND_REDLIGHTNING_ZAP)
+        SfxManager:Stop(SoundEffect.SOUND_REDLIGHTNING_ZAP_WEAK)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_LASER_UPDATE, WarpZone.updateLaser)
