@@ -2148,6 +2148,16 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseDoorway, WarpZone.WarpZoneTypes.COLLECTIBLE_DOORWAY)
 
 function WarpZone:UseIsYou(collectible, rng, entityplayer, useflags, activeslot, customvardata)
+    if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) then
+        if useflags & UseFlag.USE_CARBATTERY ~= 0 then
+            return {
+                Discharge = false,
+                Remove = false,
+                ShowAnim = false
+            }
+        end
+    end
+
     if entityplayer:GetData().baba_active == nil and entityplayer:GetData().reticle == nil then
         entityplayer:GetData().reticle = Isaac.Spawn(1000, 30, 0, entityplayer.Position, Vector(0, 0), entityplayer)
         entityplayer:GetData().WarpZone_data.blinkTime = 10
@@ -2159,7 +2169,9 @@ function WarpZone:UseIsYou(collectible, rng, entityplayer, useflags, activeslot,
         }
     elseif entityplayer:GetData().baba_active ~= nil then
         entityplayer:UseActiveItem(entityplayer:GetData().baba_active)
-
+        if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) then
+            entityplayer:UseActiveItem(entityplayer:GetData().baba_active, UseFlag.USE_CARBATTERY)
+        end
         entityplayer:GetData().baba_active = nil
         return {
             Discharge = true,
