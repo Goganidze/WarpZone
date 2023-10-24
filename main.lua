@@ -1710,9 +1710,9 @@ function WarpZone:preGameExit()
 function WarpZone:DebugText()
     local player = Isaac.GetPlayer(0) --this one is OK
     local coords = player.Position
-    --local debug_str = tostring(coords)
+    debug_str = tostring(coords)
 
-    --Isaac.RenderText(debug_str, 100, 60, 1, 1, 1, 255)
+    Isaac.RenderText(debug_str, 100, 60, 1, 1, 1, 255)
 
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
@@ -1991,21 +1991,28 @@ function WarpZone:usePastkiller(collectible, rng, entityplayer, useflags, active
     end
 
 
-    local pos = game:GetRoom():GetCenterPos() + Vector(-180, -100)
+    local pos = game:GetRoom():GetCenterPos() + Vector(-160, -160)
     local pool
     local item_removed
+    local numChoices = 3
+    local spacing = 80
 
-
+    if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) then
+        numChoices = 5
+        pos = game:GetRoom():GetCenterPos() + Vector(-120, -160)
+        spacing = 40
+    end
+    
     for j = 1, 3 do
         pickupindex = pickupindex + 1
         pool = table.remove(data.WarpZone_data.poolsTaken, 1)
         item_removed  = table.remove(data.WarpZone_data.itemsTaken, 1)
         player:RemoveCollectible(item_removed)
-        for i = 1, 3 do
+        for i = 1, numChoices do
             local pedestal = Isaac.Spawn(EntityType.ENTITY_PICKUP,
                         PickupVariant.PICKUP_COLLECTIBLE,
                         itemPool:GetCollectible(pool),
-                        game:GetRoom():FindFreePickupSpawnPosition(pos + Vector(90 * i, 60 * j)),
+                        game:GetRoom():FindFreePickupSpawnPosition(pos + Vector(spacing * i, 80 * j)),
                         Vector(0,0),
                         nil)
             pedestal:ToPickup().OptionsPickupIndex = pickupindex
