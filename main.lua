@@ -2364,7 +2364,7 @@ function WarpZone:postPlayerUpdate(player)
         player:GetEffects():RemoveCollectibleEffect(CollectibleType.COLLECTIBLE_LEO, 1)
     end
 
-    if game:GetFrameCount() - isNil(data.InGravityState, -999) == 8 then
+    if game:GetFrameCount() - isNil(data.InGravityState, -999) == 8 or (player:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) and game:GetFrameCount() - isNil(data.InGravityState, -999) == -142) then
         spr.Color = Color(1, 1, 1, 0, 1, 1, 1)
         spr:LoadGraphics()
     end
@@ -4031,9 +4031,21 @@ end
 
 function WarpZone:useGravity(collectible, rng, player, useflags, activeslot, customvardata)
     --player:AnimateLightTravel()
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) then
+        if useflags & UseFlag.USE_CARBATTERY ~= 0 then
+            return {
+                Discharge = false,
+                Remove = false,
+                ShowAnim = false
+            }
+        end
+    end
     player:PlayExtraAnimation("TeleportUp")
-    
+    print("used")
     player:GetData().InGravityState = game:GetFrameCount()
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) then
+        player:GetData().InGravityState = player:GetData().InGravityState + 150
+    end
     player:AddCacheFlags(CacheFlag.CACHE_RANGE)
     player:AddCacheFlags(CacheFlag.CACHE_FLYING)
     player:EvaluateItems()
