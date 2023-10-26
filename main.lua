@@ -3053,10 +3053,16 @@ local function pre_orbital_collision(_, orbital, collider, low)
         if orbital:GetData().PopHP == 0 then
             local orbitalPosition = orbital.Position
             Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_HEART, 0, orbitalPosition, Vector(0, 0), orbital)
+            local player = orbital.Player
+            if player:HasCollectible(CollectibleType.COLLECTIBLE_BFFS) then
+                Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_HEART, 0, orbitalPosition, Vector(0, 0), orbital)
+            end
             orbital:Remove()
             SfxManager:Play(SoundEffect.SOUND_ROCK_CRUMBLE)
-            local player = orbital.Player
             player:GetData().WarpZone_data.roomsSinceBreak = 12
+            if player:HasCollectible(CollectibleType.COLLECTIBLE_BFFS) then
+                player:GetData().WarpZone_data.roomsSinceBreak = 4
+            end
         elseif orbital:GetData().PopHP < 2 then
             local sprite = orbital:GetSprite()
             sprite:Load("gfx/Lollipop_cracked_2.anm2",false)
