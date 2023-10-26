@@ -1712,7 +1712,7 @@ function WarpZone:DebugText()
     local coords = player.Position
     debug_str = tostring(coords)
 
-    Isaac.RenderText(debug_str, 100, 60, 1, 1, 1, 255)
+    --Isaac.RenderText(debug_str, 100, 60, 1, 1, 1, 255)
 
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
@@ -2604,7 +2604,9 @@ function WarpZone:checkLaser(entitylaser)
         laser:Remove()
         
     end
-    player:GetData().LaserRedirect = false
+    if player then
+        player:GetData().LaserRedirect = false
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_LASER_INIT, WarpZone.checkLaser)
 
