@@ -3284,6 +3284,9 @@ function WarpZone:pre_tumor_collision(orbital, collider, low)
                 damage = damage + ((numTumors - 10) * 0.2)
             end
         end
+        if orbital.Player and orbital.Player:HasCollectible(CollectibleType.COLLECTIBLE_BFFS) then
+            damage = damage * 2
+        end
         collider:TakeDamage(damage, 0, EntityRef(orbital), 0)
 	elseif collider:ToProjectile() ~= nil then
         --conditions for blocking shots?
