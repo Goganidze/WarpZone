@@ -9,5 +9,6 @@
     <costume id = "5" anm2path = "NewgroundsTank.anm2" type = "passive" />
     <costume id = "29" anm2path = "costume_poppop.anm2" type = "passive"/>
     <costume id = "28" anm2path = "hitops.anm2" type = "passive"/>
+    <costume id = "32" anm2path = "bow.anm2" type = "passive"/>
     <costume id = "34" anm2path = "boxglove.anm2" type = "passive" hasSkinAlt = "true"/>
 </costumes>
