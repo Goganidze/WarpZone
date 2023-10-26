@@ -540,7 +540,7 @@ local function doesAnyoneHave(itemtype, trinket)
                 hasIt = player
             end
         else
-            if player:HasCollectible(itemtype) then
+            if player:HasCollectible(itemtype) and (hasIt == nil or (hasIt and hasIt:GetCollectibleNum(itemtype) < player:GetCollectibleNum(itemtype))) then
                 hasIt = player
             end
         end
@@ -1885,17 +1885,17 @@ function WarpZone:NewRoom()
     local possessPlayer =  doesAnyoneHave(WarpZone.WarpZoneTypes.COLLECTIBLE_POSSESSION, false)
     if possessPlayer ~= nil and room:IsFirstVisit() then
         local entities = Isaac.GetRoomEntities()
-        local charmed = false
+        local charmed = 0
         local tempnumPossessed = 0
         for i=1, #entities do
             local entity_pos = entities[i]
             if entity_pos:GetData().InPossession == true then
                 tempnumPossessed = tempnumPossessed + 1
             end
-            if not charmed and numPossessed < 15 and entity_pos:IsVulnerableEnemy() and not entity_pos:IsBoss() and not entity_pos:HasEntityFlags(EntityFlag.FLAG_CHARM) then
+            if charmed < possessPlayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_POSSESSION) and numPossessed < 15 and entity_pos:IsVulnerableEnemy() and not entity_pos:IsBoss() and not entity_pos:HasEntityFlags(EntityFlag.FLAG_CHARM) then
                 entity_pos:AddCharmed(EntityRef(possessPlayer), -1)
                 entity_pos:GetData().InPossession = true
-                charmed = true
+                charmed = charmed + 1
             end
         end
         numPossessed = tempnumPossessed
