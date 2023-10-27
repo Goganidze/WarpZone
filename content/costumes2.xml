@@ -2,6 +2,7 @@
     <costume id = "1"  anm2path = "GoldenIdolCostume.anm2" type = "passive" priority = "99"/>
     <costume id = "3" anm2path = "BirthdayCakeCostume.anm2" type = "passive" />
     <costume id = "4" anm2path = "rustyspoons.anm2" type = "passive" skinColor = "4" />
+    <costume id = "6" anm2path = "greedbutt.anm2" type = "passive" />
     <costume id = "12" anm2path = "strangemarble.anm2" type = "passive" />
     <costume id = "14" anm2path = "NightmareTickCostume.anm2" type = "passive" hasSkinAlt = "true"/>
     <costume id = "15" anm2path = "spelunker.anm2" type = "passive" hasSkinAlt = "true"/>
