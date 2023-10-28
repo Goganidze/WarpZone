@@ -1,11 +1,11 @@
 <AnimatedActor>
-	<Info CreatedBy="robot" CreatedOn="28.10.2023 20:00:23" Version="105" Fps="30"/>
+	<Info CreatedBy="robot" CreatedOn="28.10.2023 20:06:49" Version="106" Fps="30"/>
 	<Content>
 		<Spritesheets>
 			<Spritesheet Path="costumes\costume_poppop.png" Id="0"/>
 		</Spritesheets>
 		<Layers>
-			<Layer Name="body" Id="0" SpritesheetId="0"/>
+			<Layer Name="body1" Id="0" SpritesheetId="0"/>
 		</Layers>
 		<Nulls/>
 		<Events/>
