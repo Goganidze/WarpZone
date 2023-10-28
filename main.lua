@@ -1306,22 +1306,36 @@ function WarpZone:postRender(player)
         end
 
     end
-
+    local ticklostitem = data.WarpZone_unsavedata and data.WarpZone_unsavedata.TickLostItem
+    if ticklostitem then
+        local pos = Isaac.WorldToScreen(player.Position)
+        pos.Y = pos.Y - ticklostitem.frame - 15
+        ticklostitem.spr.Color = Color(1,1,1,1-ticklostitem.frame/60)
+        ticklostitem.spr:Render(pos)
+        ticklostitem.frame = ticklostitem.frame + 1
+        if ticklostitem.frame > 60 then
+            data.WarpZone_unsavedata.TickLostItem = nil
+        end
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_RENDER, WarpZone.postRender)
 
+---@param player EntityPlayer
+---@param renderoffset any
 function WarpZone:UIOnRender(player, renderoffset)
     local data = player:GetData()
     if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) then
         local numCollectibles = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW)
         
-        for i = 1, numCollectibles * 3, 1 do
+        data.WarpZone_data.maxArrowNum = math.ceil(30 / (player.MaxFireDelay + 1)) * numCollectibles
+        local numAroows = data.WarpZone_data.maxArrowNum
+        for i = 1, numAroows , 1 do
             if data.WarpZone_data.numArrows - i >= 0 then
                 ArrowHud:SetFrame("Lit", 0)
             else
                 ArrowHud:SetFrame("Unlit", 0)
             end
-            ArrowHud:RenderLayer(0,  Isaac.WorldToScreen(player.Position)+renderedPosition + Vector((i-1) * 5, 0))
+            ArrowHud:RenderLayer(0,  Isaac.WorldToScreen(player.Position)+renderedPosition+player:GetFlyingOffset() + Vector((i) * 5 - (numAroows-.5)*2.5, 0))
         end
     end
     local currentCharge = data.WarpZone_data.arrowHoldBox
@@ -1597,6 +1611,13 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
                     SfxManager:Play(SoundEffect.SOUND_THUMBS_DOWN)
                     SfxManager:Play(SoundEffect.SOUND_BOSS_BUG_HISS)
                     player:AnimateSad()
+
+                    local lostitem = Sprite()
+                    lostitem:Load("gfx/005.100_collectible.anm2", true)
+                    lostitem:Play("PlayerPickup")
+                    lostitem:ReplaceSpritesheet(1, Isaac.GetItemConfig():GetCollectible(item_del).GfxFileName)
+                    lostitem:LoadGraphics()
+                    data.WarpZone_unsavedata.TickLostItem = {spr = lostitem, frame=0}
                 end
             end
         end
@@ -1782,9 +1803,9 @@ function WarpZone:LevelStart()
                             nil)
         end
 
-        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) then
-            pdata.WarpZone_data.numArrows = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) * 3
-        end
+        --if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) then
+        --    pdata.WarpZone_data.numArrows = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) * 3
+        --end
     end
     bossPrepped = false
     while next (roomsPrepped) do
@@ -1811,6 +1832,9 @@ function WarpZone:NewRoom()
         if data.WarpZone_data.InDemonForm ~= nil then
             player:ChangePlayerType(data.WarpZone_data.InDemonForm)
             data.WarpZone_data.InDemonForm = nil
+        end
+        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) then
+            data.WarpZone_data.numArrows = data.WarpZone_data.maxArrowNum
         end
     end
     if game:GetLevel():GetStage() == DoorwayFloor and (game:GetLevel():GetCurrentRoomIndex() ~=84 or game:GetLevel():GetStage()~= 1 or not room:IsFirstVisit()) then
@@ -2187,6 +2211,11 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseIsYou, WarpZone.WarpZ
 function WarpZone:OnPickupCollide(entity, Collider, Low)
     local player = Collider:ToPlayer()
     local data = Collider:GetData()
+
+    --if entity.Variant == tokenVariant and Collider.Type == EntityType.ENTITY_PICKUP then
+        --return true
+    ---end
+
     if player == nil then
         return nil
     end
@@ -2242,6 +2271,15 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
 end
 
 WarpZone:AddCallback(ModCallbacks.MC_PRE_PICKUP_COLLISION, WarpZone.OnPickupCollide)
+
+---@param pickup EntityPickup
+function WarpZone:PickupUpdate(pickup)
+    if pickup.Variant == tokenVariant then
+        pickup.Timeout = 60
+        pickup.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_PICKUP_UPDATE, WarpZone.PickupUpdate)
 
 function WarpZone:EvaluateCache(entityplayer, Cache)
     local data = entityplayer:GetData()
@@ -2784,6 +2822,7 @@ function WarpZone:updateTear(entitytear)
         if data.BowArrowPiercing == 2 then
             data.BowArrowPiercing = 1
             tear:AddTearFlags(TearFlags.TEAR_PIERCING)
+            tear.Position = tear.Position + tear.Velocity
             tear.Velocity = tear.Velocity * Vector(1.5, 1.5)
             tear.Scale = tear.Scale * 0.5
             tear.CollisionDamage = tear.CollisionDamage * 2.5
@@ -2843,10 +2882,11 @@ function WarpZone:dropArrow(entity)
             local arrow = Isaac.Spawn(EntityType.ENTITY_PICKUP,
                     tokenVariant,
                     1,
-                    entity.Position,
+                    entity.Position-entity.Velocity*2,
                     entity.Velocity * 0.25,
                     nil)
-                arrow:GetSprite():SetFrame(23)
+            arrow:GetSprite():SetFrame(23)
+            arrow.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
         end
         if entity.Child then
             entity.Child:Remove()
