@@ -120,9 +120,11 @@
     </Pool>
     <Pool Name="devil">
         <Item Name="The Real Left Hand" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Johnny's Knives" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
     <Pool Name="greedDevil">
         <Item Name="The Real Left Hand" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Johnny's Knives" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
     <Pool Name="greedGoldenChest">
         <Item Name="Football" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
