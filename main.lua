@@ -516,7 +516,6 @@ function WarpZone:refreshItemsTaken()
         
         local data = player:GetData()
         if data.WarpZone_data and data.WarpZone_data.LastTotalItems ~= player:GetCollectibleCount() then
-            print("refresh'd")
             data.WarpZone_data.LastTotalItems = player:GetCollectibleCount()
             local itemConfig = Isaac:GetItemConfig()
             for itemID=1, itemConfig:GetCollectibles().Size-1 do
@@ -3309,19 +3308,17 @@ local function update_cache(_, player, cache_flag)
 		player:CheckFamiliar(KnifeVariantHappy, john_pickups, john_rng)
         player:CheckFamiliar(KnifeVariantSad, john_pickups, john_rng)
 
-        local junkan_pickups = player:GetCollectibleNum(WarpZone.WarpZoneTypes)
+        local junkan_pickups = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN)
         local junkan_fly_rng = RNG()
         junkan_fly_rng:SetSeed(Random(), 1)
         local junkan_walk_rng = RNG()
         junkan_walk_rng:SetSeed(Random(), 1)
 
-        local junk_count = player:GetData().WarpZone_data.GetJunkCollected
-        if junk_count > 0 then
-            local flyFamiliars = math.min(junkan_pickups, math.floor(junk_count/16))
-            local walkFamiliars = junkan_pickups-flyFamiliars
-            player:CheckFamiliar(SerJunkanFly, flyFamiliars, junkan_fly_rng)
-            player:CheckFamiliar(SerJunkanWalk, walkFamiliars, junkan_walk_rng)
-        end
+        local junk_count = isNil(player:GetData().WarpZone_data.GetJunkCollected, 0)
+        local flyFamiliars = math.min(junkan_pickups, math.floor(junk_count/16))
+        local walkFamiliars = junkan_pickups-flyFamiliars
+        player:CheckFamiliar(SerJunkanFly, flyFamiliars, junkan_fly_rng)
+        player:CheckFamiliar(SerJunkanWalk, walkFamiliars, junkan_walk_rng)
     end
 end
 
@@ -3734,7 +3731,6 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.FootballCollide, FamiliarVariant.CUBE_BABY)
 
 function WarpZone:FindEffects(collectible, rng, entityplayer, useflags, activeslot, customvardata)
-    print(Isaac:GetItemConfig():GetCollectibles().Size-1)
     local entities = Isaac.GetRoomEntities()
     local debbug = ""
     for i, entity_pos in ipairs(entities) do
@@ -3759,7 +3755,6 @@ function WarpZone:FindEffects(collectible, rng, entityplayer, useflags, activesl
     }
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.FindEffects, WarpZone.WarpZoneTypes.COLLECTIBLE_TEST_ACTIVE)
-
 
 
 function WarpZone:DisableCreep(entity)
@@ -4243,7 +4238,6 @@ function WarpZone:useGravity(collectible, rng, player, useflags, activeslot, cus
         end
     end
     player:PlayExtraAnimation("TeleportUp")
-    print("used")
     player:GetData().InGravityState = game:GetFrameCount()
     if player:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) then
         player:GetData().InGravityState = player:GetData().InGravityState + 150
