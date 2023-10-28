@@ -1183,7 +1183,9 @@ function WarpZone:postRender(player)
             Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS, player.Position, Vector(0, 0), nil)
             
         end
-
+        if not data.WarpZone_data then
+            data.WarpZone_data = {}
+        end
         if actions & ActionTriggers.ACTIONTRIGGER_ITEMACTIVATED > 0 then
             data.WarpZone_data.timeSinceTheSpacebarWasLastPressed = 0
         else
