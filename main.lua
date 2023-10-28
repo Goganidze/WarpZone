@@ -2393,7 +2393,7 @@ function WarpZone:postPlayerUpdate(player)
     --    player:UseActiveItem(CollectibleType.COLLECTIBLE_HOW_TO_JUMP)
     --end
 
-    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) == true or player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) == true  then
+    --[[if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) == true or player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) == true  then
         
         local lasers = Isaac.FindByType(EntityType.ENTITY_LASER)
         for _, laser in ipairs(lasers) do
@@ -2427,7 +2427,7 @@ function WarpZone:postPlayerUpdate(player)
                 brimball.Color = tickColor
             end
         end
-    end
+    end]]
 
     --[[if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK) == true then
 		local entities = Isaac.FindByType(EntityType.ENTITY_BOMBDROP)
@@ -2549,22 +2549,151 @@ function WarpZone:checkTear(entitytear)
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_INIT, WarpZone.checkTear)
 
+local LaserCheckUpdateFrame = 0
+WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, function()
+    local curFrame = Isaac.GetFrameCount()
+    if LaserCheckUpdateFrame ~= curFrame then
+        LaserCheckUpdateFrame = curFrame
+        
+        local lasers = Isaac.FindByType(EntityType.ENTITY_LASER)
+        for i=1, #lasers do
+            local laser = lasers[i]
+            --local player = WarpZone.TryGetPlayer(laser.SpawnerEntity)
+            local data = laser:GetData()
+            --[[if data.Laser_Rusty == true then
+                data.Laser_Rusty = false
+                laser.Color = rustColor
+            elseif player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) == true then
+                laser.Color = tickColor
+            end]]
+            if data.Laser_Rusty == true then
+                data.Laser_Rusty = false
+                laser.Color = rustColor
+            end
+            if data.WarpZone_UpdateColor then
+                laser.Color = data.WarpZone_UpdateColor
+                data.WarpZone_UpdateColor = nil
+            end
+        end
+        
+        local laserEndpoints = Isaac.FindByType(EntityType.ENTITY_EFFECT, EffectVariant.LASER_IMPACT)
+        --for _, laserEndpoint in ipairs(laserEndpoints) do
+        for i=1, #laserEndpoints do
+            local laserEndpoint = laserEndpoints[i]
+            local data = laserEndpoint:GetData()
+            --if data.Laser_Rusty == true then
+            --    data.Laser_Rusty = false
+            --    laserEndpoint.Color = rustColor
+            --elseif player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) == true then
+            --    laserEndpoint.Color = tickColor
+            --end
+        end
+        
+        local brimballs = Isaac.FindByType(EntityType.ENTITY_EFFECT, EffectVariant.BRIMSTONE_BALL)
+        for i=1, #brimballs do
+            local brimball = brimballs[i]
+            local data = brimball:GetData()
+            if data.Laser_Rusty == true then
+                data.Laser_Rusty = false
+                brimball.Color = rustColor
+            end
+            if data.WarpZone_UpdateColor then
+                brimball.Color = data.WarpZone_UpdateColor
+                data.WarpZone_UpdateColor = nil
+            end
+        end
+
+        local brimballs = Isaac.FindByType(EntityType.ENTITY_EFFECT, EffectVariant.BRIMSTONE_SWIRL)
+        for i=1, #brimballs do
+            local brimball = brimballs[i]
+            local data = brimball:GetData()
+            if data.Laser_Rusty == true then
+                data.Laser_Rusty = false
+                brimball.Color = rustColor
+            end
+            if data.WarpZone_UpdateColor then
+                brimball.Color = data.WarpZone_UpdateColor
+                data.WarpZone_UpdateColor = nil
+            end
+        end
+    end
+end)
+
+function WarpZone:BrimBallInit(laser)
+    local player = WarpZone.TryGetPlayer(laser.SpawnerEntity) 
+    local data = laser:GetData()
+    
+    if player then
+        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) then
+            local chance = player.Luck * 5 + 10
+            local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON)
+            local ghost = RNG()
+            ghost:SetSeed(rng:GetSeed(), 35) --isn't working?
+            if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
+                chance = chance + 20
+            end
+            local chance_num = ghost:RandomInt(100)
+            if chance_num < chance then
+                data.Laser_Rusty = true
+                player:GetData().LaserBleedIt = true
+            end
+        end
+        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) then
+            data.WarpZone_UpdateColor = tickColor
+        end
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_EFFECT_INIT, WarpZone.BrimBallInit, EffectVariant.BRIMSTONE_BALL)
+
+function WarpZone:BrimSwirmInit(laser)
+    local player = WarpZone.TryGetPlayer(laser.SpawnerEntity) 
+    local data = laser:GetData()
+    
+    if player then
+        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) then
+            local chance = player.Luck * 5 + 10
+            local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON)
+            local ghost = RNG()
+            ghost:SetSeed(rng:GetSeed(), 35) --isn't working?
+            if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
+                chance = chance + 20
+            end
+            local chance_num = ghost:RandomInt(100)
+            if chance_num < chance then
+                data.Laser_Rusty = true
+                --player:GetData().LaserBleedIt = true
+            end
+        end
+        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) then
+            data.WarpZone_UpdateColor = tickColor
+            laser.Color = tickColor
+        end
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_POST_EFFECT_INIT, WarpZone.BrimSwirmInit, EffectVariant.BRIMSTONE_SWIRL)
 
 function WarpZone:checkLaser(entitylaser)
     local laser = entitylaser:ToLaser()
-    local player = getPlayerFromKnifeLaser(laser)
+    local player = WarpZone.TryGetPlayer(laser.SpawnerEntity) --getPlayerFromKnifeLaser(laser)
+    local data = laser:GetData()
     local var = laser.Variant
     local subt = laser.SubType
-    if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) and not ((var == 1 and subt == 3) or var == 5 or var == 12) then
-        local chance = player.Luck * 5 + 10
-        local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON)
-        if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
-            chance = chance + 20
+    local ignoreLaserVar = ((var == 1 and subt == 3) or var == 5 or var == 12)
+    if player and not ignoreLaserVar then
+        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) then
+            local chance = player.Luck * 5 + 10
+            local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON)
+            if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
+                chance = chance + 20
+            end
+            local chance_num = rng:RandomInt(100)
+            if chance_num < chance then
+                data.Laser_Rusty = true
+                player:GetData().LaserBleedIt = true
+            end
         end
-        local chance_num = rng:RandomInt(100)
-        if chance_num < chance then
-            laser:GetData().Laser_Rusty = true
-            player:GetData().LaserBleedIt = true
+        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) then
+            data.WarpZone_UpdateColor = tickColor
         end
     end
 
