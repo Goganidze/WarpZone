@@ -23,7 +23,16 @@
     <entity anm2path="johnnyKnifeSad.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="7" friction="1" id="3" name="JohnnySad" numGridCollisionPoints="12" shadowSize="6" stageHP="0" variant="131">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
+    <entity anm2path="junkan walking.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="7" friction="1" id="3" name="SerJunkanWalk" numGridCollisionPoints="12" shadowSize="6" stageHP="0" variant="132">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
+    </entity>
+    <entity anm2path="junkan flying.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="7" friction="1" id="3" name="SerJunkanFly" numGridCollisionPoints="12" shadowSize="6" stageHP="0" variant="133">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
+    </entity>
     <entity anm2path="tumor_pickup.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="12" friction="1" id="5" name="Tumor_Pickup" numGridCollisionPoints="12" shadowSize="17" stageHP="0" variant="4787" subtype = "1">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
+    </entity>
+    <entity anm2path="junk_pickup.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="12" friction="1" id="5" name="Junk_Pickup" numGridCollisionPoints="12" shadowSize="17" stageHP="0" variant="4789" subtype = "1">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
     <entity anm2path="dummy_effect.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="12" friction="1" id="1000" name="Blank_Effect" numGridCollisionPoints="12" shadowSize="0" stageHP="0" variant="4788" subtype = "1">

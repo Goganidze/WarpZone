@@ -35,8 +35,9 @@
     <passive id="34" gfx="Collectibles_31_Boxing_Glove.png" name="Boxing Glove" description="Risk of pain" quality="2"/>
     <active id="35" gfx="Collectibles_32_Gravity.png" name="Gravity" description="Reusable flip" quality="2" chargetype = "timed" maxcharges = "600"/>
     <familiar id="36" gfx="Collectibles_33_Johnnys_Knives.png" name="Johnny's Knives" description="I need you to keep bleeding..." quality="3" devilprice="2" />
+    <familiar id="37" gfx="Collectibles_34_Ser_Junkan.png" name="Ser Junkan" description="He's a scrappy little fella!" quality="1"/>
     
-    <active id="37" gfx="Collectibles_26_Test_Active.png" name="Test Active" description="Diddle me lucky charms..." quality="0" maxcharges = "0"/>
+    <active id="38" gfx="Collectibles_26_Test_Active.png" name="Test Active" description="Diddle me lucky charms..." quality="0" maxcharges = "0"/>
 
     <trinket name="Ring of the Snake" description="Starting hand +2" gfx="Trinket_01_RingSnake.png" />
     <trinket name="Hunky Boys" description="You don't care for them...but do they?" gfx="Trinket_02_HunkyBoys.png" />

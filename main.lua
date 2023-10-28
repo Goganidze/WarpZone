@@ -258,6 +258,12 @@ WarpZone.JOHNNYS_KNIVES = {
 WarpZone.SPELUNKERS_PACK = {BOMBVAR = Isaac.GetEntityVariantByName("Spelunker Bomb"),
     FetusBasicChance = 0.5, FetusMaxLuck = 6}
 
+
+--ser junkan
+local SerJunkPickupVar = Isaac.GetEntityVariantByName("Junk_Pickup")
+local SerJunkanWalk = Isaac.GetEntityVariantByName("SerJunkanWalk")
+local SerJunkanFly = Isaac.GetEntityVariantByName("SerJunkanFly")
+
 --item defintions
 WarpZone.WarpZoneTypes = {}
 
@@ -298,7 +304,7 @@ WarpZone.WarpZoneTypes.COLLECTIBLE_EMERGENCY_MEETING = Isaac.GetItemIdByName("Em
 WarpZone.WarpZoneTypes.COLLECTIBLE_BOXING_GLOVE = Isaac.GetItemIdByName("Boxing Glove")
 WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY = Isaac.GetItemIdByName("Gravity")
 WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES = Isaac.GetItemIdByName("Johnny's Knives")
-
+WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN = Isaac.GetItemIdByName("Ser Junkan")
 
 
 WarpZone.WarpZoneTypes.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
@@ -3302,6 +3308,20 @@ local function update_cache(_, player, cache_flag)
         --myRNG5:SetSeed(Random(), 1)
 		player:CheckFamiliar(KnifeVariantHappy, john_pickups, john_rng)
         player:CheckFamiliar(KnifeVariantSad, john_pickups, john_rng)
+
+        local junkan_pickups = player:GetCollectibleNum(WarpZone.WarpZoneTypes)
+        local junkan_fly_rng = RNG()
+        junkan_fly_rng:SetSeed(Random(), 1)
+        local junkan_walk_rng = RNG()
+        junkan_walk_rng:SetSeed(Random(), 1)
+
+        local junk_count = player:GetData().WarpZone_data.GetJunkCollected
+        if junk_count > 0 then
+            local flyFamiliars = math.min(junkan_pickups, math.floor(junk_count/16))
+            local walkFamiliars = junkan_pickups-flyFamiliars
+            player:CheckFamiliar(SerJunkanFly, flyFamiliars, junkan_fly_rng)
+            player:CheckFamiliar(SerJunkanWalk, walkFamiliars, junkan_walk_rng)
+        end
     end
 end
 
