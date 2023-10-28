@@ -1,5 +1,5 @@
 <AnimatedActor>
-	<Info CreatedBy="robot" CreatedOn="10/28/2023 2:17:08 PM" Version="102" Fps="30"/>
+	<Info CreatedBy="robot" CreatedOn="10/28/2023 3:26:07 PM" Version="104" Fps="30"/>
 	<Content>
 		<Spritesheets>
 			<Spritesheet Path="pickup_junkan.png" Id="0"/>
@@ -8,7 +8,9 @@
 			<Layer Name="body" Id="0" SpritesheetId="0"/>
 		</Layers>
 		<Nulls/>
-		<Events/>
+		<Events>
+			<Event Name="DropSound" Id="0"/>
+		</Events>
 	</Content>
 	<Animations DefaultAnimation="Idle">
 		<Animation Name="Idle" FrameNum="1" Loop="false">
@@ -62,7 +64,9 @@
 				</LayerAnimation>
 			</LayerAnimations>
 			<NullAnimations/>
-			<Triggers/>
+			<Triggers>
+				<Trigger EventId="0" AtFrame="26"/>
+			</Triggers>
 		</Animation>
 	</Animations>
 </AnimatedActor>

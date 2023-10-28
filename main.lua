@@ -2255,6 +2255,17 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
     end
 
 
+    if entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == SerJunkPickupVar and entity:GetData().Collected ~= true then
+        entity:GetData().Collected = true
+        entity:GetSprite():Play("Collect")
+        SfxManager:Play(SoundEffect.SOUND_ANIMAL_SQUISH)
+        data.WarpZone_data.GetJunkCollected = isNil(data.WarpZone_data.GetJunkCollected, 0) + 1
+        player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS)
+        player:EvaluateItems()
+    elseif entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == SerJunkPickupVar then
+        return true
+    end
+
     if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant == PickupVariant.PICKUP_COLLECTIBLE) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_TONY) then
         --local dmg_config = Isaac.GetItemConfig():GetCollectible(entity.SubType)
         if entity.SubType ~= 0 and data.WarpZone_data.tonyBuff > 1 and entity:GetData().collected ~= true then -- and (dmg_config.CacheFlags & CacheFlag.CACHE_DAMAGE == CacheFlag.CACHE_DAMAGE)
@@ -3633,6 +3644,15 @@ function WarpZone:BeggarUpdate()
 			tumor:Remove()
 		elseif tumor:GetSprite():IsEventTriggered("DropSound") then
             SfxManager:Play(SoundEffect.SOUND_MEAT_FEET_SLOW0, 2)
+        end
+    end
+
+    local junks = Isaac.FindByType(EntityType.ENTITY_PICKUP, SerJunkPickupVar)
+    for _,junk in pairs(junks) do
+        if junk:GetSprite():GetFrame() >= 4 and junk:GetSprite():GetAnimation() == "Collect" then
+			junk:Remove()
+		elseif junk:GetSprite():IsEventTriggered("DropSound") then
+            SfxManager:Play(SoundEffect.SOUND_SCAMPER, 2)
         end
     end
 
