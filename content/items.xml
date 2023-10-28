@@ -34,7 +34,7 @@
     <active id="33" gfx="Collectibles_30_Emergency_Meeting.png" name="Emergency Meeting" description="Everyone back to base!" quality="0" maxcharges = "3"/>
     <passive id="34" gfx="Collectibles_31_Boxing_Glove.png" name="Boxing Glove" description="Risk of pain" quality="2"/>
     <active id="35" gfx="Collectibles_32_Gravity.png" name="Gravity" description="Reusable flip" quality="2" chargetype = "timed" maxcharges = "600"/>
-    <familiar id="36" gfx="Collectibles_33_Johnnys_Knives.png" name="Johnny's Knives" description="I need you to keep bleeding..." quality="3"/>
+    <familiar id="36" gfx="Collectibles_33_Johnnys_Knives.png" name="Johnny's Knives" description="I need you to keep bleeding..." quality="3" devilprice="2" />
     
     <active id="37" gfx="Collectibles_26_Test_Active.png" name="Test Active" description="Diddle me lucky charms..." quality="0" maxcharges = "0"/>
 
