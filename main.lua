@@ -1432,6 +1432,7 @@ WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.EnemyHit)
 
 
 function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes)
+    ---@type EntityPlayer
     local player = entity:ToPlayer()
     if player == nil then
         return
@@ -1475,17 +1476,17 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
     if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) and source ~= nil then
         local source_entity = source.Entity
         if source_entity ~= nil and (source_entity:IsEnemy() or (source_entity.Type == EntityType.ENTITY_PROJECTILE and source_entity.Variant ~= ProjectileVariant.PROJECTILE_FIRE)) then
-            local direction = player:GetHeadDirection()
+            --local direction = player:GetHeadDirection()
             local sourcePosition = source_entity.Position
             local playerPosition = player.Position
             
             local vectorSum = playerPosition - sourcePosition
             
-            local backstab = false
-            local coinvelocity
+            local backstab = true
+            local coinvelocity = player:GetAimDirection() * -16
             local velConstant = 16
 
-            if math.abs(vectorSum.X) > math.abs(vectorSum.Y) then
+            --[[if math.abs(vectorSum.X) > math.abs(vectorSum.Y) then
                 if (vectorSum.X > 0  and direction == Direction.RIGHT) then
                     backstab = true
                     coinvelocity = Vector(-velConstant, 0)
@@ -1501,7 +1502,7 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
                     backstab = true
                     coinvelocity = Vector(0, velConstant)
                 end
-            end
+            end]]
             if backstab == true then
                 local gb_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT)
                 local benchmark = gb_rng:RandomInt(100)
@@ -1511,13 +1512,24 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
                         game:GetRoom():SpawnGridEntity(id, GridEntityType.GRID_POOP, 3, gb_rng:Next(), 0)
                         SfxManager:Play(SoundEffect.SOUND_FART, 1.0, 0, false, 1.0)
                     end
+                    player:UseActiveItem(CollectibleType.COLLECTIBLE_BEAN)
+                    player:UseActiveItem(CollectibleType.COLLECTIBLE_BUTTER_BEAN)
                 else
-                    Isaac.Spawn(EntityType.ENTITY_PICKUP,
-                        PickupVariant.PICKUP_COIN,
-                        0,
-                        game:GetRoom():FindFreePickupSpawnPosition(player.Position),
-                        coinvelocity,
-                        nil)
+                    if benchmark < 25 then
+                        local id = findFreeTile(player.Position)
+                        if id ~= false then
+                            game:GetRoom():SpawnGridEntity(id, GridEntityType.GRID_POOP, 0, gb_rng:Next(), 0)
+                            SfxManager:Play(SoundEffect.SOUND_FART, 1.0, 0, false, 1.0)
+                        end
+                    else
+                        Isaac.Spawn(EntityType.ENTITY_PICKUP,
+                            PickupVariant.PICKUP_COIN,
+                            0,
+                            game:GetRoom():FindFreePickupSpawnPosition(player.Position),
+                            coinvelocity,
+                            player)
+                    end
+                    
                     player:UseActiveItem(CollectibleType.COLLECTIBLE_BEAN)
                     player:UseActiveItem(CollectibleType.COLLECTIBLE_BUTTER_BEAN)
                 end
