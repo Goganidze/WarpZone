@@ -1439,6 +1439,7 @@ WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.EnemyHit)
 
 
 function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes)
+    ---@type EntityPlayer
     local player = entity:ToPlayer()
     if player == nil then
         return
@@ -1482,17 +1483,17 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
     if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) and source ~= nil then
         local source_entity = source.Entity
         if source_entity ~= nil and (source_entity:IsEnemy() or (source_entity.Type == EntityType.ENTITY_PROJECTILE and source_entity.Variant ~= ProjectileVariant.PROJECTILE_FIRE)) then
-            local direction = player:GetHeadDirection()
+            --local direction = player:GetHeadDirection()
             local sourcePosition = source_entity.Position
             local playerPosition = player.Position
             
             local vectorSum = playerPosition - sourcePosition
             
-            local backstab = false
-            local coinvelocity
+            local backstab = true
+            local coinvelocity = player:GetAimDirection() * -16
             local velConstant = 16
 
-            if math.abs(vectorSum.X) > math.abs(vectorSum.Y) then
+            --[[if math.abs(vectorSum.X) > math.abs(vectorSum.Y) then
                 if (vectorSum.X > 0  and direction == Direction.RIGHT) then
                     backstab = true
                     coinvelocity = Vector(-velConstant, 0)
@@ -1508,7 +1509,7 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
                     backstab = true
                     coinvelocity = Vector(0, velConstant)
                 end
-            end
+            end]]
             if backstab == true then
                 local gb_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT)
                 local benchmark = gb_rng:RandomInt(100)
@@ -1518,13 +1519,24 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
                         game:GetRoom():SpawnGridEntity(id, GridEntityType.GRID_POOP, 3, gb_rng:Next(), 0)
                         SfxManager:Play(SoundEffect.SOUND_FART, 1.0, 0, false, 1.0)
                     end
+                    player:UseActiveItem(CollectibleType.COLLECTIBLE_BEAN)
+                    player:UseActiveItem(CollectibleType.COLLECTIBLE_BUTTER_BEAN)
                 else
-                    Isaac.Spawn(EntityType.ENTITY_PICKUP,
-                        PickupVariant.PICKUP_COIN,
-                        0,
-                        game:GetRoom():FindFreePickupSpawnPosition(player.Position),
-                        coinvelocity,
-                        nil)
+                    if benchmark < 25 then
+                        local id = findFreeTile(player.Position)
+                        if id ~= false then
+                            game:GetRoom():SpawnGridEntity(id, GridEntityType.GRID_POOP, 0, gb_rng:Next(), 0)
+                            SfxManager:Play(SoundEffect.SOUND_FART, 1.0, 0, false, 1.0)
+                        end
+                    else
+                        Isaac.Spawn(EntityType.ENTITY_PICKUP,
+                            PickupVariant.PICKUP_COIN,
+                            0,
+                            game:GetRoom():FindFreePickupSpawnPosition(player.Position),
+                            coinvelocity,
+                            player)
+                    end
+                    
                     player:UseActiveItem(CollectibleType.COLLECTIBLE_BEAN)
                     player:UseActiveItem(CollectibleType.COLLECTIBLE_BUTTER_BEAN)
                 end
@@ -1837,11 +1849,15 @@ function WarpZone:NewRoom()
 
         data.WarpZone_data.ballCheck = false
         if data.WarpZone_data.InDemonForm ~= nil then
-            player:ChangePlayerType(data.WarpZone_data.InDemonForm)
+            --player:ChangePlayerType(data.WarpZone_data.InDemonForm)
             data.WarpZone_data.InDemonForm = nil
         end
         if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) then
             data.WarpZone_data.numArrows = data.WarpZone_data.maxArrowNum
+        end
+        if data.WarpZone_unsavedata.johnnytearbonus then
+            data.WarpZone_unsavedata.johnnytearbonus = nil
+            player:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
         end
     end
     if game:GetLevel():GetStage() == DoorwayFloor and (game:GetLevel():GetCurrentRoomIndex() ~=84 or game:GetLevel():GetStage()~= 1 or not room:IsFirstVisit()) then
@@ -2299,6 +2315,12 @@ function WarpZone:PickupUpdate(pickup)
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PICKUP_UPDATE, WarpZone.PickupUpdate)
 
+local function tearsUp(firedelay, val)
+	local currentTears = 30 / (firedelay + 1)
+	local newTears = currentTears + val
+	return math.max((30 / newTears) - 1, -0.99)
+end
+
 function WarpZone:EvaluateCache(entityplayer, Cache)
     local data = entityplayer:GetData()
     local cakeBingeBonus = 0
@@ -2326,8 +2348,12 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
             end
             
         end
-        if entityplayer:GetData().JohnnyCreepTearBonus == true then
-            entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - 2
+        --if entityplayer:GetData().JohnnyCreepTearBonus == true then
+        --    entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - 2
+        --end
+        if data.WarpZone_unsavedata.johnnytearbonus then
+            local power = entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BFFS) and 2 or 1
+            entityplayer.MaxFireDelay = tearsUp(entityplayer.MaxFireDelay, data.WarpZone_unsavedata.johnnytearbonus/4*power)
         end
     end
         
@@ -2340,7 +2366,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
             entityplayer.Damage = entityplayer.Damage + (data.WarpZone_data.itemsSucked * 0.75)
         end
         
-        if data.WarpZone_data.InDemonForm ~= nil then
+        if data.WarpZone_data.InDemonForm then
             entityplayer.Damage = entityplayer.Damage + 1
         end
 
@@ -2371,6 +2397,9 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
 
     if Cache == CacheFlag.CACHE_FLYING then
         if game:GetFrameCount() - isNil(data.InGravityState, -999) < 150 then
+            entityplayer.CanFly = true
+        end
+        if data.WarpZone_data.InDemonForm then
             entityplayer.CanFly = true
         end
     end
@@ -2728,9 +2757,12 @@ function WarpZone:BrimSwirmInit(laser)
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_EFFECT_INIT, WarpZone.BrimSwirmInit, EffectVariant.BRIMSTONE_SWIRL)
 
+---@param entitylaser EntityLaser
 function WarpZone:checkLaser(entitylaser)
     local laser = entitylaser:ToLaser()
+    ---@type EntityPlayer
     local player = WarpZone.TryGetPlayer(laser.SpawnerEntity) --getPlayerFromKnifeLaser(laser)
+    local pdata = player and player:GetData()
     local data = laser:GetData()
     local var = laser.Variant
     local subt = laser.SubType
@@ -2753,22 +2785,27 @@ function WarpZone:checkLaser(entitylaser)
         end
     end
 
-    if player and player:GetData().WarpZone_data.InDemonForm ~= nil then
-        if player:HasCollectible(CollectibleType.COLLECTIBLE_BRIMSTONE) 
-        or player:GetData().WarpZone_data.InDemonForm == PlayerType.PLAYER_AZAZEL 
-        or player:GetData().WarpZone_data.InDemonForm == PlayerType.PLAYER_AZAZEL_B then
+    if player and pdata.WarpZone_data.InDemonForm ~= nil then
+        --if player:HasCollectible(CollectibleType.COLLECTIBLE_BRIMSTONE) then
+        --or player:GetData().WarpZone_data.InDemonForm == PlayerType.PLAYER_AZAZEL 
+        --or player:GetData().WarpZone_data.InDemonForm == PlayerType.PLAYER_AZAZEL_B then
+            if not player:HasCollectible(CollectibleType.COLLECTIBLE_BRIMSTONE, true) then
+                entitylaser.MaxDistance = player.TearRange/2
+            end
             entitylaser.Variant = 1
-            entitylaser:GetData().IsBigLaser = true
-        end
+            entitylaser:GetData().WZ_IsBigLaser = true
+            entitylaser:SetSize(entitylaser.Size*3, Vector(1,1), 1)
+            --entitylaser.Size = entitylaser.Size * 3
+        --end
     end
     --print(tostring(laser.SubType).." subtype, and damage is ".. tostring(laser.CollisionDamage))
-    if player and isNil(player:GetData().InGravityState, -1) > 0 and player:GetData().LaserRedirect ~= true then
+    if player and isNil(pdata.InGravityState, -1) > 0 and pdata.LaserRedirect ~= true then
         --print("trig")
         laser:GetData().TearGravityState = true
         local newPos = Vector(player.Position.X, 3)
         
         local offset = Vector(0, 0)
-        player:GetData().LaserRedirect = true
+        pdata.LaserRedirect = true
         if player:HasCollectible(CollectibleType.COLLECTIBLE_TECH_X) then
             local velocity = laser.Velocity
             if math.abs(velocity.X) > math.abs(velocity.Y) then
@@ -2790,17 +2827,18 @@ function WarpZone:checkLaser(entitylaser)
         
     end
     if player then
-        player:GetData().LaserRedirect = false
+        pdata.LaserRedirect = false
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_LASER_INIT, WarpZone.checkLaser)
 
 
 function WarpZone:updateLaser(laser)
-    if laser:GetData().IsBigLaser == true then
-        laser.Size = laser.Size * 3
+    if laser:GetData().WZ_IsBigLaser == true then
+        --laser.Size = laser.Size * 3
         laser:GetSprite().Scale = laser:GetSprite().Scale * 3
-        laser:GetData().IsBigLaser = false
+        laser:SetSize(laser.Size*3, Vector(1,1), 1)
+        laser:GetData().WZ_IsBigLaser = false
     end
     if laser:GetData().SuppressZaps == true then
         SfxManager:Stop(SoundEffect.SOUND_REDLIGHTNING_ZAP)
@@ -4170,11 +4208,15 @@ function WarpZone:UseFiendFire(card, player, useflags)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseFiendFire, WarpZone.WarpZoneTypes.CARD_FIEND_FIRE)
 
+---@param player EntityPlayer
 function WarpZone:UseDemonForm2(card, player, useflags)
     SfxManager:Play(SoundEffect.SOUND_SATAN_GROW)
     if player:GetData().WarpZone_data.InDemonForm == nil then
-        player:GetData().WarpZone_data.InDemonForm = player:GetPlayerType()
-        player:ChangePlayerType(PlayerType.PLAYER_AZAZEL)
+        player:GetData().WarpZone_data.InDemonForm = true --player:GetPlayerType()
+        --player:ChangePlayerType(PlayerType.PLAYER_AZAZEL)
+        --player:AddNullCostume(NullItemID.ID_AZAZEL)
+        player:GetEffects():AddNullEffect(NullItemID.ID_AZAZEL)
+        player:GetEffects():AddCollectibleEffect(CollectibleType.COLLECTIBLE_BRIMSTONE, false)
         player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
         player:EvaluateItems()
 

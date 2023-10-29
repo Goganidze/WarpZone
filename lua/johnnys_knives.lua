@@ -110,6 +110,7 @@ return function(mod)
                     creepEntity:ToEffect().Size = creepEntity:ToEffect().Size * massMultiplier
                     creepEntity:GetSprite().Scale = creepEntity:GetSprite().Scale * massMultiplier
                     creepEntity:Update()
+                    collider:GetData().WarpZone_KilledJohnny = knife.Player
                 end
                 if collider.Type ~= 951 then
                     collider:ToNPC():BloodExplode()
@@ -125,6 +126,18 @@ return function(mod)
 
     WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.OnJohnnyTouch, WarpZone.JOHNNYS_KNIVES.ENT.HAPPY)
     WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.OnJohnnyTouch, WarpZone.JOHNNYS_KNIVES.ENT.SAD)
+
+    function WarpZone:JohnnyKill(ent)
+        local data = ent:GetData()
+        if data.WarpZone_KilledJohnny and data.WarpZone_KilledJohnny:Exists() then
+            local playerdata = data.WarpZone_KilledJohnny:GetData().WarpZone_unsavedata
+            playerdata.johnnytearbonus = playerdata.johnnytearbonus and (playerdata.johnnytearbonus + 1) or 1
+            playerdata.johnnytearbonus = math.min(playerdata.johnnytearbonus, 20)
+            data.WarpZone_KilledJohnny:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
+            data.WarpZone_KilledJohnny:EvaluateItems()
+        end
+    end
+    WarpZone:AddCallback(ModCallbacks.MC_POST_ENTITY_KILL, WarpZone.JohnnyKill)
 
     WarpZone.DoubleTapCallback[#WarpZone.DoubleTapCallback+1] =
         {function(player, direction)
