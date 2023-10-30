@@ -40,7 +40,7 @@ return function(mod)
 			WarpZone:SpelunkerBombEffect(bomb.Position)
 			game:MakeShockwave(bomb.Position,0.02,0.06,4)
 		end
-		if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN) then
+		if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN) then
 			WarpZone:DestroyItemPedestalCheck(bomb, player)
 		end
 	end
@@ -112,7 +112,9 @@ return function(mod)
 	end, EntityType.ENTITY_BOMBDROP)
 	
 	mod:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, function(_, bomb)
-		mod:postBombExplosion(bomb, bomb:GetData().WarpZone_Player)
+		--if bomb:GetData().WarpZone_Player then
+			mod:postBombExplosion(bomb, bomb:GetData().WarpZone_Player)
+		--end
 	end,EntityType.ENTITY_BOMBDROP)
 
 	mod:AddCallback(ModCallbacks.MC_POST_EFFECT_UPDATE, function(_, rocket)
