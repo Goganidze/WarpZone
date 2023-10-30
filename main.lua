@@ -4330,3 +4330,20 @@ for i=1,#extrafiles do
     local module = include(extrafiles[i])
     module(WarpZone)
 end
+
+function WarpZone:DestroyItemPedestalCheck(bomb, player)
+    local entities = Isaac.FindInRadius(bomb.Position, 100)
+    local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN)
+    for i, entity in ipairs(entities) do
+        if entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == PickupVariant.PICKUP_COLLECTIBLE then
+            Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, -1, entity.Position, entity.Velocity, bomb)
+            entity:Remove()
+            local loops = rng:RandomInt(3) + 3
+            for j=1, loops, 1 do
+                print("loop")
+                local velocity = Vector(rng:RandomInt(8), rng:RandomInt(8))
+                Isaac.Spawn(EntityType.ENTITY_PICKUP, SerJunkPickupVar, 1, entity.Position, velocity, bomb)
+            end
+        end
+    end
+end

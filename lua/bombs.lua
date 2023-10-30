@@ -40,6 +40,9 @@ return function(mod)
 			WarpZone:SpelunkerBombEffect(bomb.Position)
 			game:MakeShockwave(bomb.Position,0.02,0.06,4)
 		end
+		if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN) then
+			WarpZone:DestroyItemPedestalCheck(bomb, player)
+		end
 	end
 
 	---@param player EntityPlayer
