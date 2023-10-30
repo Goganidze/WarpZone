@@ -3364,7 +3364,7 @@ local function update_cache(_, player, cache_flag)
         junkan_walk_rng:SetSeed(Random(), 1)
 
         local junk_count = isNil(player:GetData().WarpZone_data.GetJunkCollected, 0)
-        local flyFamiliars = math.min(junkan_pickups, math.floor(junk_count/16))
+        local flyFamiliars = math.min(junkan_pickups, math.floor(junk_count/15))
         local walkFamiliars = junkan_pickups-flyFamiliars
         player:CheckFamiliar(SerJunkanFly, flyFamiliars, junkan_fly_rng)
         player:CheckFamiliar(SerJunkanWalk, walkFamiliars, junkan_walk_rng)
@@ -4347,3 +4347,30 @@ function WarpZone:DestroyItemPedestalCheck(bomb, player)
         end
     end
 end
+
+local fammovespeed = 50
+local chasingspeed = 70
+
+local function normalizedirection(currentpos, targetpos, chasing)
+	local moveVector = targetpos - currentpos
+	if chasing then
+		moveVector = moveVector:Normalized() * chasingspeed
+	else
+		moveVector = moveVector:Normalized() * fammovespeed
+	end
+	moveVector = currentpos + moveVector
+	return moveVector
+end
+
+
+local function update_junkan(_, fam)
+    local animName = "Idle"
+    local player = fam.Player
+    local data = player:GetData()
+    local junkCount = math.floor((isNil(data.WarpZone_data.GetJunkCollected, 0) % 15) / 2) + 1
+    animName = animName .. tostring(junkCount)
+    if fam:GetSprite():GetAnimation() ~= animName then
+        fam:GetSprite():Play(animName)
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, update_junkan, SerJunkanWalk)
