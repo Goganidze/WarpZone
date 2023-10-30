@@ -1125,6 +1125,32 @@ function WarpZone:OnUpdate()
             end
         end
     end
+
+    if WarpZone.ForcePushList and #WarpZone.ForcePushList>0 then
+        for i = #WarpZone.ForcePushList, 1, -1 do
+            local tab = WarpZone.ForcePushList[i]
+            ---@type Entity
+            local ent = tab[1]
+            if ent and ent:Exists() then
+                if tab[4] then
+                    ent:AddEntityFlags(EntityFlag.FLAG_APPLY_IMPACT_DAMAGE | EntityFlag.FLAG_KNOCKED_BACK)
+                    if ent:CollidesWithGrid() then
+                        ent:TakeDamage(10, 0, EntityRef(tab[5]), 1)
+                        tab[3] = 0
+                    end
+                end
+                --ent:AddVelocity(tab[2])
+                ent.Velocity = tab[2] -- ent.Velocity * 0.05 + tab[2] * 0.95
+
+                tab[3] = tab[3] - 1
+                if tab[3] <= 0 then
+                    table.remove(WarpZone.ForcePushList, i)
+                end
+            else
+                table.remove(WarpZone.ForcePushList, i)
+            end
+        end
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.OnUpdate)
 
@@ -1157,6 +1183,17 @@ function WarpZone:SpelunkerBombEffect(position)
     end
     if resonate then
         game:ShakeScreen(2)
+    end
+end
+
+WarpZone.ForcePushList = {}
+---@param ent Entity
+---@param vec Vector
+---@param time integer
+function WarpZone.ForcePushEnemy(ent, vec, time, applyImpactDamage, refEnt)
+    if ent and ent:Exists() and vec then
+        WarpZone.ForcePushList[#WarpZone.ForcePushList+1] = {ent, vec, time or 5, applyImpactDamage, refEnt}
+        ent.Velocity = vec
     end
 end
 
@@ -1292,7 +1329,7 @@ function WarpZone:postRender(player)
             end
             
             if maxThreshold > framesToCharge and data.WarpZone_data.arrowHoldBox == 0 then
-                data.fireGlove = true
+                data.WarpZone_unsavedata.fireGlove = true
             end
         end
 
@@ -1406,10 +1443,12 @@ function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
                         entity.Friction = 0.55
                         entity.Mass = 5
                         local dir = player:GetLastDirection()
+                        entity:AddEntityFlags(EntityFlag.FLAG_APPLY_IMPACT_DAMAGE | EntityFlag.FLAG_KNOCKED_BACK)
                         entity:AddVelocity(dir * 40)
                         entity:AddConfusion(EntityRef(knife), 90, true)
                         SfxManager:Play(SoundEffect.SOUND_PUNCH)
                         --return false
+                        WarpZone.ForcePushEnemy(entity, dir*22, 10, true)
                     end
                 end
             end
@@ -1489,9 +1528,12 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
             
             local vectorSum = playerPosition - sourcePosition
             
-            local backstab = true
-            local coinvelocity = player:GetAimDirection() * -16
             local velConstant = 16
+            local backstab = true
+            local coinvelocity = player:GetAimDirection() * -velConstant
+            if coinvelocity:Length() < 0.1 then
+                coinvelocity = Vector.FromAngle(player:GetSmoothBodyRotation()) * -velConstant
+            end
 
             --[[if math.abs(vectorSum.X) > math.abs(vectorSum.Y) then
                 if (vectorSum.X > 0  and direction == Direction.RIGHT) then
@@ -1513,7 +1555,7 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
             if backstab == true then
                 local gb_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT)
                 local benchmark = gb_rng:RandomInt(100)
-                if benchmark < 4 then
+                if benchmark < 5 then
                     local id = findFreeTile(player.Position)
                     if id ~= false then
                         game:GetRoom():SpawnGridEntity(id, GridEntityType.GRID_POOP, 3, gb_rng:Next(), 0)
@@ -1522,20 +1564,20 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
                     player:UseActiveItem(CollectibleType.COLLECTIBLE_BEAN)
                     player:UseActiveItem(CollectibleType.COLLECTIBLE_BUTTER_BEAN)
                 else
-                    if benchmark < 25 then
-                        local id = findFreeTile(player.Position)
-                        if id ~= false then
-                            game:GetRoom():SpawnGridEntity(id, GridEntityType.GRID_POOP, 0, gb_rng:Next(), 0)
-                            SfxManager:Play(SoundEffect.SOUND_FART, 1.0, 0, false, 1.0)
-                        end
-                    else
+                    --if benchmark < 5 then
+                    --    local id = findFreeTile(player.Position)
+                    --    if id ~= false then
+                    --        game:GetRoom():SpawnGridEntity(id, GridEntityType.GRID_POOP, 0, gb_rng:Next(), 0)
+                    --        SfxManager:Play(SoundEffect.SOUND_FART, 1.0, 0, false, 1.0)
+                    --    end
+                    --else
                         Isaac.Spawn(EntityType.ENTITY_PICKUP,
                             PickupVariant.PICKUP_COIN,
                             0,
                             game:GetRoom():FindFreePickupSpawnPosition(player.Position),
                             coinvelocity,
                             player)
-                    end
+                    --end
                     
                     player:UseActiveItem(CollectibleType.COLLECTIBLE_BEAN)
                     player:UseActiveItem(CollectibleType.COLLECTIBLE_BUTTER_BEAN)
@@ -2431,9 +2473,9 @@ function WarpZone:postPlayerUpdate(player)
     local data = player:GetData()
     local spr = player:GetSprite()
 
-    if data.fireGlove == true then
+    if data.WarpZone_unsavedata.fireGlove == true then
         WarpZone:fireGlove(player)
-        player:GetData().fireGlove = nil
+        data.WarpZone_unsavedata.fireGlove = nil
     end
     if(data.breakCap==false) then
         player.MoveSpeed = math.min(player.MoveSpeed+player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_HITOPS)*0.2, 3)
@@ -3173,7 +3215,7 @@ end, InputHook.IS_ACTION_PRESSED)
 WarpZone:AddCallback(ModCallbacks.MC_INPUT_ACTION, function(_, entity, hook, action)
 	if WarpZone.scanforclub then
 		if entity and entity:GetData().InputHook and action == entity:GetData().InputHook and entity:ToPlayer() then
-			return 2
+			return 1
 		end
 	end
 end, InputHook.GET_ACTION_VALUE)
@@ -3207,18 +3249,20 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_KNIFE_INIT, function(_, knife)
 end)
 
 function WarpZone:OnKnifeUpdate(knife)
-    if knife:GetData().isGloveObj == 2 then
-        knife:GetSprite():ReplaceSpritesheet(1, "gfx/glove_shot.png")
+    local data = knife:GetData()
+    local sprite = knife:GetSprite()
+    if data.isGloveObj == 2 then
+        sprite:ReplaceSpritesheet(1, "gfx/glove_shot.png")
         --knife:GetSprite().Color = Color(1, 0, 0, 1, 0, 0, 0)
         knife.Scale = knife.Scale * 1.5
-        knife:GetSprite().Scale = knife:GetSprite().Scale * 1.5
-        knife:GetData().isGloveObj = 1
-        knife:GetSprite():LoadGraphics()
-    elseif knife:GetData().isHammer == 2 then
-        knife:GetSprite():ReplaceSpritesheet(1, "gfx/hammer_shot.png")
-        knife:GetSprite().Scale = knife:GetSprite().Scale * 1.5
-        knife:GetData().isHammer = 1
-        knife:GetSprite():LoadGraphics()
+        sprite.Scale = sprite.Scale * 1.5
+        data.isGloveObj = 1
+        sprite:LoadGraphics()
+    elseif data.isHammer == 2 then
+        sprite:ReplaceSpritesheet(1, "gfx/hammer_shot.png")
+        sprite.Scale = sprite.Scale * 1.5
+        data.isHammer = 1
+        sprite:LoadGraphics()
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_KNIFE_UPDATE, WarpZone.OnKnifeUpdate)
@@ -4008,6 +4052,7 @@ function WarpZone:useBlank(card, player, useflags)
     entity_sprite.Color = Color(0, 0, 1, 1, 0, 0, .5)
     SfxManager:Play(SoundEffect.SOUND_DEATH_CARD)
 
+    game:ButterBeanFart(center, radius, player, false, true)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useBlank, WarpZone.WarpZoneTypes.CARD_BLANK)
 
