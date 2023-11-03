@@ -4394,7 +4394,7 @@ function WarpZone:DestroyItemPedestalCheck(bomb, player)
 end
 
 local fammovespeed = 50
-local chasingspeed = 70
+local chasingspeed = 90
 
 local function normalizedirection(currentpos, targetpos, chasing)
 	local moveVector = targetpos - currentpos
@@ -4413,9 +4413,53 @@ local function update_junkan(_, fam)
     local player = fam.Player
     local data = player:GetData()
     local junkCount = math.floor((isNil(data.WarpZone_data.GetJunkCollected, 0) % 15) / 2) + 1
+    local followPos = fam.Position
+    local enemyEntity= nil
+
+    local entities = Isaac.FindInRadius(fam.Position, 100)
+    for i, entity in ipairs(entities) do
+        if entity:IsVulnerableEnemy() then
+            if enemyEntity == nil then
+                enemyEntity = entity
+            else
+                if fam.Position:Distance(enemyEntity.Position) > fam.Position:Distance(entity.Position) then
+                    enemyEntity = entity
+                end
+            end
+        end
+    end
+    
+    if enemyEntity ~= nil and (enemyEntity.Position-fam.Position):Length() > math.min(5, enemyEntity.Size) then
+        followPos = normalizedirection(fam.Position, enemyEntity.Position, true)
+        animName = "Walk"
+    elseif player.Position:Distance(fam.Position) > 60 and enemyEntity == nil then
+        followPos = normalizedirection(fam.Position, player.Position, false)
+        animName = "Walk"
+    end
+    if enemyEntity ~= nil and (enemyEntity.Position-fam.Position):Length() <= 15 then
+        animName = "Attack"
+    end
+    fam:FollowPosition(followPos)
+    
     animName = animName .. tostring(junkCount)
     if fam:GetSprite():GetAnimation() ~= animName then
         fam:GetSprite():Play(animName)
     end
+
+    local damage = 0
+    if enemyEntity and fam:GetSprite():IsEventTriggered("BumpAttack") then
+        damage = junkCount/2 + 1
+    elseif enemyEntity and fam:GetSprite():IsEventTriggered("SwordSwing") then
+        damage = junkCount
+    elseif enemyEntity and fam:GetSprite():IsEventTriggered("SpinAttack") then
+        damage = 0.7
+        if junkCount == 7 then
+            damage = 1
+        end
+    end
+    if enemyEntity and damage > 0 then
+        enemyEntity:TakeDamage(damage, 0, EntityRef(fam), 1)
+    end
+
 end
 WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, update_junkan, SerJunkanWalk)

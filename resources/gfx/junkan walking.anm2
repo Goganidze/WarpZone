@@ -1,5 +1,5 @@
 <AnimatedActor>
-	<Info CreatedBy="robot" CreatedOn="10/28/2023 2:12:37 PM" Version="102" Fps="30"/>
+	<Info CreatedBy="robot" CreatedOn="11/2/2023 7:39:15 PM" Version="103" Fps="30"/>
 	<Content>
 		<Spritesheets>
 			<Spritesheet Path="familiar\junkan_walking.png" Id="0"/>
@@ -8,7 +8,12 @@
 			<Layer Name="body" Id="0" SpritesheetId="0"/>
 		</Layers>
 		<Nulls/>
-		<Events/>
+		<Events>
+			<Event Name="BumpAttack" Id="0"/>
+			<Event Name="SwordSwing" Id="1"/>
+			<Event Name="Unnamed" Id="2"/>
+			<Event Name="SpinAttack" Id="3"/>
+		</Events>
 	</Content>
 	<Animations DefaultAnimation="Idle">
 		<Animation Name="Idle" FrameNum="1" Loop="true">
@@ -274,7 +279,9 @@
 				</LayerAnimation>
 			</LayerAnimations>
 			<NullAnimations/>
-			<Triggers/>
+			<Triggers>
+				<Trigger EventId="0" AtFrame="7"/>
+			</Triggers>
 		</Animation>
 		<Animation Name="Attack2" FrameNum="16" Loop="true">
 			<RootAnimation>
@@ -289,7 +296,9 @@
 				</LayerAnimation>
 			</LayerAnimations>
 			<NullAnimations/>
-			<Triggers/>
+			<Triggers>
+				<Trigger EventId="0" AtFrame="7"/>
+			</Triggers>
 		</Animation>
 		<Animation Name="Attack3" FrameNum="16" Loop="true">
 			<RootAnimation>
@@ -304,7 +313,9 @@
 				</LayerAnimation>
 			</LayerAnimations>
 			<NullAnimations/>
-			<Triggers/>
+			<Triggers>
+				<Trigger EventId="0" AtFrame="7"/>
+			</Triggers>
 		</Animation>
 		<Animation Name="Attack4" FrameNum="16" Loop="true">
 			<RootAnimation>
@@ -319,7 +330,9 @@
 				</LayerAnimation>
 			</LayerAnimations>
 			<NullAnimations/>
-			<Triggers/>
+			<Triggers>
+				<Trigger EventId="1" AtFrame="3"/>
+			</Triggers>
 		</Animation>
 		<Animation Name="Attack5" FrameNum="27" Loop="true">
 			<RootAnimation>
@@ -339,7 +352,10 @@
 				</LayerAnimation>
 			</LayerAnimations>
 			<NullAnimations/>
-			<Triggers/>
+			<Triggers>
+				<Trigger EventId="1" AtFrame="10"/>
+				<Trigger EventId="1" AtFrame="21"/>
+			</Triggers>
 		</Animation>
 		<Animation Name="Attack6" FrameNum="47" Loop="true">
 			<RootAnimation>
@@ -369,7 +385,28 @@
 				</LayerAnimation>
 			</LayerAnimations>
 			<NullAnimations/>
-			<Triggers/>
+			<Triggers>
+				<Trigger EventId="3" AtFrame="21"/>
+				<Trigger EventId="3" AtFrame="22"/>
+				<Trigger EventId="3" AtFrame="23"/>
+				<Trigger EventId="3" AtFrame="24"/>
+				<Trigger EventId="3" AtFrame="25"/>
+				<Trigger EventId="3" AtFrame="26"/>
+				<Trigger EventId="3" AtFrame="27"/>
+				<Trigger EventId="3" AtFrame="28"/>
+				<Trigger EventId="3" AtFrame="29"/>
+				<Trigger EventId="3" AtFrame="30"/>
+				<Trigger EventId="3" AtFrame="31"/>
+				<Trigger EventId="3" AtFrame="32"/>
+				<Trigger EventId="3" AtFrame="33"/>
+				<Trigger EventId="3" AtFrame="34"/>
+				<Trigger EventId="3" AtFrame="35"/>
+				<Trigger EventId="3" AtFrame="36"/>
+				<Trigger EventId="3" AtFrame="37"/>
+				<Trigger EventId="3" AtFrame="38"/>
+				<Trigger EventId="3" AtFrame="39"/>
+				<Trigger EventId="3" AtFrame="40"/>
+			</Triggers>
 		</Animation>
 		<Animation Name="Attack7" FrameNum="47" Loop="true">
 			<RootAnimation>
@@ -399,7 +436,28 @@
 				</LayerAnimation>
 			</LayerAnimations>
 			<NullAnimations/>
-			<Triggers/>
+			<Triggers>
+				<Trigger EventId="3" AtFrame="21"/>
+				<Trigger EventId="3" AtFrame="22"/>
+				<Trigger EventId="3" AtFrame="23"/>
+				<Trigger EventId="3" AtFrame="24"/>
+				<Trigger EventId="3" AtFrame="25"/>
+				<Trigger EventId="3" AtFrame="26"/>
+				<Trigger EventId="3" AtFrame="27"/>
+				<Trigger EventId="3" AtFrame="28"/>
+				<Trigger EventId="3" AtFrame="29"/>
+				<Trigger EventId="3" AtFrame="30"/>
+				<Trigger EventId="3" AtFrame="31"/>
+				<Trigger EventId="3" AtFrame="32"/>
+				<Trigger EventId="3" AtFrame="33"/>
+				<Trigger EventId="3" AtFrame="34"/>
+				<Trigger EventId="3" AtFrame="35"/>
+				<Trigger EventId="3" AtFrame="36"/>
+				<Trigger EventId="3" AtFrame="37"/>
+				<Trigger EventId="3" AtFrame="38"/>
+				<Trigger EventId="3" AtFrame="39"/>
+				<Trigger EventId="3" AtFrame="40"/>
+			</Triggers>
 		</Animation>
 	</Animations>
 </AnimatedActor>
