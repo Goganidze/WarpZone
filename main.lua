@@ -4407,6 +4407,16 @@ local function normalizedirection(currentpos, targetpos, chasing)
 	return moveVector
 end
 
+local function checkForCollision(position, size)
+    local room = game:GetRoom()
+    for i=1, room:GetGridSize() do
+        local ge = room:GetGridEntity(i)
+        if ge and (ge.Position-position):Length() <= size + 20 then
+            return false
+        end
+    end
+    return true
+end
 
 local function update_junkan(_, fam)
     local animName = "Idle"
@@ -4428,13 +4438,19 @@ local function update_junkan(_, fam)
             end
         end
     end
-    
+    local stagePos
     if enemyEntity ~= nil and (enemyEntity.Position-fam.Position):Length() > math.min(5, enemyEntity.Size) then
-        followPos = normalizedirection(fam.Position, enemyEntity.Position, true)
-        animName = "Walk"
+        stagePos = normalizedirection(fam.Position, enemyEntity.Position, true)
+        --if checkForCollision(stagePos, fam.Size) then
+            followPos = stagePos
+            animName = "Walk"
     elseif player.Position:Distance(fam.Position) > 60 and enemyEntity == nil then
-        followPos = normalizedirection(fam.Position, player.Position, false)
-        animName = "Walk"
+        print(fam.GridCollisionClass)
+        stagePos = normalizedirection(fam.Position, player.Position, false)
+        --if checkForCollision(stagePos, fam.Size) then
+            followPos = stagePos
+            animName = "Walk"
+        --end
     end
     if enemyEntity ~= nil and (enemyEntity.Position-fam.Position):Length() <= 15 then
         animName = "Attack"
@@ -4460,6 +4476,5 @@ local function update_junkan(_, fam)
     if enemyEntity and damage > 0 then
         enemyEntity:TakeDamage(damage, 0, EntityRef(fam), 1)
     end
-
 end
 WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, update_junkan, SerJunkanWalk)

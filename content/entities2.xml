@@ -23,7 +23,7 @@
     <entity anm2path="johnnyKnifeSad.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="7" friction="1" id="3" name="JohnnySad" numGridCollisionPoints="12" shadowSize="6" stageHP="0" variant="131">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
-    <entity anm2path="junkan walking.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="7" friction="1" id="3" name="SerJunkanWalk" numGridCollisionPoints="12" shadowSize="6" stageHP="0" variant="132">
+    <entity anm2path="junkan walking.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="7" friction="1" id="3" name="SerJunkanWalk" numGridCollisionPoints="12" shadowSize="6" stageHP="0" variant="132" gridCollision="ground">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
     <entity anm2path="junkan flying.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="7" friction="1" id="3" name="SerJunkanFly" numGridCollisionPoints="12" shadowSize="6" stageHP="0" variant="133">
