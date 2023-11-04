@@ -4407,17 +4407,6 @@ local function normalizedirection(currentpos, targetpos, chasing)
 	return moveVector
 end
 
-local function checkForCollision(position, size)
-    local room = game:GetRoom()
-    for i=1, room:GetGridSize() do
-        local ge = room:GetGridEntity(i)
-        if ge and (ge.Position-position):Length() <= size + 20 then
-            return false
-        end
-    end
-    return true
-end
-
 local function update_junkan(_, fam)
     local animName = "Idle"
     local player = fam.Player
@@ -4425,7 +4414,9 @@ local function update_junkan(_, fam)
     local junkCount = math.floor((isNil(data.WarpZone_data.GetJunkCollected, 0) % 15) / 2) + 1
     local followPos = fam.Position
     local enemyEntity= nil
-
+    if fam.GridCollisionClass ~= EntityGridCollisionClass.GRIDCOLL_GROUND then
+        fam.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_GROUND
+    end
     local entities = Isaac.FindInRadius(fam.Position, 100)
     for i, entity in ipairs(entities) do
         if entity:IsVulnerableEnemy() then
@@ -4440,17 +4431,11 @@ local function update_junkan(_, fam)
     end
     local stagePos
     if enemyEntity ~= nil and (enemyEntity.Position-fam.Position):Length() > math.min(5, enemyEntity.Size) then
-        stagePos = normalizedirection(fam.Position, enemyEntity.Position, true)
-        --if checkForCollision(stagePos, fam.Size) then
-            followPos = stagePos
-            animName = "Walk"
+        followPos = normalizedirection(fam.Position, enemyEntity.Position, true)
+        animName = "Walk"
     elseif player.Position:Distance(fam.Position) > 60 and enemyEntity == nil then
-        print(fam.GridCollisionClass)
-        stagePos = normalizedirection(fam.Position, player.Position, false)
-        --if checkForCollision(stagePos, fam.Size) then
-            followPos = stagePos
-            animName = "Walk"
-        --end
+        followPos = normalizedirection(fam.Position, player.Position, false)
+        animName = "Walk"
     end
     if enemyEntity ~= nil and (enemyEntity.Position-fam.Position):Length() <= 15 then
         animName = "Attack"
