@@ -4498,7 +4498,6 @@ local function normalizedirection(currentpos, targetpos, chasing)
 	return moveVector
 end
 
-
 local function update_junkan(_, fam)
     local animName = "Idle"
     local player = fam.Player
@@ -4506,7 +4505,9 @@ local function update_junkan(_, fam)
     local junkCount = math.floor((isNil(data.WarpZone_data.GetJunkCollected, 0) % 15) / 2) + 1
     local followPos = fam.Position
     local enemyEntity= nil
-
+    if fam.GridCollisionClass ~= EntityGridCollisionClass.GRIDCOLL_GROUND then
+        fam.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_GROUND
+    end
     local entities = Isaac.FindInRadius(fam.Position, 100)
     for i, entity in ipairs(entities) do
         if entity:IsVulnerableEnemy() then
@@ -4519,7 +4520,7 @@ local function update_junkan(_, fam)
             end
         end
     end
-    
+    local stagePos
     if enemyEntity ~= nil and (enemyEntity.Position-fam.Position):Length() > math.min(5, enemyEntity.Size) then
         followPos = normalizedirection(fam.Position, enemyEntity.Position, true)
         animName = "Walk"
@@ -4551,6 +4552,5 @@ local function update_junkan(_, fam)
     if enemyEntity and damage > 0 then
         enemyEntity:TakeDamage(damage, 0, EntityRef(fam), 1)
     end
-
 end
 WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, update_junkan, SerJunkanWalk)
