@@ -2306,7 +2306,7 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
         entity:GetData().Collected = true
         entity:GetSprite():Play("Collect")
         data.WarpZone_data.numArrows = data.WarpZone_data.numArrows + 1
-        SfxManager:Play(SoundEffect.SOUND_SHELLGAME)
+        SfxManager:Play(SoundEffect.SOUND_SHELLGAME, Options.SFXVolume/2)
         return true
     elseif entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == tokenVariant then
         return true
@@ -2632,6 +2632,7 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpda
 
 
 function WarpZone:checkTear(entitytear)
+    ---@type EntityTear
     local tear = entitytear:ToTear()
     local player = WarpZone:GetPlayerFromTear(entitytear)
     local data = player and player:GetData()
@@ -2652,16 +2653,21 @@ function WarpZone:checkTear(entitytear)
 
     if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) and data.WarpZone_data.numArrows > 0 then
         data.WarpZone_data.numArrows = data.WarpZone_data.numArrows - 1
-        tear:GetData().BowArrowPiercing = 2
+        local tdata = tear:GetData()
+        tdata.WarpZone_data = tdata.WarpZone_data or {}
+        tdata.WarpZone_data.BowArrowPiercing = 2
         local spr = tear:GetSprite()
-        spr:Load("gfx/arrow tear.anm2", true)
+        local anim = spr:GetAnimation()
+        --[[spr:Load("gfx/arrow tear.anm2", true)
         spr:Play(spr:GetDefaultAnimation())
+        spr:Play(anim)
+        tear:ResetSpriteScale()]]
 
-        if not tear.Child then
-            tear.Child = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.SPRITE_TRAIL, 0, tear.Position, Vector(0,0), tear)
-            tear.Child.Color = arrowTrail.col
-            tear.Child:ToEffect().MinRadius = arrowTrail.MinRadius
-            tear.Child:ToEffect():FollowParent(tear)
+        if not tdata.WarpZone_data.trail then
+            tdata.WarpZone_data.trail = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.SPRITE_TRAIL, 0, tear.Position, Vector(0,0), tear)
+            tdata.WarpZone_data.trail.Color = arrowTrail.col
+            tdata.WarpZone_data.trail:ToEffect().MinRadius = arrowTrail.MinRadius
+            tdata.WarpZone_data.trail:ToEffect():FollowParent(tear)
         end
     end
 
@@ -2890,10 +2896,13 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_POST_LASER_UPDATE, WarpZone.updateLaser)
 
 function WarpZone:updateTear(entitytear)
+    ---@type EntityTear
     local tear = entitytear:ToTear()
+    local spr = entitytear:GetSprite()
     local data = tear:GetData()
     local focusshot = false
     local player = WarpZone:GetPlayerFromTear(tear)
+    
     if data then
         focusshot = data.FocusShot == true
         if focusshot then
@@ -2916,22 +2925,103 @@ function WarpZone:updateTear(entitytear)
             end
             tear:ResetSpriteScale()
         end
-        
-        if data.BowArrowPiercing == 2 then
-            data.BowArrowPiercing = 1
-            tear:AddTearFlags(TearFlags.TEAR_PIERCING)
-            tear.Position = tear.Position + tear.Velocity
-            tear.Velocity = tear.Velocity * Vector(1.5, 1.5)
-            tear.Scale = tear.Scale * 0.5
-            tear.CollisionDamage = tear.CollisionDamage * 2.5
-            tear:GetSprite().Rotation = Vector(tear.Velocity.X, tear.Velocity.Y + tear.FallingSpeed):GetAngleDegrees()
-            if tear.Child then
-                tear.Child:ToEffect().ParentOffset = tear.PositionOffset
+
+        if data.WarpZone_data then
+            if  data.WarpZone_data.BowArrowPiercing == 2 then
+                spr:Load("gfx/arrow tear.anm2", true)
+                spr:Play(spr:GetDefaultAnimation())
+                spr:Play("RegularTear6")
+
+                data.WarpZone_data.BowArrowPiercing = 1
+                tear:AddTearFlags(TearFlags.TEAR_PIERCING)
+                tear.Position = tear.Position + tear.Velocity
+                tear.Velocity = tear.Velocity * Vector(1.5, 1.5)
+                tear.Scale = tear.Scale * 0.5
+                tear.CollisionDamage = tear.CollisionDamage * 2.5
+                tear.SpriteRotation = Vector(tear.Velocity.X, tear.Velocity.Y + tear.FallingSpeed):GetAngleDegrees()
+                if data.WarpZone_data.trail then
+                    data.WarpZone_data.trail:ToEffect().ParentOffset = tear.PositionOffset
+                end
+                tear:ResetSpriteScale()
+
+                if player and tear:HasTearFlags(TearFlags.TEAR_LUDOVICO) then
+                    spr:Load("gfx/bow tear.anm2", true)
+                    spr:Play("Idle")
+                    data.WarpZone_data = data.WarpZone_data or {}
+                    data.WarpZone_data.IsBow = true
+                    data.WarpZone_data.BowShotDelay = player.MaxFireDelay*4
+                    data.WarpZone_data.BowMaxDelay = data.WarpZone_data.BowShotDelay
+                    data.WarpZone_data.BowArrowPiercing = nil
+                    player:GetData().WarpZone_data.numArrows = player:GetData().WarpZone_data.numArrows +1
+
+                    if data.WarpZone_data.trail then
+                        data.WarpZone_data.trail:Remove()
+                    end
+                end
+
+            elseif data.WarpZone_data.BowArrowPiercing == 1 then
+                tear:GetSprite().Rotation = Vector(tear.Velocity.X, tear.Velocity.Y + tear.FallingSpeed):GetAngleDegrees()
+                if tear.Child then
+                    tear.Child:ToEffect().ParentOffset = tear.PositionOffset
+                end
             end
-        elseif data.BowArrowPiercing == 1 then
-            tear:GetSprite().Rotation = Vector(tear.Velocity.X, tear.Velocity.Y + tear.FallingSpeed):GetAngleDegrees()
-            if tear.Child then
-                tear.Child:ToEffect().ParentOffset = tear.PositionOffset
+
+            if player and data.WarpZone_data.IsBow then
+                local data = data.WarpZone_data
+                if spr:GetFilename() ~= "gfx/bow tear.anm2" then
+                    data.RenderBow = Sprite()
+                    data.RenderBow:Load("gfx/bow tear.anm2", true)
+                    data.RenderBow:Play("Idle")
+                end
+                if tear.FrameCount%30 == 0 then
+                    local tearpos = tear.Position
+                    local list = Isaac.FindInRadius(tear.Position, 200, EntityPartition.ENEMY)
+                    local mdist = 3000
+                    --local pick 
+                    for i=1, #list do
+                        local ent = list[i]
+                        if ent:IsVulnerableEnemy() and ent:IsActiveEnemy() then
+                            local dist = ent.Position:Distance(tearpos)
+                            if dist < mdist then
+                                mdist = dist
+                                --pick = ent
+                                if not tear.Target then
+                                    data.BowShotDelay = player.MaxFireDelay*4
+                                    data.BowMaxDelay = data.BowShotDelay
+                                end
+                                tear.Target = ent
+                            end
+                        end
+                    end
+                
+                end
+                spr:Update()
+                if tear.Target then
+                    local tarvel = (tear.Target.Position - tear.Position)
+                    tear.SpriteRotation = tarvel:GetAngleDegrees()
+
+                    if player:GetData().WarpZone_data.numArrows > 0 then
+                        data.BowShotDelay = data.BowShotDelay - 1
+                        if data.BowShotDelay < 0 then
+                            local loop = math.ceil(math.abs(data.BowShotDelay))
+
+                            for i=1, loop do
+                                local tera = player:FireTear(tear.Position, tarvel:Resized(player.ShotSpeed*15), true, false, false, player, 1)
+                                tera.FallingSpeed = tera.FallingSpeed + 1.8
+                            end
+                            data.BowShotDelay = player.MaxFireDelay*4
+                            data.BowMaxDelay = data.BowShotDelay
+                            spr:Play("shoot2")
+                            SfxManager:Play(SoundEffect.SOUND_SHELLGAME, Options.SFXVolume*1.7, 0, false, 1.4)
+                        else
+                            local frame = math.ceil((1-data.BowShotDelay/data.BowMaxDelay)*15)
+                            spr:SetFrame("charge", frame-1)
+                        end
+                    end
+                    data.BowShotDelay = math.max(0, data.BowShotDelay)
+                else
+                    tear.SpriteRotation = Vector(tear.Velocity.X, tear.Velocity.Y + tear.FallingSpeed):GetAngleDegrees()
+                end
             end
         end
 
@@ -2970,7 +3060,8 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, WarpZone.updateTear)
 
 
 function WarpZone:dropArrow(entity)
-    if entity:GetData().BowArrowPiercing and entity:GetData().BowArrowPiercing > 0 then
+    local data = entity:GetData()
+    if data.WarpZone_data and data.WarpZone_data.BowArrowPiercing and data.WarpZone_data.BowArrowPiercing > 0 then
         if game:GetRoom():GetFrameCount() == 0 then
             local player = entity.SpawnerEntity
             if player and player:ToPlayer() ~= nil then
@@ -2986,8 +3077,8 @@ function WarpZone:dropArrow(entity)
             arrow:GetSprite():SetFrame(23)
             arrow.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
         end
-        if entity.Child then
-            entity.Child:Remove()
+        if data.WarpZone_data.trail then
+            data.WarpZone_data.trail:Remove()
         end
     end
 end
