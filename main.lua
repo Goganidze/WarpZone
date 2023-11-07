@@ -1340,7 +1340,6 @@ function WarpZone:postRender(player)
         Input.IsActionPressed(ButtonAction.ACTION_SHOOTRIGHT, controllerid))
         then
             local dir = player:GetLastDirection()
-            print(dir)
             dir = dir * 16
             local tear = player:FireTear(player.Position, dir, false, true, true, player)
             SfxManager:Play(SoundEffect.SOUND_EXPLOSION_WEAK, 3)
@@ -4385,7 +4384,6 @@ function WarpZone:DestroyItemPedestalCheck(bomb, player)
             entity:Remove()
             local loops = rng:RandomInt(3) + 3
             for j=1, loops, 1 do
-                print("loop")
                 local velocity = Vector(rng:RandomInt(8), rng:RandomInt(8))
                 Isaac.Spawn(EntityType.ENTITY_PICKUP, SerJunkPickupVar, 1, entity.Position, velocity, bomb)
             end
@@ -4407,7 +4405,7 @@ local function normalizedirection(currentpos, targetpos, chasing)
 	return moveVector
 end
 
-local function update_junkan(_, fam)
+function WarpZone:update_junkan(fam)
     local animName = "Idle"
     local player = fam.Player
     local data = player:GetData()
@@ -4429,7 +4427,6 @@ local function update_junkan(_, fam)
             end
         end
     end
-    local stagePos
     if enemyEntity ~= nil and (enemyEntity.Position-fam.Position):Length() > math.min(5, enemyEntity.Size) then
         followPos = normalizedirection(fam.Position, enemyEntity.Position, true)
         animName = "Walk"
@@ -4462,4 +4459,19 @@ local function update_junkan(_, fam)
         enemyEntity:TakeDamage(damage, 0, EntityRef(fam), 1)
     end
 end
-WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, update_junkan, SerJunkanWalk)
+WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_junkan, SerJunkanWalk)
+
+
+function WarpZone:update_flying_junkan(fam)
+    local animName = "Idle"
+    local player = fam.Player
+    local data = player:GetData()
+    local followPos = fam.Position
+    
+    if player.Position:Distance(fam.Position) > 60 then
+        followPos = normalizedirection(fam.Position, player.Position, true)
+    end
+
+    fam:FollowPosition(followPos)
+end
+WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_flying_junkan, SerJunkanFly)
