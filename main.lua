@@ -4482,8 +4482,8 @@ function WarpZone:DestroyItemPedestalCheck(bomb, player)
     end
 end
 
-local fammovespeed = 50
-local chasingspeed = 90
+local fammovespeed = 60
+local chasingspeed = 100
 
 local function normalizedirection(currentpos, targetpos, chasing)
 	local moveVector = targetpos - currentpos
@@ -4558,9 +4558,46 @@ function WarpZone:update_flying_junkan(fam)
     local player = fam.Player
     local data = player:GetData()
     local followPos = fam.Position
-    
+    local lastFrameShot = isNil(data.LastFrameShot, 0)
+    local currentframe = game:GetFrameCount()
+    local enemyEntity= nil
+    local entities = Isaac.FindInRadius(fam.Position, 250)
+
+    for i, entity in ipairs(entities) do
+        if entity:IsVulnerableEnemy() then
+            if enemyEntity == nil then
+                enemyEntity = entity
+            else
+                if fam.Position:Distance(enemyEntity.Position) > fam.Position:Distance(entity.Position) then
+                    enemyEntity = entity
+                end
+            end
+        end
+    end
+
     if player.Position:Distance(fam.Position) > 60 then
         followPos = normalizedirection(fam.Position, player.Position, true)
+    end
+
+    if lastFrameShot + 180 <= currentframe and enemyEntity ~= nil then
+        animName = "Shoot"
+        data.LastFrameShot = currentframe
+    elseif lastFrameShot + 60 >= currentframe then
+        animName = "Shoot"
+    end
+
+    if fam:GetSprite():GetAnimation() == "Shoot" and enemyEntity ~= nil and (currentframe - lastFrameShot) % 12 == 0 then
+        local direction = (enemyEntity.Position - fam.Position):Normalized()
+        local proj = fam:FireProjectile(direction)
+
+        proj:AddTearFlags(TearFlags.TEAR_SPECTRAL)
+        proj:AddTearFlags(TearFlags.TEAR_HOMING)
+        proj:GetSprite().Color = Color(.91, .187, .371, 1, 0, 0, 0)
+        proj.CollisionDamage = 8
+    end
+
+    if fam:GetSprite():GetAnimation() ~= animName then
+        fam:GetSprite():Play(animName)
     end
 
     fam:FollowPosition(followPos)
