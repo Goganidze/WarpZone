@@ -55,7 +55,6 @@ return function(mod)
 				fam.PositionOffset = idinahuiApi + Vector(0,-4)
 			end
 			--fam.PositionOffset = fam.Target:GetCostumeNullPos("pickup item", true, Vector.Zero)
-			--print(fam.Target:GetCostumeNullPos("pickup item", true, Vector(0,-1)))
 			if fam.Target:ToPlayer():IsExtraAnimationFinished() then
 				fam.Target:GetData().WarpZone_data.HoldEntity = nil
 			end
@@ -179,7 +178,6 @@ return function(mod)
 					if ent.Index ~= collider.Index and ent:IsVulnerableEnemy() and ent:IsActiveEnemy() then
 						local angle = (ent.Position -fam.Position ):GetAngleDegrees()
 						if math.abs(getAngleDiv(angle,ballAngle)) < WarpZone.FOOTBALL.rekoshetMaxAngle then
-							--print(angle, ballAngle)
 							local dist = ent.Position:Distance(fam.Position)
 							if dist < maxdis then
 								FlyTarget = angle
