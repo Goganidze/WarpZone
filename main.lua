@@ -373,6 +373,7 @@ if EID then
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOXING_GLOVE, "{{Chargeable}} Gain a charged punching attack with a {{Timer}} 2.35 second charge time#The punch has high knockback and {{Confusion}} stuns enemies", "Boxing Glove",  "en_us")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY, "On use, you fall up to the ceiling for about {{Timer}} 5 seconds.#While in this state, gain {{Seraphim}} flight, invulnerability, and {{Range}} +6.25 Range#Tears rain down from the top of the screen, regardless of the fired direction.", "Gravity",  "en_us")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES, "{{Throwable}} Gain two homing flying knife familiars that do damage on contact#When killing enemies with the knives, spawn a pool of red creep that damages enemies. The size of the creep depends on the enemy's mass.#When enemy is killed by knives, gain {{Tears}} +0.5 Tears to the rest of the room.", "Johnny's Knives",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN, "Spawns a familiar that pursues enemies and does contact damage.#You can blow up items with bombs. Collecting the junk that comes out upgrades your familiar.#Collecting 7 junk gives Junkan flight, and lets him fire spectral homing projectiles at the nearest enemy.", "Ser Junkan",  "en_us")
 
     EID:addTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS, "While held, pressing the Drop Trinket button immediately drops this trinket; you don't need to hold the button#When on the ground, enemies will target the trinket for a short time.", "Hunky Boys", "en_us")
     EID:addTrinket(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP, "{{Collectible33}} The Bible is added to several item pools.#Using {{Collectible33}} The Bible or {{Card71}} The Devil? card with this item will deal 40 damage to all enemies in the room, in addition to granting flight.#Using The Bible on {{Satan}} Satan will kill him, and you will survive#The golden version of this trinket kills {{TheLamb}} The Lamb as well.", "Bible Thump", "en_us")
@@ -3498,7 +3499,7 @@ local function update_cache(_, player, cache_flag)
         junkan_walk_rng:SetSeed(Random(), 1)
 
         local junk_count = isNil(player:GetData().WarpZone_data.GetJunkCollected, 0)
-        local flyFamiliars = math.min(junkan_pickups, math.floor(junk_count/15))
+        local flyFamiliars = math.min(junkan_pickups, math.floor(junk_count/7))
         local walkFamiliars = junkan_pickups-flyFamiliars
         player:CheckFamiliar(SerJunkanFly, flyFamiliars, junkan_fly_rng)
         player:CheckFamiliar(SerJunkanWalk, walkFamiliars, junkan_walk_rng)
@@ -4473,11 +4474,11 @@ function WarpZone:DestroyItemPedestalCheck(bomb, player)
         if entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == PickupVariant.PICKUP_COLLECTIBLE then
             Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, -1, entity.Position, entity.Velocity, bomb)
             entity:Remove()
-            local loops = rng:RandomInt(3) + 3
-            for j=1, loops, 1 do
-                local velocity = Vector(rng:RandomInt(8), rng:RandomInt(8))
-                Isaac.Spawn(EntityType.ENTITY_PICKUP, SerJunkPickupVar, 1, entity.Position, velocity, bomb)
-            end
+            --local loops = rng:RandomInt(3) + 3
+            --for j=1, loops, 1 do
+            local velocity = Vector(rng:RandomInt(8), rng:RandomInt(8))
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, SerJunkPickupVar, 1, entity.Position, velocity, bomb)
+            --end
         end
     end
 end
@@ -4500,7 +4501,7 @@ function WarpZone:update_junkan(fam)
     local animName = "Idle"
     local player = fam.Player
     local data = player:GetData()
-    local junkCount = math.floor((isNil(data.WarpZone_data.GetJunkCollected, 0) % 15) / 2) + 1
+    local junkCount = (isNil(data.WarpZone_data.GetJunkCollected, 0) % 7) + 1
     local followPos = fam.Position
     local enemyEntity= nil
     if fam.GridCollisionClass ~= EntityGridCollisionClass.GRIDCOLL_GROUND then
@@ -4532,6 +4533,9 @@ function WarpZone:update_junkan(fam)
     
     animName = animName .. tostring(junkCount)
     if fam:GetSprite():GetAnimation() ~= animName then
+        if fam:GetSprite():GetAnimation():sub(-1) ~= animName:sub(-1) then
+            Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, -1, fam.Position, Vector(0, 0), fam)
+        end
         fam:GetSprite():Play(animName)
     end
 

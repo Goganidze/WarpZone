@@ -18,6 +18,7 @@
         <Item Name="Emergency Meeting" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Boxing Glove" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Gravity" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Ser Junkan" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="curse">
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -45,6 +46,7 @@
         <Item Name="Emergency Meeting" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Gravity" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Boxing Glove" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Ser Junkan" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="greedCurse">
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -91,6 +93,7 @@
     <Pool Name="rottenBeggar">
         <Item Name="Rusty Spoon" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Ball of Tumors" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Ser Junkan" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
     <Pool Name="craneGame">
         <Item Name="Rusty Spoon" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -98,6 +101,7 @@
         <Item Name="Emergency Meeting" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Gravity" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Boxing Glove" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Ser Junkan" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
     <Pool Name="angel">
         <Item Name="   Focus   " Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
