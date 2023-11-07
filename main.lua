@@ -64,6 +64,7 @@ defaultData.WarpZone_unsavedata = {
     arrowTimeRight = 0,
 }
 
+
 local function TabDeepCopy(tbl)
     local t = {}
 	if type(tbl) ~= "table" then error("[1] is not a table",2) end
@@ -128,7 +129,7 @@ whiteColor:SetTint(20, 20, 20, 2)
 
 --doorway
 local DoorwayFloor = -1 --saved
-
+local DoorwayFloorType = -1
 
 --nightmare tick
 local tickColor = Color(.2, .05, .05, 1, 0, 0, 0)
@@ -1704,6 +1705,7 @@ function WarpZone:OnGameStart(isSave)
     if WarpZone:HasData()  and isSave then
         saveData = json.decode(WarpZone:LoadData())
         DoorwayFloor = saveData.DoorwayFloor --[1]
+        DoorwayFloorType = saveData.DoorwayFloorType
         numPossessed = saveData.numPossessed --[2]
         floorBeggar = saveData.floorBeggar --[3]
         bibleThumpPool = saveData.bibleThumpPool --[4]
@@ -1711,6 +1713,7 @@ function WarpZone:OnGameStart(isSave)
         bossPrepped = saveData.bossPrepped --[6]
         roomsPrepped = saveData.roomsPrepped --[7]
         preservedItems = saveData.preservedItems --[8]
+
 
         for i=0, numPlayers-1, 1 do
             local player = Isaac.GetPlayer(i)
@@ -1732,6 +1735,7 @@ function WarpZone:OnGameStart(isSave)
 
         saveData = {}
         DoorwayFloor = -1
+        DoorwayFloorType = -1
         numPossessed = 0
         floorBeggar = -1
         bibleThumpPool = false
@@ -1763,6 +1767,7 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, WarpZone.OnGameStart)
 function WarpZone:preGameExit()
     local numPlayers = game:GetNumPlayers()
     saveData.DoorwayFloor = DoorwayFloor
+    saveData.DoorwayFloorType = DoorwayFloorType
     saveData.numPossessed = numPossessed
     saveData.floorBeggar = floorBeggar
     saveData.bibleThumpPool = bibleThumpPool
@@ -1902,7 +1907,7 @@ function WarpZone:NewRoom()
             player:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
         end
     end
-    if game:GetLevel():GetStage() == DoorwayFloor and (game:GetLevel():GetCurrentRoomIndex() ~=84 or game:GetLevel():GetStage()~= 1 or not room:IsFirstVisit()) then
+    if game:GetLevel():GetStage() == DoorwayFloor and game:GetLevel():GetStageType() == DoorwayFloorType and (game:GetLevel():GetCurrentRoomIndex() ~=84 or game:GetLevel():GetStage()~= 1 or not room:IsFirstVisit()) then
         if room:GetType() == RoomType.ROOM_BOSS then
             room:TrySpawnDevilRoomDoor(false, true)
             if game:GetLevel():GetStage() == LevelStage.STAGE3_2 then
@@ -2158,6 +2163,7 @@ function WarpZone:UseDoorway(collectible, rng, entityplayer, useflags, activeslo
     currentLevel:DisableDevilRoom()
     entityplayer:UseActiveItem(CollectibleType.COLLECTIBLE_DADS_KEY)
     DoorwayFloor = currentLevel:GetStage()
+    DoorwayFloorType = currentLevel:GetStageType()
     currentLevel:ApplyBlueMapEffect()
 
     local rooms = currentLevel:GetRooms()
@@ -3126,7 +3132,7 @@ WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.LaserEnemyHit)
 function WarpZone:OnFrame(player)
     local data = player:GetData()
         local room = game:GetRoom()
-        if game:GetLevel():GetStage() == DoorwayFloor and (game:GetLevel():GetCurrentRoomIndex() ~=84 or game:GetLevel():GetStage()~= 1) then
+        if game:GetLevel():GetStage() == DoorwayFloor and game:GetLevel():GetStageType() == DoorwayFloorType and (game:GetLevel():GetCurrentRoomIndex() ~=84 or game:GetLevel():GetStage()~= 1) then
             for i = 0, 7 do
                 local door = room:GetDoor(i)
                 if door then -- if it isnt nil, then
