@@ -1657,29 +1657,31 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
                 end
                 
                 local pos_to_delete = rng:RandomInt(#itemsTakenHere) + 1
-                local config = Isaac.GetItemConfig():GetCollectible(data.WarpZone_data.itemsTaken[pos_to_delete])
-                if (data.WarpZone_data.itemsTaken[pos_to_delete] == WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK or (config.Tags & ItemConfig.TAG_QUEST == ItemConfig.TAG_QUEST)) and #itemsTakenHere > 1 then
-                    pos_to_delete = (pos_to_delete % #itemsTakenHere) + 1
-                end
-                
-                config = Isaac.GetItemConfig():GetCollectible(data.WarpZone_data.itemsTaken[pos_to_delete])
-                if data.WarpZone_data.itemsTaken[pos_to_delete] ~= WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK and (config.Tags & ItemConfig.TAG_QUEST ~= ItemConfig.TAG_QUEST) then
-                    local item_del = table.remove(data.WarpZone_data.itemsTaken, pos_to_delete)
-                    table.remove(data.WarpZone_data.poolsTaken, pos_to_delete)
-                    player:RemoveCollectible(item_del)
-                    data.WarpZone_data.itemsSucked = data.WarpZone_data.itemsSucked + 1
-                    player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
-                    player:EvaluateItems()
-                    SfxManager:Play(SoundEffect.SOUND_THUMBS_DOWN)
-                    SfxManager:Play(SoundEffect.SOUND_BOSS_BUG_HISS)
-                    player:AnimateSad()
+                if data.WarpZone_data.itemsTaken[pos_to_delete] ~= nil then
+                    local config = Isaac.GetItemConfig():GetCollectible(data.WarpZone_data.itemsTaken[pos_to_delete])
+                    if (data.WarpZone_data.itemsTaken[pos_to_delete] == WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK or (config.Tags & ItemConfig.TAG_QUEST == ItemConfig.TAG_QUEST)) and #itemsTakenHere > 1 then
+                        pos_to_delete = (pos_to_delete % #itemsTakenHere) + 1
+                    end
+                    
+                    config = Isaac.GetItemConfig():GetCollectible(data.WarpZone_data.itemsTaken[pos_to_delete])
+                    if data.WarpZone_data.itemsTaken[pos_to_delete] ~= WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK and (config.Tags & ItemConfig.TAG_QUEST ~= ItemConfig.TAG_QUEST) then
+                        local item_del = table.remove(data.WarpZone_data.itemsTaken, pos_to_delete)
+                        table.remove(data.WarpZone_data.poolsTaken, pos_to_delete)
+                        player:RemoveCollectible(item_del)
+                        data.WarpZone_data.itemsSucked = data.WarpZone_data.itemsSucked + 1
+                        player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
+                        player:EvaluateItems()
+                        SfxManager:Play(SoundEffect.SOUND_THUMBS_DOWN)
+                        SfxManager:Play(SoundEffect.SOUND_BOSS_BUG_HISS)
+                        player:AnimateSad()
 
-                    local lostitem = Sprite()
-                    lostitem:Load("gfx/005.100_collectible.anm2", true)
-                    lostitem:Play("PlayerPickup")
-                    lostitem:ReplaceSpritesheet(1, Isaac.GetItemConfig():GetCollectible(item_del).GfxFileName)
-                    lostitem:LoadGraphics()
-                    data.WarpZone_unsavedata.TickLostItem = {spr = lostitem, frame=0}
+                        local lostitem = Sprite()
+                        lostitem:Load("gfx/005.100_collectible.anm2", true)
+                        lostitem:Play("PlayerPickup")
+                        lostitem:ReplaceSpritesheet(1, Isaac.GetItemConfig():GetCollectible(item_del).GfxFileName)
+                        lostitem:LoadGraphics()
+                        data.WarpZone_unsavedata.TickLostItem = {spr = lostitem, frame=0}
+                    end
                 end
             end
         end
