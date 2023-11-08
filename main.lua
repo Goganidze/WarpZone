@@ -265,6 +265,9 @@ local SerJunkPickupVar = Isaac.GetEntityVariantByName("Junk_Pickup")
 local SerJunkanWalk = Isaac.GetEntityVariantByName("SerJunkanWalk")
 local SerJunkanFly = Isaac.GetEntityVariantByName("SerJunkanFly")
 
+--crowdfunder
+local CrowdfunderVar = Isaac.GetEntityVariantByName("Crowdfunder")
+
 --item defintions
 WarpZone.WarpZoneTypes = {}
 
@@ -306,7 +309,7 @@ WarpZone.WarpZoneTypes.COLLECTIBLE_BOXING_GLOVE = Isaac.GetItemIdByName("Boxing 
 WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY = Isaac.GetItemIdByName("Gravity")
 WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES = Isaac.GetItemIdByName("Johnny's Knives")
 WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN = Isaac.GetItemIdByName("Ser Junkan")
-
+WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER = Isaac.GetItemIdByName("The Crowdfunder")
 
 WarpZone.WarpZoneTypes.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
 WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS = Isaac.GetTrinketIdByName("Hunky Boys")
@@ -608,20 +611,6 @@ local function getPlayerFromKnifeLaser(entity)
 	else
 		return nil
 	end
-end
-
-local function respawnBalls(numberBalls, player)
-    if numberBalls > 0 then
-        for i=1, numberBalls do
-            local create_entity = Isaac.Spawn(EntityType.ENTITY_FAMILIAR, FamiliarVariant.CUBE_BABY, 0, game:GetRoom():FindFreePickupSpawnPosition(game:GetRoom():GetCenterPos()), Vector(0,0), nil)
-            local sprite = create_entity:GetSprite()
-            sprite:ReplaceSpritesheet(0, "gfx/familiar/football_reskin.png")
-            --sprite:Load("gfx/football_swap.anm2",false)
-            sprite:LoadGraphics()
-            create_entity:GetData().Football = true
-            create_entity:ToFamiliar().Player = player:ToPlayer()
-        end
-    end
 end
 
 
@@ -3511,6 +3500,17 @@ local function update_cache(_, player, cache_flag)
         local walkFamiliars = junkan_pickups-flyFamiliars
         player:CheckFamiliar(SerJunkanFly, flyFamiliars, junkan_fly_rng)
         player:CheckFamiliar(SerJunkanWalk, walkFamiliars, junkan_walk_rng)
+
+        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
+        --and player:GetData().WarpZone_unsavedata
+        --and player:GetData().WarpZone_unsavedata.HasCrowdfunder ~= nil 
+        then
+            print("ho!")
+            local crowd_rng = RNG()
+            crowd_rng:SetSeed(Random(), 1)
+            player:CheckFamiliar(CrowdfunderVar, 1, crowd_rng)
+        end
+
     end
 end
 
@@ -4615,3 +4615,24 @@ function WarpZone:update_flying_junkan(fam)
     fam:FollowPosition(followPos)
 end
 WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_flying_junkan, SerJunkanFly)
+
+
+function WarpZone:update_crowdfunder(fam)
+    local player = fam.Player
+    local headRotation = getVectorFromDirection(player:GetHeadDirection())
+    local rotation = player:GetAimDirection()
+
+    if rotation.X == 0 and rotation.Y == 0 then
+        rotation = headRotation
+    end
+
+
+    fam:GetSprite().Rotation = rotation:GetAngleDegrees()
+    print(rotation)
+    local newPos = player.Position + (rotation:Normalized() * 30)
+    newPos = newPos + Vector(0, -10)
+
+    fam.Position = newPos
+    --print(tostring(fam.Position))
+end
+WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_crowdfunder, CrowdfunderVar)
