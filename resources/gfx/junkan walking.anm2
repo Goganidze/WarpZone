@@ -1,5 +1,5 @@
 <AnimatedActor>
-	<Info CreatedBy="robot" CreatedOn="08.11.2023 15:56:47" Version="119" Fps="30"/>
+	<Info CreatedBy="robot" CreatedOn="08.11.2023 16:14:42" Version="122" Fps="30"/>
 	<Content>
 		<Spritesheets>
 			<Spritesheet Path="familiar\junkan_walking.png" Id="0"/>
@@ -406,6 +406,9 @@
 				<Trigger EventId="2" AtFrame="38"/>
 				<Trigger EventId="2" AtFrame="39"/>
 				<Trigger EventId="2" AtFrame="40"/>
+				<Trigger EventId="1" AtFrame="44"/>
+				<Trigger EventId="1" AtFrame="45"/>
+				<Trigger EventId="1" AtFrame="46"/>
 			</Triggers>
 		</Animation>
 		<Animation Name="Attack7" FrameNum="47" Loop="true">
@@ -457,6 +460,9 @@
 				<Trigger EventId="2" AtFrame="38"/>
 				<Trigger EventId="2" AtFrame="39"/>
 				<Trigger EventId="2" AtFrame="40"/>
+				<Trigger EventId="1" AtFrame="44"/>
+				<Trigger EventId="1" AtFrame="45"/>
+				<Trigger EventId="1" AtFrame="46"/>
 			</Triggers>
 		</Animation>
 	</Animations>
