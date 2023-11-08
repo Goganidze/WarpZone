@@ -1520,7 +1520,7 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
         player:UseCard(Card.CARD_FOOL, 257)
     end
 
-    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) and source ~= nil then
+    --[[if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) and source ~= nil then
         local source_entity = source.Entity
         if source_entity ~= nil and (source_entity:IsEnemy() or (source_entity.Type == EntityType.ENTITY_PROJECTILE and source_entity.Variant ~= ProjectileVariant.PROJECTILE_FIRE)) then
             --local direction = player:GetHeadDirection()
@@ -1552,7 +1552,7 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
                     backstab = true
                     coinvelocity = Vector(0, velConstant)
                 end
-            end]]
+            end] ]
             if backstab == true then
                 local gb_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT)
                 local benchmark = gb_rng:RandomInt(100)
@@ -1586,7 +1586,7 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
             end
 
         end
-    end
+    end]]
 
     if player:GetNumCoins() > 0 and player:GetData().inIdolDamage ~= true and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
         player:GetData().inIdolDamage = true
@@ -2365,6 +2365,29 @@ function WarpZone:PickupUpdate(pickup)
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PICKUP_UPDATE, WarpZone.PickupUpdate)
 
+WarpZone:AddPriorityCallback(ModCallbacks.MC_PRE_PICKUP_COLLISION, CallbackPriority.LATE, function(_, pickup, collider)
+    if not pickup.Touched then
+        if pickup.SubType <= CoinSubType.COIN_GOLDEN and pickup.SubType ~= CoinSubType.COIN_STICKYNICKEL then
+            if collider:ToPlayer() then
+                local value
+                local subtype = pickup.SubType
+                if subtype == CoinSubType.COIN_DIME then
+                    value = 10
+                elseif subtype == CoinSubType.COIN_NICKEL or subtype == CoinSubType.COIN_STICKYNICKEL then
+                    value = 5
+                elseif subtype == CoinSubType.COIN_DOUBLEPACK then
+                    value = 2
+                else
+                    value = 1
+                end
+                local player = collider:ToPlayer()
+                WarpZone.GreedButtCoinPickup(player, value)
+            end
+        end
+    end
+end, 20)
+
+
 local function tearsUp(firedelay, val)
 	local currentTears = 30 / (firedelay + 1)
 	local newTears = currentTears + val
@@ -2635,6 +2658,10 @@ function WarpZone:postPlayerUpdate(player)
             end
         end
     end
+    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) then
+        WarpZone.GreedButtEffect(player, data, spr)
+    end
+
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpdate, 0)
 
@@ -4244,6 +4271,10 @@ function WarpZone:OnPlayerCollide(player, collider)
         SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_MURDER_KILL, 2)
         return true
     end
+    --local result = WarpZone.GreedButt_PlayerCollide(player, collider)
+    --if result ~= nil then
+       -- return false
+    --end
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_PLAYER_COLLISION, WarpZone.OnPlayerCollide)
 
@@ -4471,6 +4502,7 @@ local extrafiles = {
     "lua.bombs",
     "lua.johnnys_knives",
     "lua.ser_junkan",
+    "lua.greed_butt",
 }
 for i=1,#extrafiles do
     local module = include(extrafiles[i])
