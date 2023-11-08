@@ -23,10 +23,10 @@
     <entity anm2path="johnnyKnifeSad.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="7" friction="1" id="3" name="JohnnySad" numGridCollisionPoints="12" shadowSize="6" stageHP="0" variant="131">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
-    <entity anm2path="junkan walking.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="7" friction="1" id="3" name="SerJunkanWalk" numGridCollisionPoints="12" shadowSize="6" stageHP="0" variant="132" gridCollision="ground">
+    <entity anm2path="junkan walking.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="13" friction="1" id="3" name="SerJunkanWalk" numGridCollisionPoints="12" shadowSize="12" stageHP="0" variant="132" gridCollision="ground">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
-    <entity anm2path="junkan flying.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="7" friction="1" id="3" name="SerJunkanFly" numGridCollisionPoints="12" shadowSize="6" stageHP="0" variant="133">
+    <entity anm2path="junkan flying.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="7" friction="1" id="3" name="SerJunkanFly" numGridCollisionPoints="12" shadowSize="12" stageHP="0" variant="133">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
     <entity anm2path="tumor_pickup.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="12" friction="1" id="5" name="Tumor_Pickup" numGridCollisionPoints="12" shadowSize="17" stageHP="0" variant="4787" subtype = "1">
@@ -76,5 +76,11 @@
     </entity>
     <entity anm2path="items/pick ups/bombs/spelunker/bomb2.anm2" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="6" collisionRadius="16" friction="1" id="4" name="Spelunker Bomb" numGridCollisionPoints="12" shadowSize="18" stageHP="0" variant="950">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0"/>
+    </entity>
+    <entity anm2path="22arrow tear.anm2" name="WZ proxy npc" id="456" baseHP="1" boss="0" champion="0" collisionDamage="0" collisionMass="14" collisionRadius="14" friction="1" numGridCollisionPoints="12" shadowSize="0" stageHP="0" gridCollision="none">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
+    </entity>
+    <entity anm2path="effects/greed butt effect.anm2" name="WZ greed butt effect" id="1000" variant="8549" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="0" collisionRadius="0" friction="1" numGridCollisionPoints="0" shadowSize="0" stageHP="0">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
 </entities>

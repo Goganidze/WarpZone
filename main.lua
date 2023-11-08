@@ -1509,7 +1509,7 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
         player:UseCard(Card.CARD_FOOL, 257)
     end
 
-    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) and source ~= nil then
+    --[[if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) and source ~= nil then
         local source_entity = source.Entity
         if source_entity ~= nil and (source_entity:IsEnemy() or (source_entity.Type == EntityType.ENTITY_PROJECTILE and source_entity.Variant ~= ProjectileVariant.PROJECTILE_FIRE)) then
             --local direction = player:GetHeadDirection()
@@ -1541,7 +1541,7 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
                     backstab = true
                     coinvelocity = Vector(0, velConstant)
                 end
-            end]]
+            end] ]
             if backstab == true then
                 local gb_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT)
                 local benchmark = gb_rng:RandomInt(100)
@@ -1575,7 +1575,7 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
             end
 
         end
-    end
+    end]]
 
     if player:GetNumCoins() > 0 and player:GetData().inIdolDamage ~= true and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
         player:GetData().inIdolDamage = true
@@ -2354,6 +2354,29 @@ function WarpZone:PickupUpdate(pickup)
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PICKUP_UPDATE, WarpZone.PickupUpdate)
 
+WarpZone:AddPriorityCallback(ModCallbacks.MC_PRE_PICKUP_COLLISION, CallbackPriority.LATE, function(_, pickup, collider)
+    if not pickup.Touched then
+        if pickup.SubType <= CoinSubType.COIN_GOLDEN and pickup.SubType ~= CoinSubType.COIN_STICKYNICKEL then
+            if collider:ToPlayer() then
+                local value
+                local subtype = pickup.SubType
+                if subtype == CoinSubType.COIN_DIME then
+                    value = 10
+                elseif subtype == CoinSubType.COIN_NICKEL or subtype == CoinSubType.COIN_STICKYNICKEL then
+                    value = 5
+                elseif subtype == CoinSubType.COIN_DOUBLEPACK then
+                    value = 2
+                else
+                    value = 1
+                end
+                local player = collider:ToPlayer()
+                WarpZone.GreedButtCoinPickup(player, value)
+            end
+        end
+    end
+end, 20)
+
+
 local function tearsUp(firedelay, val)
 	local currentTears = 30 / (firedelay + 1)
 	local newTears = currentTears + val
@@ -2624,6 +2647,10 @@ function WarpZone:postPlayerUpdate(player)
             end
         end
     end
+    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) then
+        WarpZone.GreedButtEffect(player, data, spr)
+    end
+
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpdate, 0)
 
@@ -3490,10 +3517,10 @@ local function update_cache(_, player, cache_flag)
         player:CheckFamiliar(KnifeVariantSad, john_pickups, john_rng)
 
         local junkan_pickups = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN)
-        local junkan_fly_rng = RNG()
-        junkan_fly_rng:SetSeed(Random(), 1)
-        local junkan_walk_rng = RNG()
-        junkan_walk_rng:SetSeed(Random(), 1)
+        local junkan_fly_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN)  --RNG()
+        --junkan_fly_rng:SetSeed(Random(), 1)
+        local junkan_walk_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN)  --RNG()
+        --junkan_walk_rng:SetSeed(Random(), 1)
 
         local junk_count = isNil(player:GetData().WarpZone_data.GetJunkCollected, 0)
         local flyFamiliars = math.min(junkan_pickups, math.floor(junk_count/7))
@@ -4244,6 +4271,10 @@ function WarpZone:OnPlayerCollide(player, collider)
         SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_MURDER_KILL, 2)
         return true
     end
+    --local result = WarpZone.GreedButt_PlayerCollide(player, collider)
+    --if result ~= nil then
+       -- return false
+    --end
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_PLAYER_COLLISION, WarpZone.OnPlayerCollide)
 
@@ -4443,19 +4474,20 @@ function WarpZone:useGravity(collectible, rng, player, useflags, activeslot, cus
             }
         end
     end
+    local data = player:GetData()
     player:PlayExtraAnimation("TeleportUp")
-    player:GetData().InGravityState = game:GetFrameCount()
+    data.InGravityState = game:GetFrameCount()
     if player:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) then
-        player:GetData().InGravityState = player:GetData().InGravityState + 150
+        data.InGravityState = data.InGravityState + 150
     end
     player:AddCacheFlags(CacheFlag.CACHE_RANGE)
     player:AddCacheFlags(CacheFlag.CACHE_FLYING)
     player:EvaluateItems()
     SfxManager:Play(SoundEffect.SOUND_THUMBSUP, 2)
-    player:GetData().gravReticle = Isaac.Spawn(1000, 30, 0, player.Position, Vector(0, 0), player)
-    player:GetData().gravReticle:GetSprite():ReplaceSpritesheet(0, "gfx/gravity_lander.png")
-    player:GetData().gravReticle:GetSprite():LoadGraphics()
-    player:GetData().gravReticle.Color = Color(0.392, 0.917, 0.509, .5, 0, 0, 0)
+    data.gravReticle = Isaac.Spawn(1000, 30, 0, player.Position, Vector(0, 0), player)
+    data.gravReticle:GetSprite():ReplaceSpritesheet(0, "gfx/gravity_lander.png")
+    data.gravReticle:GetSprite():LoadGraphics()
+    data.gravReticle.Color = Color(0.392, 0.917, 0.509, .5, 0, 0, 0)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.useGravity, WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY)
 
@@ -4468,14 +4500,18 @@ local extrafiles = {
     "lua.ru",
     "lua.football",
     "lua.bombs",
-    "lua.johnnys_knives"
+    "lua.johnnys_knives",
+    "lua.ser_junkan",
+    "lua.greed_butt",
 }
 for i=1,#extrafiles do
     local module = include(extrafiles[i])
     module(WarpZone)
 end
 
-function WarpZone:DestroyItemPedestalCheck(bomb, player)
+--moved to lua/ser_junkan.lua
+
+--[[function WarpZone:DestroyItemPedestalCheck(bomb, player)
     local entities = Isaac.FindInRadius(bomb.Position, 100)
     local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN)
     for i, entity in ipairs(entities) do
@@ -4501,7 +4537,7 @@ local function normalizedirection(currentpos, targetpos, chasing)
 	else
 		moveVector = moveVector:Normalized() * fammovespeed
 	end
-	moveVector = currentpos + moveVector
+	moveVector = currentpos/1 + moveVector
 	return moveVector
 end
 
@@ -4509,13 +4545,15 @@ function WarpZone:update_junkan(fam)
     local animName = "Idle"
     local player = fam.Player
     local data = player:GetData()
+    local spr = fam:GetSprite()
     local junkCount = (isNil(data.WarpZone_data.GetJunkCollected, 0) % 7) + 1
     local followPos = fam.Position
     local enemyEntity= nil
+    
     if fam.GridCollisionClass ~= EntityGridCollisionClass.GRIDCOLL_GROUND then
         fam.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_GROUND
     end
-    local entities = Isaac.FindInRadius(fam.Position, 100)
+    local entities = Isaac.FindInRadius(fam.Position, 100, EntityPartition.ENEMY)
     for i, entity in ipairs(entities) do
         if entity:IsVulnerableEnemy() then
             if enemyEntity == nil then
@@ -4528,31 +4566,41 @@ function WarpZone:update_junkan(fam)
         end
     end
     if enemyEntity ~= nil and (enemyEntity.Position-fam.Position):Length() > math.min(5, enemyEntity.Size) then
-        followPos = normalizedirection(fam.Position, enemyEntity.Position, true)
+        --followPos = normalizedirection(fam.Position, enemyEntity.Position, true)
+        followPos = enemyEntity.Position
         animName = "Walk"
     elseif player.Position:Distance(fam.Position) > 60 and enemyEntity == nil then
-        followPos = normalizedirection(fam.Position, player.Position, false)
+        --followPos = normalizedirection(fam.Position, player.Position, false)
+        followPos = player.Position
         animName = "Walk"
     end
     if enemyEntity ~= nil and (enemyEntity.Position-fam.Position):Length() <= 15 then
         animName = "Attack"
     end
-    fam:FollowPosition(followPos)
+    if followPos and fam.FrameCount % 2 == 0 then
+        fam.Velocity = (followPos-fam.Position):Resized(followPos:Distance(fam.Position)/40)    --followPos
+    end
+    --fam:FollowPosition(followPos)
     
     animName = animName .. tostring(junkCount)
-    if fam:GetSprite():GetAnimation() ~= animName then
-        if fam:GetSprite():GetAnimation():sub(-1) ~= animName:sub(-1) then
+    if spr:GetAnimation() ~= animName then
+        if spr:GetAnimation():sub(-1) ~= animName:sub(-1) then
             Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, -1, fam.Position, Vector(0, 0), fam)
         end
-        fam:GetSprite():Play(animName)
+        spr:Play(animName)
+    end
+    if fam.Velocity.X < 0 then
+        spr.FlipX = true
+    else
+        spr.FlipX = false
     end
 
     local damage = 0
-    if enemyEntity and fam:GetSprite():IsEventTriggered("BumpAttack") then
+    if enemyEntity and spr:IsEventTriggered("BumpAttack") then
         damage = junkCount/2 + 1
-    elseif enemyEntity and fam:GetSprite():IsEventTriggered("SwordSwing") then
+    elseif enemyEntity and spr:IsEventTriggered("SwordSwing") then
         damage = junkCount
-    elseif enemyEntity and fam:GetSprite():IsEventTriggered("SpinAttack") then
+    elseif enemyEntity and spr:IsEventTriggered("SpinAttack") then
         damage = 0.7
         if junkCount == 7 then
             damage = 1
@@ -4586,7 +4634,7 @@ function WarpZone:update_flying_junkan(fam)
             end
         end
     end
-
+    
     if player.Position:Distance(fam.Position) > 60 then
         followPos = normalizedirection(fam.Position, player.Position, true)
     end
@@ -4614,8 +4662,9 @@ function WarpZone:update_flying_junkan(fam)
 
     fam:FollowPosition(followPos)
 end
-WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_flying_junkan, SerJunkanFly)
 
+WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_flying_junkan, SerJunkanFly)
+]]
 
 function WarpZone:update_crowdfunder(fam)
     local player = fam.Player
@@ -4636,3 +4685,4 @@ function WarpZone:update_crowdfunder(fam)
     --print(tostring(fam.Position))
 end
 WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_crowdfunder, CrowdfunderVar)
+
