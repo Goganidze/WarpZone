@@ -1788,7 +1788,7 @@ function WarpZone:preGameExit()
 function WarpZone:DebugText()
     local player = Isaac.GetPlayer(0) --this one is OK
     local coords = player.Position
-    debug_str = tostring(coords)
+    --debug_str = tostring(coords)
 
     --Isaac.RenderText(debug_str, 100, 60, 1, 1, 1, 255)
 
@@ -3532,7 +3532,6 @@ local function update_cache(_, player, cache_flag)
         --and player:GetData().WarpZone_unsavedata
         --and player:GetData().WarpZone_unsavedata.HasCrowdfunder ~= nil 
         then
-            print("ho!")
             local crowd_rng = RNG()
             crowd_rng:SetSeed(Random(), 1)
             player:CheckFamiliar(CrowdfunderVar, 1, crowd_rng)
@@ -4666,6 +4665,56 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_flying_junkan, SerJunkanFly)
 ]]
 
+local function crowdfundAnimation(degrees, fam, player)
+    local prefix = "Shoot"
+    local suffix = ""
+
+    local controllerid = player.ControllerIndex
+
+
+    if not Input.IsActionPressed(ButtonAction.ACTION_SHOOTLEFT, controllerid) and
+    not Input.IsActionPressed(ButtonAction.ACTION_SHOOTRIGHT, controllerid) and
+    not Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, controllerid) and
+    not Input.IsActionPressed(ButtonAction.ACTION_SHOOTDOWN, controllerid) then
+        if fam:GetSprite():GetAnimation():sub(1, 9) == "ShootLoop" then
+            prefix = "ShootEnd"
+        elseif not fam:GetSprite():IsFinished() and fam:GetSprite():GetAnimation():sub(1, 8) == "ShootEnd" then
+            prefix = "ShootEnd"
+        else
+            prefix = "Idle"
+        end
+    else
+        print(fam:GetSprite():GetAnimation():sub(1, 10))
+        if not fam:GetSprite():IsFinished() and fam:GetSprite():GetAnimation():sub(1, 10) == "ShootBegin" then
+            prefix = "ShootBegin"
+        elseif fam:GetSprite():GetAnimation():sub(1, 4) == "Idle" then
+            prefix = "ShootBegin"
+        else
+            prefix = "ShootLoop"
+        end
+    end
+
+
+
+    if degrees == 0 then
+        suffix = "Right"
+    elseif degrees == 180 then
+        suffix = "Left"
+    elseif degrees < 180 and degrees > 0 then
+        suffix = "Down"
+    elseif degrees < 0 then
+        suffix = "Up"
+    else
+        suffix = "Down"
+    end
+
+    local animName = prefix .. suffix
+    if fam:GetSprite():GetAnimation() ~= animName then
+        fam:GetSprite():Play(animName)
+    end
+
+end
+
 function WarpZone:update_crowdfunder(fam)
     local player = fam.Player
     local headRotation = getVectorFromDirection(player:GetHeadDirection())
@@ -4675,14 +4724,13 @@ function WarpZone:update_crowdfunder(fam)
         rotation = headRotation
     end
 
-
     fam:GetSprite().Rotation = rotation:GetAngleDegrees()
-    print(rotation)
     local newPos = player.Position + (rotation:Normalized() * 30)
     newPos = newPos + Vector(0, -10)
 
     fam.Position = newPos
-    --print(tostring(fam.Position))
+
+    crowdfundAnimation(rotation:GetAngleDegrees(), fam, player)
 end
 WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_crowdfunder, CrowdfunderVar)
 
