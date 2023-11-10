@@ -4748,8 +4748,8 @@ function WarpZone:update_crowdfunder(fam)
     fam:GetSprite().Rotation = rotation:GetAngleDegrees()
     local newPos = player.Position + (rotation:Normalized() * 25)
     newPos = newPos + Vector(0, -10)
-
-    fam.Position = newPos
+    fam.Velocity = newPos - fam.Position --+ --fam.Velocity/2 --
+    --fam.Position = newPos
 
     crowdfundAnimation(rotation:GetAngleDegrees(), fam, player)
 end
