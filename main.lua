@@ -2654,16 +2654,13 @@ function WarpZone:postPlayerUpdate(player)
     
     if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
         and Input.IsActionTriggered(ButtonAction.ACTION_DROP, player.ControllerIndex) then
-           print("getup")
             if not data.WarpZone_unsavedata then
                 data.WarpZone_unsavedata = {}
            end
            if data.WarpZone_unsavedata.HasCrowdfunder == nil then
                 data.WarpZone_unsavedata.HasCrowdfunder = true
-                print(game:GetFrameCount())
            else
                 data.WarpZone_unsavedata.HasCrowdfunder = nil
-                print(game:GetFrameCount())
            end
            player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS)
            player:EvaluateItems()
