@@ -1339,6 +1339,7 @@ function WarpZone:postRender(player)
             tear:GetData().FocusIndicator = true
         end
 
+        
     end
     local ticklostitem = data.WarpZone_unsavedata and data.WarpZone_unsavedata.TickLostItem
     if ticklostitem then
@@ -2650,6 +2651,23 @@ function WarpZone:postPlayerUpdate(player)
     if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) then
         WarpZone.GreedButtEffect(player, data, spr)
     end
+    
+    if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
+        and Input.IsActionTriggered(ButtonAction.ACTION_DROP, player.ControllerIndex) then
+           print("getup")
+            if not data.WarpZone_unsavedata then
+                data.WarpZone_unsavedata = {}
+           end
+           if data.WarpZone_unsavedata.HasCrowdfunder == nil then
+                data.WarpZone_unsavedata.HasCrowdfunder = true
+                print(game:GetFrameCount())
+           else
+                data.WarpZone_unsavedata.HasCrowdfunder = nil
+                print(game:GetFrameCount())
+           end
+           player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS)
+           player:EvaluateItems()
+    end
 
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpdate, 0)
@@ -3529,12 +3547,18 @@ local function update_cache(_, player, cache_flag)
         player:CheckFamiliar(SerJunkanWalk, walkFamiliars, junkan_walk_rng)
 
         if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
-        --and player:GetData().WarpZone_unsavedata
-        --and player:GetData().WarpZone_unsavedata.HasCrowdfunder ~= nil 
+        and player:GetData().WarpZone_unsavedata
+        and player:GetData().WarpZone_unsavedata.HasCrowdfunder ~= nil
         then
             local crowd_rng = RNG()
             crowd_rng:SetSeed(Random(), 1)
             player:CheckFamiliar(CrowdfunderVar, 1, crowd_rng)
+        elseif player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
+            and player:GetData().WarpZone_unsavedata
+            and player:GetData().WarpZone_unsavedata.HasCrowdfunder == nil then
+            local crowd_rng = RNG()
+            crowd_rng:SetSeed(Random(), 1)
+            player:CheckFamiliar(CrowdfunderVar, 0, crowd_rng)
         end
 
     end
@@ -4684,7 +4708,7 @@ local function crowdfundAnimation(degrees, fam, player)
             prefix = "Idle"
         end
     else
-        print(fam:GetSprite():GetAnimation():sub(1, 10))
+        --print(fam:GetSprite():GetAnimation():sub(1, 10))
         if not fam:GetSprite():IsFinished() and fam:GetSprite():GetAnimation():sub(1, 10) == "ShootBegin" then
             prefix = "ShootBegin"
         elseif fam:GetSprite():GetAnimation():sub(1, 4) == "Idle" then
@@ -4725,7 +4749,7 @@ function WarpZone:update_crowdfunder(fam)
     end
 
     fam:GetSprite().Rotation = rotation:GetAngleDegrees()
-    local newPos = player.Position + (rotation:Normalized() * 30)
+    local newPos = player.Position + (rotation:Normalized() * 25)
     newPos = newPos + Vector(0, -10)
 
     fam.Position = newPos
