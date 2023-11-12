@@ -137,6 +137,11 @@ return function (mod)
     
     ---@param fam EntityFamiliar
     function WarpZone:update_junkan(fam)
+        if not (fam.Velocity.X <= 0) and not (fam.Velocity.X >= 0) then
+            fam.Velocity = Vector(0,0)
+            fam.Position = fam.Player.Position
+        end
+
         local animName = "Idle"
         local player = fam.Player
         local data = player:GetData()
@@ -144,6 +149,7 @@ return function (mod)
         local junkCount = (isNil(data.WarpZone_data.GetJunkCollected, 0) % 7) + 1
         local followPos = fam.Position
         local enemyEntity= nil
+        local pathfinder = WarpZone.GetPathFinder(fam)
         
         if fam.GridCollisionClass ~= EntityGridCollisionClass.GRIDCOLL_GROUND then
             fam.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_GROUND
@@ -164,19 +170,25 @@ return function (mod)
                     end
                 end
             end]]
-            fam:PickEnemyTarget(200, 1, 2)
+            fam:PickEnemyTarget(400, 1, 3)
+            if not pathfinder:HasDirectPath() then
+                fam.Target = nil
+                fam:PickEnemyTarget(400, 1, 3)
+            end
             enemyEntity = fam.Target
             local followPlayer
             if enemyEntity ~= nil and (enemyEntity.Position-fam.Position):Length() > math.min(5, enemyEntity.Size) then
                 --followPos = normalizedirection(fam.Position, enemyEntity.Position, true)
                 followPos = enemyEntity.Position
-                animName = "Walk"
+                --animName = "Walk"
+                animName = fam.Velocity:Length()>0.3 and "Walk" or animName
             elseif player.Position:Distance(fam.Position) > 0 and enemyEntity == nil then
                 --followPos = normalizedirection(fam.Position, player.Position, false)
                 followPos = player.Position -- (player.Position-fam.Position):Resized(60)
                 animName = fam.Velocity:Length()>0.3 and "Walk" or animName
                 followPlayer = true
             end
+            
             --if enemyEntity ~= nil and (enemyEntity.Position-fam.Position):Length() <= 15 then
             --    animName = "Attack"
             --end
@@ -193,7 +205,7 @@ return function (mod)
                     --power = math.min(dist/2, power)
                     fam.Velocity = fam.Velocity * 0.6 + (followPos-fam.Position):Resized(power) * 0.4
                 else
-                    WarpZone.GetPathFinder(fam):FindGridPath(followPos, 1.1, 0, true) --0.3 + dist/220
+                    pathfinder:FindGridPath(followPos, 1.1, 0, true) --0.3 + dist/220
                 end
             end
             --fam:FollowPosition(followPos)
@@ -221,9 +233,16 @@ return function (mod)
                 elseif junkCount > 5 then
                     fam.State = 2
                 end
+                if fam.Player:HasTrinket(TrinketType.TRINKET_FORGOTTEN_LULLABY) then
+                    fam.Keys = spr:GetFrame()
+                end
+                fam.Hearts = 0
+                fam.Coins = 0
             end
         
         elseif fam.State == 1 then
+
+
             local damage = 0
             local mas = false
             if  spr:IsEventTriggered("BumpAttack") then
@@ -238,9 +257,14 @@ return function (mod)
                 end
                 mas = 70
             end
+            if fam.Player:HasTrinket(TrinketType.TRINKET_FORGOTTEN_LULLABY) then
+                damage = damage * 0.7
+                fam.Keys = spr:GetFrame()
+            end
             if fam.Target and damage > 0 then
                 if fam.Player:HasCollectible(CollectibleType.COLLECTIBLE_BFFS) then
                     damage = damage * 2
+                    mas = mas and (mas + 10)
                 end
                 --if not mas then
                     fam.Target:TakeDamage(damage, 0, EntityRef(fam), 1)
@@ -257,22 +281,27 @@ return function (mod)
 
             if GetLastFrame(spr) == spr:GetFrame() then
                 fam.State = 0
+                spr.PlaybackSpeed = 1
             end
             if fam.Target then
-                local power = fam.Target.Position:Distance(fam.Position)-fam.Target.Size
+                local power = math.min(8, fam.Target.Position:Distance(fam.Position)-fam.Target.Size)
                 fam.Velocity = fam.Velocity * 0.8 + (fam.Target.Position-fam.Position):Resized(power/2) * 0.2
             end
             fam.Velocity = fam.Velocity * (1-spr:GetFrame()*0.02)
 
         elseif fam.State == 2 then
-            local damage = 0.7
+            local damage = 0.9
             local mas = 40
             if junkCount == 7 then
-                damage = 1
+                damage = 1.2
             end
             if fam.Player:HasCollectible(CollectibleType.COLLECTIBLE_BFFS) then
                 damage = damage * 2
                 mas = mas + 20
+            end
+            if fam.Player:HasTrinket(TrinketType.TRINKET_FORGOTTEN_LULLABY) then
+                damage = damage * 1.1
+                fam.Keys = spr:GetFrame()
             end
 
             if not fam.Target then
@@ -283,46 +312,78 @@ return function (mod)
                 local list = Isaac.FindInRadius(fam.Position, mas, EntityPartition.ENEMY)
                 for i=1, #list do
                     local ent = list[i]
-                    if ent:IsVulnerableEnemy() and ent:IsActiveEnemy() then
+                    if ent:IsVulnerableEnemy() and ent:IsActiveEnemy() or ent.Type == EntityType.ENTITY_FIREPLACE then
                         ent:TakeDamage(damage, 0, EntityRef(fam), 1)
+                    end
+                end
+                local room = game:GetRoom()
+                for i=0, 360-45, 45 do
+                    local pos = fam.Position + Vector.FromAngle(i):Resized(30)
+                    local grid = room:GetGridEntityFromPos(pos)
+                    if grid and grid:Hurt(1) then
+                        
                     end
                 end
             end
             if not spr:WasEventTriggered("SpinAttack") then
-                fam.Velocity = fam.Velocity * 0.82 + (fam.Target.Position-fam.Position):Resized(5) * 0.1
+                local power = fam.Target and math.min(5, fam.Target.Position:Distance(fam.Position)/6)
+                local tar = fam.Target and ((fam.Target.Position-fam.Position):Resized(power) * 0.1) or Vector(0,0)
+                fam.Velocity = fam.Velocity * 0.82 + tar
             elseif fam.Target and fam.Hearts == 0 then
                 fam.Hearts = 1
                 --local power = fam.Target.Position:Distance(fam.Position)-fam.Target.Size
                 --fam.Velocity = fam.Velocity * 0.5 + (fam.Target.Position-fam.Position):Resized(10) * 0.5
+                local power = fam.Target.Position:Distance(fam.Position)/6+2
                 if junkCount == 7 then
-                    fam.Velocity = (fam.Target.Position-fam.Position):Resized(10)
+                    fam.Velocity = (fam.Target.Position-fam.Position):Resized(math.min(power, 10))
                 else
-                    fam.Velocity = (fam.Target.Position-fam.Position):Resized(7)
+                    fam.Velocity = (fam.Target.Position-fam.Position):Resized(math.min(power, 7))
                 end
             elseif fam.Target and fam.Hearts == 1 then
                 local ang = (fam.Target.Position-fam.Position):GetAngleDegrees()
                 fam.Velocity = Vector(fam.Velocity:Length(), 0):Rotated(lerpAngle(fam.Velocity:GetAngleDegrees(), ang, 0.1))
             end
+            if fam.Player:HasTrinket(TrinketType.TRINKET_FORGOTTEN_LULLABY) and spr:GetFrame() >= 40 and fam.Coins < 3 then
+                fam.Coins = fam.Coins + 1
+                spr:SetFrame(21)
+                return
+            end
             if GetLastFrame(spr) == spr:GetFrame() then
                 fam.State = 0
                 fam.Hearts = 0
+                spr.PlaybackSpeed = 1
+                fam.Coins = 0
             end
         end
     end
     WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_junkan, SerJunkanWalk)
-    
-    
+
+    function WarpZone.update_junkan_Render(_, fam)
+        if not game:IsPaused() and fam.Player:HasTrinket(TrinketType.TRINKET_FORGOTTEN_LULLABY) and fam.State == 1 then
+            local spr = fam:GetSprite()
+            if fam.Keys ~= spr:GetFrame() then
+                WarpZone.update_junkan(_, fam)
+                --if ((fam.Player:GetData().WarpZone_data.GetJunkCollected or 0) % 7 + 1) <= 5 then
+                    spr:Update()
+                --end
+            end
+        end
+    end
+    WarpZone:AddCallback(ModCallbacks.MC_POST_FAMILIAR_RENDER, WarpZone.update_junkan_Render, SerJunkanWalk)
+
+    ---@param fam EntityFamiliar
     function WarpZone:update_flying_junkan(fam)
+        local spr = fam:GetSprite()
         local animName = "Idle"
         local player = fam.Player
         local data = player:GetData()
         local followPos = fam.Position
-        local lastFrameShot = isNil(data.LastFrameShot, 0)
-        local currentframe = game:GetFrameCount()
-        local enemyEntity= nil
-        local entities = Isaac.FindInRadius(fam.Position, 250)
+        --local lastFrameShot = isNil(data.LastFrameShot, 0)
+        --local currentframe = game:GetFrameCount()
+        
+        --local entities = Isaac.FindInRadius(fam.Position, 250)
     
-        for i, entity in ipairs(entities) do
+        --[[for i, entity in ipairs(entities) do
             if entity:IsVulnerableEnemy() then
                 if enemyEntity == nil then
                     enemyEntity = entity
@@ -332,34 +393,75 @@ return function (mod)
                     end
                 end
             end
-        end
-        
-        if player.Position:Distance(fam.Position) > 60 then
-            followPos = normalizedirection(fam.Position, player.Position, true)
+        end]]
+        fam:PickEnemyTarget(800, 1, 3)
+        local enemyEntity = fam.Target
+        --if player.Position:Distance(fam.Position) > 60 then
+        --    followPos = normalizedirection(fam.Position, player.Position, true)
+        --end
+        if not fam.Target then
+            fam:FollowParent()
+        else
+            local power = (fam.Target.Position:Distance(fam.Position)-70)/20
+            fam.Velocity = (fam.Target.Position-fam.Position):Resized(math.min(power, 3))
+            animName = "Shoot"
         end
     
-        if lastFrameShot + 180 <= currentframe and enemyEntity ~= nil then
+        --[[if lastFrameShot + 180 <= currentframe and enemyEntity ~= nil then
             animName = "Shoot"
             data.LastFrameShot = currentframe
         elseif lastFrameShot + 60 >= currentframe then
             animName = "Shoot"
+        end]]
+        
+        if fam.FireCooldown <= 0  then
+            if fam.State == 0 then
+                fam.Coins = fam:GetDropRNG():RandomInt(5)+11
+                if fam.Player:HasTrinket(TrinketType.TRINKET_FORGOTTEN_LULLABY) then
+                    fam.Coins = fam.Coins + 10
+                end
+            fam.Hearts = 5
+            end
+            fam.State = 1
+        else
+            fam.FireCooldown = fam.FireCooldown - 1
+            fam.State = 0
+        end
+        
+        if fam.State == 1 then
+            fam.Hearts = fam.Hearts - 1
+
+            if enemyEntity ~= nil and fam.Hearts == 0 then
+                fam.Hearts = fam.Player:HasTrinket(TrinketType.TRINKET_FORGOTTEN_LULLABY) and 3 or 5
+                fam.Coins = fam.Coins - 1
+
+                local direction = (enemyEntity.Position - fam.Position):Normalized()
+                local proj = fam:FireProjectile(direction)
+        
+                proj:AddTearFlags(TearFlags.TEAR_SPECTRAL | TearFlags.TEAR_HOMING | TearFlags.TEAR_PIERCING)
+                proj:ChangeVariant(TearVariant.DARK_MATTER)
+                proj:ResetSpriteScale()
+                proj:GetSprite().Scale = Vector(2,1)
+                proj:GetSprite().Color = Color(0, 0, 0, 1, 0.9, 0, 0.4) -- Color(1.91, 1.287, 1.771, 1, 0.2, 0, 0.1)
+                local dmg = player:GetData().WarpZone_data.GetJunkCollected - 7 + 
+                    (fam.Player:HasCollectible(CollectibleType.COLLECTIBLE_BFFS) and 16 or 8)
+                proj.CollisionDamage = dmg
+
+            end
+            if not enemyEntity or fam.Coins <= 0 then
+                fam.State = 0
+                fam.FireCooldown = math.max(0, 50 - fam.Coins*7)
+                fam.Coins = 0
+            end
+        end
+        
+    
+        if spr:GetAnimation() ~= animName then
+            spr:Play(animName)
+            --fam.FireCooldown = 10
         end
     
-        if fam:GetSprite():GetAnimation() == "Shoot" and enemyEntity ~= nil and (currentframe - lastFrameShot) % 6 == 0 then
-            local direction = (enemyEntity.Position - fam.Position):Normalized()
-            local proj = fam:FireProjectile(direction)
-    
-            proj:AddTearFlags(TearFlags.TEAR_SPECTRAL)
-            proj:AddTearFlags(TearFlags.TEAR_HOMING)
-            proj:GetSprite().Color = Color(.91, .187, .371, 1, 0, 0, 0)
-            proj.CollisionDamage = 8
-        end
-    
-        if fam:GetSprite():GetAnimation() ~= animName then
-            fam:GetSprite():Play(animName)
-        end
-    
-        fam:FollowPosition(followPos)
+        --fam:FollowPosition(followPos)
     end
     WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_flying_junkan, SerJunkanFly)
     
