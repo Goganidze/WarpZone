@@ -51,6 +51,7 @@ return function (mod)
         return npc
     end
 
+    ---@return PathFinder
     function WarpZone.GetPathFinder(ent)
         if Renderer then
             return ent["GetPathFinder"](ent)
@@ -58,8 +59,9 @@ return function (mod)
         local proxyNPC = WarpZone.SpawnNPCProxy(ent)
         proxyNPC:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
         proxyNPC.Position = ent.Position
-        proxyNPC.I1 = 1
-        return proxyNPC.Pathfinder
+        --proxyNPC.I1 = 1
+        --return proxyNPC.Pathfinder
+        return proxyNPC:GetData().__PathfinderFunc
     end
 
     ---@param ent EntityNPC
@@ -71,6 +73,48 @@ return function (mod)
         if not ent:HasEntityFlags(EntityFlag.FLAG_FRIENDLY) then
             ent:AddEntityFlags(EntityFlag.FLAG_FRIENDLY)
         end
+        ent:GetData().__PathfinderFunc = {
+            EvadeTarget = function(self, ...)
+                return ent.Pathfinder.EvadeTarget(ent.Pathfinder, ...)
+            end,
+            FindGridPath = function(self, ...)
+                ent.I1 = 1
+                return ent.Pathfinder.FindGridPath(ent.Pathfinder, ...)
+            end,
+            GetEvadeMovementCountdown = function(self, ...)
+                return ent.Pathfinder.GetEvadeMovementCountdown(ent.Pathfinder, ...)
+            end,
+            GetGridIndex = function(self, ...)
+                return ent.Pathfinder.GetGridIndex(ent.Pathfinder, ...)
+            end,
+            HasDirectPath = function(self, ...)
+                return ent.Pathfinder.HasDirectPath(ent.Pathfinder, ...)
+            end,
+            HasPathToPos = function(self, ...)
+                return ent.Pathfinder.HasPathToPos(ent.Pathfinder, ...)
+            end,
+            MoveRandomly = function(self, ...)
+                return ent.Pathfinder.MoveRandomly(ent.Pathfinder, ...)
+            end,
+            MoveRandomlyAxisAligned = function(self, ...)
+                return ent.Pathfinder.MoveRandomlyAxisAligned(ent.Pathfinder, ...)
+            end,
+            MoveRandomlyBoss = function(self, ...)
+                return ent.Pathfinder.MoveRandomlyBoss(ent.Pathfinder, ...)
+            end,
+            Reset = function(self, ...)
+                return ent.Pathfinder.Reset(ent.Pathfinder, ...)
+            end,
+            ResetMovementTarget = function(self, ...)
+                return ent.Pathfinder.ResetMovementTarget(ent.Pathfinder, ...)
+            end,
+            SetCanCrushRocks = function(self, ...)
+                return ent.Pathfinder.SetCanCrushRocks(ent.Pathfinder, ...)
+            end,
+            UpdateGridIndex = function(self, ...)
+                return ent.Pathfinder.UpdateGridIndex(ent.Pathfinder, ...)
+            end,
+        }
     end
     WarpZone:AddCallback(ModCallbacks.MC_POST_NPC_INIT, WarpZone.ProxyNPC_init, proxyNPCtype)
 
@@ -85,7 +129,7 @@ return function (mod)
         if ent.Target then
             ent.Position = ent.Target.Position
             if ent.I1 == 1 then
-                ent.Target.Velocity = ent.Velocity
+                ent.Target.Velocity = ent.Velocity/1
                 ent.I1 = 0
             end
         else
@@ -144,12 +188,16 @@ return function (mod)
 
         local animName = "Idle"
         local player = fam.Player
-        local data = player:GetData()
+        local data = fam:GetData()
         local spr = fam:GetSprite()
-        local junkCount = (isNil(data.WarpZone_data.GetJunkCollected, 0) % 7) + 1
+        local junkCount = (isNil(player:GetData().WarpZone_data.GetJunkCollected, 0) % 7) + 1
         local followPos = fam.Position
         local enemyEntity= nil
         local pathfinder = WarpZone.GetPathFinder(fam)
+        data.pathshitter = data.pathshitter or {
+            active = false,
+
+        }
         
         if fam.GridCollisionClass ~= EntityGridCollisionClass.GRIDCOLL_GROUND then
             fam.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_GROUND
@@ -158,22 +206,11 @@ return function (mod)
 
         if fam.State == 0 then
             
-            --[[local entities = Isaac.FindInRadius(fam.Position, 100, EntityPartition.ENEMY)
-            for i, entity in ipairs(entities) do
-                if entity:IsVulnerableEnemy() then
-                    if enemyEntity == nil then
-                        enemyEntity = entity
-                    else
-                        if fam.Position:Distance(enemyEntity.Position) > fam.Position:Distance(entity.Position) then
-                            enemyEntity = entity
-                        end
-                    end
-                end
-            end]]
             fam:PickEnemyTarget(400, 1, 3)
             if not pathfinder:HasDirectPath() then
                 fam.Target = nil
                 fam:PickEnemyTarget(400, 1, 3)
+                --pathfinder:FindGridPath(followPos, 0, 0, true)
             end
             enemyEntity = fam.Target
             local followPlayer
@@ -188,14 +225,12 @@ return function (mod)
                 animName = fam.Velocity:Length()>0.3 and "Walk" or animName
                 followPlayer = true
             end
-            
-            --if enemyEntity ~= nil and (enemyEntity.Position-fam.Position):Length() <= 15 then
-            --    animName = "Attack"
-            --end
+
             if followPos then
+                local room = game:GetRoom()
                 --fam.Velocity = (followPos-fam.Position):Resized(followPos:Distance(fam.Position)/40)    --followPos
                 local dist = followPos:Distance(fam.Position)
-                if dist < 60 or game:GetRoom():CheckLine(followPos, fam.Position, 0) then
+                if dist < 60 or room:CheckLine(followPos, fam.Position, 0) then
                     local power --= followPos:Distance(fam.Position)/90 + 6
                     if followPlayer then
                         power = math.min(10, math.max(0, followPos:Distance(fam.Position)-60)/10 )
@@ -205,7 +240,86 @@ return function (mod)
                     --power = math.min(dist/2, power)
                     fam.Velocity = fam.Velocity * 0.6 + (followPos-fam.Position):Resized(power) * 0.4
                 else
-                    pathfinder:FindGridPath(followPos, 1.1, 0, true) --0.3 + dist/220
+                    --pathfinder:FindGridPath(followPos, 1.1, 0, true) --0.3 + dist/220
+                    if not pathfinder:HasPathToPos(followPos, false) then
+                        local pathshitter = data.pathshitter
+                        pathshitter.active = true
+                        if not pathshitter.NewTargetPos then
+                            if not pathshitter.Angle then
+                                pathshitter.Angle = 0
+                                pathshitter.FindDist = 0
+                                pathshitter.level = 0
+                            end
+                            local fampos = fam.Position
+                            for i=0, 8 do
+                                local fpos = followPos + Vector(pathshitter.FindDist, 0):Rotated(pathshitter.Angle)
+                                --Isaac.Spawn(1000,104,2,fpos,Vector(0,0),nil)
+                                local dist = fpos:Distance(fampos)
+                                if room:GetGridCollisionAtPos(fpos) == GridCollisionClass.COLLISION_NONE then
+                                    if dist < 140 then
+                                        pathshitter.CanJump = true
+                                        pathshitter.NewTargetPos = fpos
+                                        --print("hhh")
+                                        break
+                                    end
+                                    if dist > 60 and pathfinder:HasPathToPos(fpos, false) then
+                                        pathshitter.NewTargetPos = fpos
+                                        --print("hhh2")
+                                        break
+                                    end
+                                end
+                                pathshitter.Angle = pathshitter.Angle + 20 * (1-pathshitter.level*0.05)
+                                if pathshitter.Angle >= 360 then
+                                    pathshitter.Angle = 0
+                                    pathshitter.FindDist = pathshitter.FindDist + 20
+                                    pathshitter.level = pathshitter.level + 1
+                                end
+                                
+                            end
+                            if pathshitter.FindDist > 500 then
+                                pathshitter.Angle = 0
+                                pathshitter.FindDist = 30
+                                pathshitter.level = 0
+                            end
+                            fam.Velocity = fam.Velocity * 0.9
+                            
+                        else
+                            --Isaac.Spawn(1000,104,2,data.pathshitter.NewTargetPos,Vector(0,0),nil)
+                            pathshitter.Angle = 0
+                            pathshitter.FindDist = 20
+                            pathshitter.level = 0
+                            
+                            local dist = data.pathshitter.NewTargetPos:Distance(fam.Position) 
+                            
+                            if dist < 20 or (not pathfinder:HasPathToPos(data.pathshitter.NewTargetPos, false) and dist >= 140 ) then
+                                data.pathshitter.NewTargetPos = nil
+                                pathshitter.Angle = 0
+                                pathshitter.FindDist = 30
+                                pathshitter.level = 0
+                                --print("c")
+                            elseif dist < 50 then
+                                local power = math.min(10, math.max(0, pathshitter.NewTargetPos:Distance(fam.Position))/10 )
+                                fam.Velocity = fam.Velocity * 0.6 + (pathshitter.NewTargetPos-fam.Position):Resized(power) * 0.4
+                            else
+                                pathfinder:FindGridPath(pathshitter.NewTargetPos, 1.1, 0, true)
+
+                                if dist < 140 and pathshitter.CanJump then
+                                    --pathshitter.CanJump = true
+                                    fam.State = 7
+                                    pathshitter.StartJump = true
+                                    pathshitter.PreJumpPos = fam.Position/1
+                                end
+                            end
+                        end
+                        --print("b")
+                    else
+                        --print("a")
+                        data.pathshitter.active = false
+                        data.pathshitter.NewTargetPos = nil
+                        pathfinder:FindGridPath(followPos, 1.1, 0, true)
+                    end
+                    --print(data.pathshitter.NewTargetPos, fam.Position, data.pathshitter.NewTargetPos and data.pathshitter.NewTargetPos:Distance(fam.Position))
+                    --pathfinder:FindGridPath(followPos, 1.1, 0, true)
                 end
             end
             --fam:FollowPosition(followPos)
@@ -341,9 +455,11 @@ return function (mod)
                 end
             elseif fam.Target and fam.Hearts == 1 then
                 local ang = (fam.Target.Position-fam.Position):GetAngleDegrees()
-                fam.Velocity = Vector(fam.Velocity:Length(), 0):Rotated(lerpAngle(fam.Velocity:GetAngleDegrees(), ang, 0.1))
+                local power = math.min( fam.Velocity:Length()+0.2, junkCount == 7 and 10 or 7)
+                fam.Velocity = Vector(power, 0):Rotated(lerpAngle(fam.Velocity:GetAngleDegrees(), ang, 0.1))
             end
-            if fam.Player:HasTrinket(TrinketType.TRINKET_FORGOTTEN_LULLABY) and spr:GetFrame() >= 40 and fam.Coins < 3 then
+            if fam.Target and fam.Player:HasTrinket(TrinketType.TRINKET_FORGOTTEN_LULLABY) 
+            and spr:GetFrame() >= 40 and fam.Coins < 3 then
                 fam.Coins = fam.Coins + 1
                 spr:SetFrame(21)
                 return
@@ -354,6 +470,56 @@ return function (mod)
                 spr.PlaybackSpeed = 1
                 fam.Coins = 0
             end
+
+        elseif fam.State == 7 then
+            local followPos = data.pathshitter.NewTargetPos
+            local pathshitter = data.pathshitter
+            pathshitter.CanJump = nil
+            if pathshitter.StartJump then
+                --Isaac.Spawn(1000,104,2,fam.Position,Vector(0,0),nil)
+                pathshitter.frame = 0
+                pathshitter.Scale = spr.Scale/1
+                pathshitter.OffsetPos = fam.PositionOffset/1
+                pathshitter.StartJump = nil
+            end
+            pathshitter.frame = pathshitter.frame + 1
+            if pathshitter.frame >= 20 then
+                fam.State = 0
+                fam.PositionOffset = pathshitter.OffsetPos
+                spr.Scale = pathshitter.Scale
+                pathshitter.frame = 0
+            end
+            --print(pathshitter.frame)
+            if pathshitter.frame < 4 then
+                spr.Scale = Vector(pathshitter.Scale.X * (1 + pathshitter.frame*0.1), pathshitter.Scale.Y * (1 - pathshitter.frame*0.1))
+            elseif pathshitter.frame > 4 then
+                spr.Scale = pathshitter.Scale
+                spr:Play("Walk"..junkCount)
+                spr:SetFrame(4)
+                local proc = (pathshitter.frame-5)/15
+                --local proc = math.sin(math.pi*(pathshitter.frame-5)/15)
+                fam.PositionOffset = fam.PositionOffset + Vector(0,-math.sin(math.pi*proc))
+                fam.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_NONE
+                
+                local power = (followPos-fam.Position) * (proc*0.5)
+                --fam.Position = fam.Position + power --*5
+                --print(proc, power, followPos)
+                fam.Velocity = power --*15 -- fam.Velocity * 0.6 + (power-fam.Position) * 0.4
+                if pathshitter.frame >= 19 then
+                    fam.PositionOffset = pathshitter.OffsetPos
+                    spr.Scale = pathshitter.Scale
+                    pathshitter.frame = 0
+                    pathshitter.CanJump = false
+                    fam.State = 0
+                    --Isaac.Spawn(1000,104,2,followPos,Vector(0,0),nil)
+                    if game:GetRoom():GetGridCollisionAtPos(fam.Position) ~= GridCollisionClass.COLLISION_NONE then
+                        fam.Position = followPos
+                        fam.Velocity = Vector(0,0)
+                    end
+                    pathshitter.NewTargetPos = nil
+                end
+            end
+            
         end
     end
     WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_junkan, SerJunkanWalk)
