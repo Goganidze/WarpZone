@@ -267,7 +267,6 @@ local SerJunkanFly = Isaac.GetEntityVariantByName("SerJunkanFly")
 
 --crowdfunder
 local CrowdfunderVar = Isaac.GetEntityVariantByName("Crowdfunder")
-
 --item defintions
 WarpZone.WarpZoneTypes = {}
 
@@ -1323,6 +1322,24 @@ function WarpZone:postRender(player)
                 data.WarpZone_unsavedata.fireGlove = true
             end
         end
+
+    if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
+        and Input.IsActionTriggered(ButtonAction.ACTION_DROP, controllerid) then
+           if not data.WarpZone_unsavedata then
+                data.WarpZone_unsavedata = {}
+           end
+           if isNil(data.WarpZone_unsavedata.lastFrameSwitched, 0) ~= game:GetFrameCount() then
+                if data.WarpZone_unsavedata.HasCrowdfunder == nil then
+                        data.WarpZone_unsavedata.HasCrowdfunder = true
+                else
+                        data.WarpZone_unsavedata.HasCrowdfunder = nil
+                end
+                data.WarpZone_unsavedata.lastFrameSwitched = game:GetFrameCount()
+                player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS)
+                player:EvaluateItems()
+           end
+    end
+    
 
         if player and WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS == player:GetActiveItem() 
         and data.primeShot ~= nil and (Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, controllerid) or
@@ -2652,20 +2669,37 @@ function WarpZone:postPlayerUpdate(player)
         WarpZone.GreedButtEffect(player, data, spr)
     end
     
-    if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
-        and Input.IsActionTriggered(ButtonAction.ACTION_DROP, player.ControllerIndex) then
-            if not data.WarpZone_unsavedata then
-                data.WarpZone_unsavedata = {}
-           end
-           if data.WarpZone_unsavedata.HasCrowdfunder == nil then
-                data.WarpZone_unsavedata.HasCrowdfunder = true
-           else
-                data.WarpZone_unsavedata.HasCrowdfunder = nil
-           end
-           player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS)
-           player:EvaluateItems()
+    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
+        and data.WarpZone_unsavedata
+        and data.WarpZone_unsavedata.HasCrowdfunder ~= nil
+        and (Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, player.ControllerIndex) or
+        Input.IsActionPressed(ButtonAction.ACTION_SHOOTDOWN, player.ControllerIndex) or
+        Input.IsActionPressed(ButtonAction.ACTION_SHOOTLEFT, player.ControllerIndex) or
+        Input.IsActionPressed(ButtonAction.ACTION_SHOOTRIGHT, player.ControllerIndex))
+    then
+        data.WarpZone_data.FramesHeldCrowdfund = isNil(data.WarpZone_data.FramesHeldCrowdfund, 0) + 1 
+    elseif player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER) then
+        data.WarpZone_data.FramesHeldCrowdfund = 0
     end
-
+    if isNil(data.WarpZone_data.FramesHeldCrowdfund, 0) > 0 then
+        local frame = isNil(data.WarpZone_data.FramesHeldCrowdfund, 0) - 1
+        local multiplicator = math.min(3, math.floor(frame/60))
+        print(multiplicator)
+        if frame % math.floor(20/multiplicator) == 0 and player:GetNumCoins() >=1 then
+            SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT)
+            player:AddCoins(-1)
+            local aimspeed = player:GetAimDirection() * 16
+            local firePosition = player.Position + (player:GetAimDirection() * 18) + Vector(0, 13)
+            local cointear = player:FireTear(firePosition, aimspeed, false, false, false, player, 1.5)
+            cointear:AddTearFlags(TearFlags.TEAR_GREED_COIN)
+            local sprite = cointear:GetSprite()
+            sprite:Load("gfx/002.020_coin tear.anm2",true)
+            sprite:Play("Rotate2")
+            cointear:ResetSpriteScale()
+            
+        end
+        player.FireDelay = 1
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpdate, 0)
 
@@ -4748,8 +4782,7 @@ function WarpZone:update_crowdfunder(fam)
     fam:GetSprite().Rotation = rotation:GetAngleDegrees()
     local newPos = player.Position + (rotation:Normalized() * 25)
     newPos = newPos + Vector(0, -10)
-    fam.Velocity = newPos - fam.Position --+ --fam.Velocity/2 --
-    --fam.Position = newPos
+    fam.Velocity = newPos - fam.Position
 
     crowdfundAnimation(rotation:GetAngleDegrees(), fam, player)
 end
