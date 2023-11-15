@@ -2684,18 +2684,19 @@ function WarpZone:postPlayerUpdate(player)
     if isNil(data.WarpZone_data.FramesHeldCrowdfund, 0) > 0 then
         local frame = isNil(data.WarpZone_data.FramesHeldCrowdfund, 0) - 1
         local multiplicator = math.min(3, math.floor(frame/60))
-        print(multiplicator)
         if frame % math.floor(20/multiplicator) == 0 and player:GetNumCoins() >=1 then
             SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT)
             player:AddCoins(-1)
             local aimspeed = player:GetAimDirection() * 16
             local firePosition = player.Position + (player:GetAimDirection() * 18) + Vector(0, 13)
-            local cointear = player:FireTear(firePosition, aimspeed, false, false, false, player, 1.5)
+            local cointear = player:FireTear(firePosition, aimspeed, false, false, false, player, 1)
+            cointear.CollisionDamage = cointear.CollisionDamage + 10
             cointear:AddTearFlags(TearFlags.TEAR_GREED_COIN)
             local sprite = cointear:GetSprite()
             sprite:Load("gfx/002.020_coin tear.anm2",true)
             sprite:Play("Rotate2")
             cointear:ResetSpriteScale()
+            cointear:GetData().CrowdfunderShot = 2
             
         end
         player.FireDelay = 1
@@ -3154,6 +3155,15 @@ function WarpZone:dropArrow(entity)
             data.WarpZone_data.trail:Remove()
         end
     end
+
+    if entity:GetData().CrowdfunderShot == 2 then
+        local rng = entity:GetDropRNG()
+        if rng:RandomInt(2) == 1 then
+            local coin = Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_COIN, CoinSubType.COIN_PENNY, entity.Position, entity.Velocity * 0.25, nil):ToPickup()
+            coin.Timeout = 75 + math.floor(RandomFloatRange(15))
+            coin:GetSprite():SetFrame(1)
+        end
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, WarpZone.dropArrow)
 
@@ -3163,6 +3173,15 @@ function WarpZone:hitEnemy(entitytear, collider, low)
 
     if collider:IsEnemy() and tear:GetData().BleedIt == true then
         collider:AddEntityFlags(EntityFlag.FLAG_BLEED_OUT)
+    end
+
+    if entitytear:GetData().CrowdfunderShot == 2 then
+        entitytear:GetData().CrowdfunderShot = 1
+        local rng = entitytear:GetDropRNG()
+        if collider:IsActiveEnemy() and not collider:IsBoss() and rng:RandomInt(3) == 1 then
+            collider:AddEntityFlags(EntityFlag.FLAG_MIDAS_FREEZE)
+        end
+
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, WarpZone.hitEnemy)
