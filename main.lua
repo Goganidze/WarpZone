@@ -333,6 +333,7 @@ WarpZone.WarpZoneTypes.SOUND_COW_TRASH = Isaac.GetSoundIdByName("TrashFarm")
 WarpZone.WarpZoneTypes.SOUND_EMERGENCY_MEETING = Isaac.GetSoundIdByName("EmergencyMeetingSound")
 WarpZone.WarpZoneTypes.SOUND_MURDER_STING = Isaac.GetSoundIdByName("MurderSting")
 WarpZone.WarpZoneTypes.SOUND_MURDER_KILL = Isaac.GetSoundIdByName("MurderKillSnd")
+WarpZone.WarpZoneTypes.SOUND_GUN_SWAP = Isaac.GetSoundIdByName("GunSwap")
 
 --external item descriptions
 if EID then
@@ -377,6 +378,7 @@ if EID then
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY, "On use, you fall up to the ceiling for about {{Timer}} 5 seconds.#While in this state, gain {{Seraphim}} flight, invulnerability, and {{Range}} +6.25 Range#Tears rain down from the top of the screen, regardless of the fired direction.", "Gravity",  "en_us")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES, "{{Throwable}} Gain two homing flying knife familiars that do damage on contact#When killing enemies with the knives, spawn a pool of red creep that damages enemies. The size of the creep depends on the enemy's mass.#When enemy is killed by knives, gain {{Tears}} +0.5 Tears to the rest of the room.", "Johnny's Knives",  "en_us")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN, "Spawns a familiar that pursues enemies and does contact damage.#You can blow up items with bombs. Collecting the junk that comes out upgrades your familiar.#Collecting 7 junk gives Junkan flight, and lets him fire spectral homing projectiles at the nearest enemy.", "Ser Junkan",  "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER, "Press the drop button to toggle a coin-firing minigun#Each bullet costs 1 cent to fire.#When hitting a wall, bullets have a chance to drop a fading coin.#Killing enemies with The Crowdfunder may also drop extra money.", "The Crowdfunder",  "en_us")
 
     EID:addTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS, "While held, pressing the Drop Trinket button immediately drops this trinket; you don't need to hold the button#When on the ground, enemies will target the trinket for a short time.", "Hunky Boys", "en_us")
     EID:addTrinket(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP, "{{Collectible33}} The Bible is added to several item pools.#Using {{Collectible33}} The Bible or {{Card71}} The Devil? card with this item will deal 40 damage to all enemies in the room, in addition to granting flight.#Using The Bible on {{Satan}} Satan will kill him, and you will survive#The golden version of this trinket kills {{TheLamb}} The Lamb as well.", "Bible Thump", "en_us")
@@ -1334,6 +1336,7 @@ function WarpZone:postRender(player)
                 else
                         data.WarpZone_unsavedata.HasCrowdfunder = nil
                 end
+                SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_GUN_SWAP)
                 data.WarpZone_unsavedata.lastFrameSwitched = game:GetFrameCount()
                 player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS)
                 player:EvaluateItems()

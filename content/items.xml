@@ -36,7 +36,7 @@
     <active id="35" gfx="Collectibles_32_Gravity.png" name="Gravity" description="Reusable flip" quality="2" chargetype = "timed" maxcharges = "600"/>
     <familiar id="36" gfx="Collectibles_33_Johnnys_Knives.png" name="Johnny's Knives" description="I need you to keep bleeding..." quality="3" devilprice="2" tags="summonable monstermanual"/>
     <familiar id="37" gfx="Collectibles_34_Ser_Junkan.png" name="Ser Junkan" description="He's a scrappy little fella!" quality="3" tags="summonable monstermanual"/>
-    <familiar id="38" gfx="Collectibles_35_Crowdfunder.png" name="The Crowdfunder" description="Pump 'em full of gold!" quality="2"/>
+    <familiar id="38" gfx="Collectibles_35_Crowdfunder.png" name="The Crowdfunder" description="Pump 'em full of gold!" quality="2" coins = "10"/>
     
     <active id="39" gfx="Collectibles_26_Test_Active.png" name="Test Active" description="Diddle me lucky charms..." quality="0" maxcharges = "0"/>
 

@@ -14,4 +14,7 @@
     <sound name="MurderKillSnd">
         <sample weight="1" path="Impostor_Kill.wav" />
     </sound>
+    <sound name="GunSwap">
+        <sample weight="1" path="gunreload.wav" />
+    </sound>
 </sounds>
