@@ -1743,7 +1743,7 @@ function WarpZone:OnGameStart(isSave)
 
     if not isSave then
         saveData = json.decode(WarpZone:LoadData())
-        preservedItems = saveData[8]--this persists across games
+        preservedItems = saveData.preservedItems--this persists across games
 
         saveData = {}
         DoorwayFloor = -1
@@ -4488,20 +4488,12 @@ function WarpZone:UseAmberChunk(card, player, useflags)
     if preservedItems == nil then
         preservedItems = {}
     end
-    for k, v in pairs(preservedItems) do
-        Isaac.Spawn(EntityType.ENTITY_PICKUP,
-           v.Variant,
-           v.SubType,
-           game:GetRoom():FindFreePickupSpawnPosition(player.Position),
-           Vector(0, 0),
-           nil)
-        tableContains(preservedItems, v, true)
-
-    end
+    local preserveSwitch = TabDeepCopy(preservedItems)
+    
     while next (preservedItems) do
         preservedItems[next(preservedItems)]=nil
     end
-    for i, entity in ipairs(entities) do --this shouldn't actually work but it seems to work anyway. i'm not gonna touch it
+    for i, entity in ipairs(entities) do --somehow it isn't working anymore. time to pay the piper
         if entity.Variant <= 90 or
         entity.Variant == PickupVariant.PICKUP_REDCHEST
         or entity.Variant == PickupVariant.PICKUP_TRINKET
@@ -4518,12 +4510,24 @@ function WarpZone:UseAmberChunk(card, player, useflags)
 
         end
     end
-    Isaac.Spawn(EntityType.ENTITY_PICKUP,
-           PickupVariant.PICKUP_COIN,
-           CoinSubType.COIN_LUCKYPENNY,
+
+    for k, v in pairs(preserveSwitch) do
+        Isaac.Spawn(EntityType.ENTITY_PICKUP,
+           v.Variant,
+           v.SubType,
            game:GetRoom():FindFreePickupSpawnPosition(player.Position),
            Vector(0, 0),
            nil)
+    end
+
+    if #preserveSwitch == 0 then
+        Isaac.Spawn(EntityType.ENTITY_PICKUP,
+            PickupVariant.PICKUP_COIN,
+            CoinSubType.COIN_LUCKYPENNY,
+            game:GetRoom():FindFreePickupSpawnPosition(player.Position),
+            Vector(0, 0),
+            nil)
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseAmberChunk, WarpZone.WarpZoneTypes.CARD_AMBER_CHUNK)
 
