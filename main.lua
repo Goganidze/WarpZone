@@ -851,6 +851,58 @@ local function findGridEntityResponse(position, player)
                 active = CollectibleType.COLLECTIBLE_RED_CANDLE,
                 typevar = tostring(entity.Type) .. "~~" .. tostring(entity.Variant)
             }
+        elseif entity.Type == EntityType.ENTITY_PLAYER then
+            t = {
+                blurb = "YOU IS YOU",
+                position = entity.Position,
+                active = CollectibleType.COLLECTIBLE_ISAACS_TEARS,
+                typevar = tostring(entity.Type) .. "~~" .. tostring(entity.Variant)
+            }
+        elseif entity.Type == EntityType.ENTITY_SLOT then
+            local va = entity.Variant
+            if va == 4 or va == 5 or va == 6 or va == 7 or va == 9 or va == 13 or va == 15 or va == 18 then
+                t = {
+                    blurb = "FRIEND IS YOU",
+                    position = entity.Position,
+                    active = CollectibleType.COLLECTIBLE_BEST_FRIEND,
+                    typevar = tostring(entity.Type) .. "~~" .. tostring(entity.Variant)
+                }
+            elseif va == 2 then
+                t = {
+                    blurb = "BLOOD IS YOU",
+                    position = entity.Position,
+                    active = CollectibleType.COLLECTIBLE_IV_BAG,
+                    typevar = tostring(entity.Type) .. "~~" .. tostring(entity.Variant)
+                }
+            elseif va == 10 then
+                t = {
+                    blurb = "REROLL IS YOU",
+                    position = entity.Position,
+                    active = CollectibleType.COLLECTIBLE_ETERNAL_D6,
+                    typevar = tostring(entity.Type) .. "~~" .. tostring(entity.Variant)
+                }
+            elseif va == 3 then 
+                t = {
+                    blurb = "FORTUNE IS YOU",
+                    position = entity.Position,
+                    active = CollectibleType.COLLECTIBLE_FORTUNE_COOKIE,
+                    typevar = tostring(entity.Type) .. "~~" .. tostring(entity.Variant)
+                }
+            else
+                t = {
+                    blurb = "GAMBLE IS YOU",
+                    position = entity.Position,
+                    active = CollectibleType.COLLECTIBLE_PORTABLE_SLOT,
+                    typevar = tostring(entity.Type) .. "~~" .. tostring(entity.Variant)
+                }
+            end
+        elseif entity:IsActiveEnemy() then
+            t = {
+                blurb = "SCARY IS YOU",
+                position = entity.Position,
+                active = CollectibleType.COLLECTIBLE_MOMS_PAD,
+                typevar = tostring(entity.Type) .. "~~" .. tostring(entity.Variant)
+            }
         end
         if t then
             t.distance = math.abs((position - t.position):LengthSquared())
