@@ -4127,12 +4127,7 @@ function WarpZone:UseWitchCube(card, player, useflags)
         end
     else
         player:UseActiveItem(CollectibleType.COLLECTIBLE_BEAN, false, false, true, false, -1, 0)
-        Isaac.Spawn(EntityType.ENTITY_PICKUP,
-            PickupVariant.PICKUP_TAROTCARD,
-            WarpZone.WarpZoneTypes.CARD_WITCH_CUBE,
-            game:GetRoom():FindFreePickupSpawnPosition(player.Position),
-            Vector(0,0),
-            nil)
+        player:AddCard(WarpZone.WarpZoneTypes.CARD_WITCH_CUBE)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseWitchCube, WarpZone.WarpZoneTypes.CARD_WITCH_CUBE)
