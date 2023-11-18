@@ -4834,3 +4834,16 @@ function WarpZone:update_crowdfunder(fam)
 end
 WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_crowdfunder, CrowdfunderVar)
 
+function WarpZone:test_command(cmd, args)
+    if cmd == "printactivecharge" then
+        local player = Isaac.GetPlayer(0)
+        print(tostring(player:GetActiveCharge()))
+    end
+    if cmd == "chargeup" then
+        local player = Isaac.GetPlayer(0)
+        local charge = player:GetActiveCharge()
+        player:SetActiveCharge(charge+1)
+        print(tostring(player:GetActiveCharge()))
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_EXECUTE_CMD, WarpZone.test_command)
