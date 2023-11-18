@@ -38,8 +38,6 @@
     <familiar id="37" gfx="Collectibles_34_Ser_Junkan.png" name="Ser Junkan" description="He's a scrappy little fella!" quality="3" tags="summonable monstermanual"/>
     <familiar id="38" gfx="Collectibles_35_Crowdfunder.png" name="The Crowdfunder" description="Pump 'em full of gold!" quality="2" coins = "10"/>
     
-    <active id="39" gfx="Collectibles_26_Test_Active.png" name="Test Active" description="Diddle me lucky charms..." quality="0" maxcharges = "0"/>
-
     <trinket name="Ring of the Snake" description="Starting hand +2" gfx="Trinket_01_RingSnake.png" />
     <trinket name="Hunky Boys" description="You don't care for them...but do they?" gfx="Trinket_02_HunkyBoys.png" />
     <trinket name="Bible Thump" description="God has no mercy" gfx="Trinket_03_BibleThump.png" />

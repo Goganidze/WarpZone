@@ -302,7 +302,6 @@ WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP = Isaac.GetItemIdByName("Pop Pop")
 WarpZone.WarpZoneTypes.COLLECTIBLE_FOOTBALL = Isaac.GetItemIdByName("Football")
 WarpZone.WarpZoneTypes.COLLECTIBLE_BALL_OF_TUMORS = Isaac.GetItemIdByName("Ball of Tumors")
 WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW = Isaac.GetItemIdByName("Bow and Arrow")
-WarpZone.WarpZoneTypes.COLLECTIBLE_TEST_ACTIVE = Isaac.GetItemIdByName("Test Active")
 WarpZone.WarpZoneTypes.COLLECTIBLE_EMERGENCY_MEETING = Isaac.GetItemIdByName("Emergency Meeting")
 WarpZone.WarpZoneTypes.COLLECTIBLE_BOXING_GLOVE = Isaac.GetItemIdByName("Boxing Glove")
 WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY = Isaac.GetItemIdByName("Gravity")
@@ -4085,32 +4084,6 @@ function WarpZone:FootballCollide(familiar, collider, low)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.FootballCollide, FamiliarVariant.CUBE_BABY)
-
-function WarpZone:FindEffects(collectible, rng, entityplayer, useflags, activeslot, customvardata)
-    local entities = Isaac.GetRoomEntities()
-    local debbug = ""
-    for i, entity_pos in ipairs(entities) do
-        if entity_pos.Type == EntityType.ENTITY_LARRYJR then
-            debbug = tostring(entity_pos.Variant) .. "-" .. tostring(entity_pos.Position) .. " --  " ..  tostring(entity_pos.Parent.Position)
-            print(debbug)
-        end
-    end
-
-    local room = game:GetRoom()
-    for i=1, room:GetGridSize() do
-        local ge = room:GetGridEntity(i)
-        if ge and ge:GetType() == GridEntityType.GRID_TRAPDOOR then
-            --print(ge:GetGridIndex())
-        end
-
-    end
-    return {
-        Discharge = false,
-        Remove = false,
-        ShowAnim = true
-    }
-end
-WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.FindEffects, WarpZone.WarpZoneTypes.COLLECTIBLE_TEST_ACTIVE)
 
 
 function WarpZone:DisableCreep(entity)
