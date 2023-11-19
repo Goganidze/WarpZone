@@ -29,14 +29,14 @@
     <passive id="28" gfx="Collectibles_25_Hitops.png" name="Hitops" description="Speed up" quality="2" cache = "speed" tags="summonable"/>
     <passive id="29" gfx="Collectibles_26_Pop_Pop.png" name="Pop Pop" description="Double tap burst" quality="2" tags="summonable"/>
     <familiar id="30" gfx="Collectibles_27_Football.png" name="Football" description="Let's toss the ball around" quality="1" tags="summonable"/>
-    <familiar id="31" gfx="Collectibles_28_Ball_Of_Tumors.png" name="Ball of Tumors" description="Collect 'em all!" quality="2"tags="summonable"/>
+    <familiar id="31" gfx="Collectibles_28_Ball_Of_Tumors.png" name="Ball of Tumors" description="Collect 'em all!" quality="2" tags="summonable"/>
     <passive id="32" gfx="Collectibles_29_Bow_And_Arrow.png" name="Bow and Arrow" description="Not much in the quiver..." quality="2" tags="summonable"/>
     <active id="33" gfx="Collectibles_30_Emergency_Meeting.png" name="Emergency Meeting" description="Everyone back to base!" quality="0" maxcharges = "3"/>
     <passive id="34" gfx="Collectibles_31_Boxing_Glove.png" name="Boxing Glove" description="Risk of pain" quality="2" tags="summonable"/>
     <active id="35" gfx="Collectibles_32_Gravity.png" name="Gravity" description="Reusable flip" quality="2" chargetype = "timed" maxcharges = "600"/>
     <familiar id="36" gfx="Collectibles_33_Johnnys_Knives.png" name="Johnny's Knives" description="I need you to keep bleeding..." quality="3" devilprice="2" tags="summonable monstermanual"/>
     <familiar id="37" gfx="Collectibles_34_Ser_Junkan.png" name="Ser Junkan" description="He's a scrappy little fella!" quality="3" tags="summonable monstermanual"/>
-    <familiar id="38" gfx="Collectibles_35_Crowdfunder.png" name="The Crowdfunder" description="Pump 'em full of gold!" quality="2" coins = "10"/>
+    <active id="38" gfx="Collectibles_35_Crowdfunder.png" name="The Crowdfunder" description="Pump 'em full of gold!" quality="2" coins = "10" maxcharges = "0" persistent="true" cleareffectsonremove = "true"/>
     <active	id="39" gfx="Collectibles_2_Past_Killer_2x.png" name=" Gun that can kill the Past " description="Leave your past behind" maxcharges = "0" quality="2"/>
     <active	id="40" gfx="Collectibles_2_Past_Killer_1x.png" name="  Gun that can kill the Past  " description="Leave your past behind" maxcharges = "0" quality="2"/>
     
