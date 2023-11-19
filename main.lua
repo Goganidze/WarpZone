@@ -340,6 +340,8 @@ WarpZone.WarpZoneTypes.SOUND_GUN_SWAP = Isaac.GetSoundIdByName("GunSwap")
 
 WarpZone.WarpZoneTypes.COSTUME_DIOGENES_ON = Isaac.GetCostumeIdByPath("gfx/characters/DiogenesPotCostume.anm2")
 
+WarpZone.WarpZoneTypes.CHALLENGE_GETTING_UNDER_IT = Isaac.GetChallengeIdByName("Getting Under It")
+
 --external item descriptions
 if EID then
 	EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL, "#The player has a 50% chance of receiving a fading nickel when a room is cleared#Getting damage causes the player to lose half their money, dropping some of it on the ground as fading {{Coin}} coins.#When the player is holding money, damage is always 1 full heart {{Heart}}", "Golden Idol", "en_us")
@@ -1898,6 +1900,9 @@ function WarpZone:multiPlayerInit(player)
             end
         end
     --end
+    if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_GETTING_UNDER_IT then
+        player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE)
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, WarpZone.multiPlayerInit)
 
@@ -2482,6 +2487,14 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
         return true
     end
 
+    local item_config = Isaac.GetItemConfig():GetCollectible(entity.SubType)
+    if item_config and entity.Type == EntityType.ENTITY_PICKUP and
+    entity.Variant == PickupVariant.PICKUP_COLLECTIBLE
+    and Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_GETTING_UNDER_IT
+    and item_config.Type == ItemType.ITEM_ACTIVE then
+        return false
+    end
+
     if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant == PickupVariant.PICKUP_COLLECTIBLE) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_TONY) then
         --local dmg_config = Isaac.GetItemConfig():GetCollectible(entity.SubType)
         if entity.SubType ~= 0 and data.WarpZone_data.tonyBuff > 1 and entity:GetData().collected ~= true then -- and (dmg_config.CacheFlags & CacheFlag.CACHE_DAMAGE == CacheFlag.CACHE_DAMAGE)
@@ -2824,6 +2837,10 @@ function WarpZone:postPlayerUpdate(player)
         end
     end
     
+    if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_GETTING_UNDER_IT and
+    not player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE) then
+        player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE)
+    end
     --[[if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
         and data.WarpZone_unsavedata
         and data.WarpZone_unsavedata.HasCrowdfunder ~= nil
@@ -3293,7 +3310,7 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, WarpZone.updateTear)
 
 function WarpZone:dropArrow(entity)
     local data = entity:GetData()
-    if data.WarpZone_data and data.WarpZone_data.BowArrowPiercing and data.WarpZone_data.BowArrowPiercing > 0 then
+    if data and data.WarpZone_data and data.WarpZone_data.BowArrowPiercing and data.WarpZone_data.BowArrowPiercing > 0 then
         if game:GetRoom():GetFrameCount() == 0 then
             local player = entity.SpawnerEntity
             if player and player:ToPlayer() ~= nil then
@@ -3492,8 +3509,12 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseDiogenes, WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT)
 
 function WarpZone:SheathDiogenes(collectible, rng, entityplayer, useflags, activeslot, customvardata)
-    swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT, ActiveSlot.SLOT_PRIMARY, entityplayer, 0)
-    SfxManager:Play(SoundEffect.SOUND_URN_CLOSE)
+    if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_GETTING_UNDER_IT then
+        SfxManager:Play(SoundEffect.SOUND_BOSS2INTRO_ERRORBUZZ)
+    else
+        swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT, ActiveSlot.SLOT_PRIMARY, entityplayer, 0)
+        SfxManager:Play(SoundEffect.SOUND_URN_CLOSE)
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.SheathDiogenes, WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE)
 
@@ -4708,6 +4729,7 @@ function WarpZone:useGravity(collectible, rng, player, useflags, activeslot, cus
     data.gravReticle.Color = Color(0.392, 0.917, 0.509, .5, 0, 0, 0)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.useGravity, WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY)
+
 
 
 --extra files and translation
