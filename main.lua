@@ -341,6 +341,9 @@ WarpZone.WarpZoneTypes.SOUND_GUN_SWAP = Isaac.GetSoundIdByName("GunSwap")
 WarpZone.WarpZoneTypes.COSTUME_DIOGENES_ON = Isaac.GetCostumeIdByPath("gfx/characters/DiogenesPotCostume.anm2")
 
 WarpZone.WarpZoneTypes.CHALLENGE_GETTING_UNDER_IT = Isaac.GetChallengeIdByName("Getting Under It")
+WarpZone.WarpZoneTypes.CHALLENGE_HOLE_IN_MY_POCKET = Isaac.GetChallengeIdByName("Hole In My Pocket")
+WarpZone.WarpZoneTypes.CHALLENGE_CHAMPIONSHIP = Isaac.GetChallengeIdByName("Championship")
+WarpZone.WarpZoneTypes.CHALLENGE_CURSE_OF_THE_LOSS = Isaac.GetChallengeIdByName("Curse Of The Loss")
 
 --external item descriptions
 if EID then
@@ -1902,6 +1905,16 @@ function WarpZone:multiPlayerInit(player)
     --end
     if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_GETTING_UNDER_IT then
         player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE)
+    end
+    if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_HOLE_IN_MY_POCKET then
+        player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL)
+    end
+    if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_CHAMPIONSHIP then
+        player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_STRANGE_MARBLE)
+        player:UseActiveItem(CollectibleType.COLLECTIBLE_SMELTER)
+    end
+    if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_CURSE_OF_THE_LOSS then
+        player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, WarpZone.multiPlayerInit)

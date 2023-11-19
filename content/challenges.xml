@@ -1,3 +1,6 @@
 <challenges version="1">
     <challenge playertype="0" name="Getting Under It" endstage="11" startingitems="67" roomfilter="0" cursefilter="0" canshoot="true" difficulty = "1"/>
+    <challenge playertype="0" name="Hole In My Pocket" endstage="11" startingitems="109,501" roomfilter="4" cursefilter="0" canshoot="true" difficulty = "0"/>
+    <challenge playertype="0" name="Championship" endstage="11" altpath = "true" startingitems="208,709" startingtrinkets="5" roomfilter="4" cursefilter="0" canshoot="true" difficulty = "1" megasatan = "true"/>
+    <challenge playertype="21" name="Curse Of The Loss" endstage="11" altpath = "true" startingitems="723" roomfilter="0" cursefilter="0" canshoot="true" difficulty = "0"/>
 </challenges>
