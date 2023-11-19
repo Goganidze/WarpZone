@@ -63,6 +63,7 @@ defaultData.WarpZone_unsavedata = {
     arrowTimeLeft = 0,
     arrowTimeRight = 0,
 }
+defaultData.dioCostumeEquipped = false
 
 
 local function TabDeepCopy(tbl)
@@ -335,6 +336,9 @@ WarpZone.WarpZoneTypes.SOUND_EMERGENCY_MEETING = Isaac.GetSoundIdByName("Emergen
 WarpZone.WarpZoneTypes.SOUND_MURDER_STING = Isaac.GetSoundIdByName("MurderSting")
 WarpZone.WarpZoneTypes.SOUND_MURDER_KILL = Isaac.GetSoundIdByName("MurderKillSnd")
 WarpZone.WarpZoneTypes.SOUND_GUN_SWAP = Isaac.GetSoundIdByName("GunSwap")
+
+
+WarpZone.WarpZoneTypes.COSTUME_DIOGENES_ON = Isaac.GetCostumeIdByPath("gfx/characters/DiogenesPotCostume.anm2")
 
 --external item descriptions
 if EID then
@@ -2831,6 +2835,17 @@ function WarpZone:postPlayerUpdate(player)
         end
         player.FireDelay = 1
     end
+    if data.WarpZone_data then
+        if data.WarpZone_data.dioCostumeEquipped == true
+        and not player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE) then
+            data.WarpZone_data.dioCostumeEquipped = nil
+            player:TryRemoveNullCostume(WarpZone.WarpZoneTypes.COSTUME_DIOGENES_ON)
+        elseif data.WarpZone_data.dioCostumeEquipped ~= true
+        and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE) then
+            data.WarpZone_data.dioCostumeEquipped = true
+            player:AddNullCostume(WarpZone.WarpZoneTypes.COSTUME_DIOGENES_ON)
+        end
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpdate, 0)
 
@@ -4926,6 +4941,9 @@ function WarpZone:test_command(cmd, args)
         else
             print("False...")
         end
+    end
+    if cmd == "printthis" then
+        print(WarpZone.WarpZoneTypes.COSTUME_DIOGENES_ON)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_EXECUTE_CMD, WarpZone.test_command)
