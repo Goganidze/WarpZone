@@ -528,7 +528,7 @@ function WarpZone:refreshItemsTaken()
         local data = player:GetData()
         if data.WarpZone_data and data.WarpZone_data.LastTotalItems ~= player:GetCollectibleCount() then
             data.WarpZone_data.LastTotalItems = player:GetCollectibleCount()
-            local itemConfig = Isaac:GetItemConfig()
+            local itemConfig = Isaac.GetItemConfig()
             for itemID=1, itemConfig:GetCollectibles().Size-1 do
                 local item = itemConfig:GetCollectible(itemID)
                 local pool = game:GetItemPool():GetLastPool()
@@ -4011,10 +4011,17 @@ function WarpZone:BeggarUpdate()
         if beggar:GetSprite():IsEventTriggered("Prize") then
 			local prizepos = game:GetRoom():FindFreePickupSpawnPosition(beggar.Position)
             local pickup_num
-
+            local item_config = Isaac.GetItemConfig()
             for i = 1, 10000 do
-                pickup_num = myRNG:RandomInt(733)
-                if Isaac.GetItemConfig():GetCollectible(pickup_num) and Isaac.GetItemConfig():GetCollectible(pickup_num).Type == ItemType.ITEM_ACTIVE  and not (pickup_num >= 550 and pickup_num <= 552) and pickup_num ~= 714 and pickup_num ~= 715 then
+                pickup_num = myRNG:RandomInt(item_config:GetCollectibles().Size-1)
+                if item_config:GetCollectible(pickup_num) and item_config:GetCollectible(pickup_num).Type == ItemType.ITEM_ACTIVE and item_config:GetCollectible(pickup_num):IsAvailable() 
+                and not (pickup_num >= 550 and pickup_num <= 552) and pickup_num ~= 714 and pickup_num ~= 715 
+                and pickup_num ~= WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS
+                and pickup_num ~= WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_2 
+                and pickup_num ~= WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_3
+                and pickup_num ~= WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE
+                and pickup_num ~= WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_1x
+                and pickup_num ~= WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_2x then
                     break
                 end
             end
@@ -4911,15 +4918,15 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_crowdfunder, CrowdfunderVar)
 
 function WarpZone:test_command(cmd, args)
-    if cmd == "printactivecharge" then
+    if cmd == "availability" then
         local player = Isaac.GetPlayer(0)
-        print(tostring(player:GetActiveCharge()))
-    end
-    if cmd == "chargeup" then
-        local player = Isaac.GetPlayer(0)
-        local charge = player:GetActiveCharge()
-        player:SetActiveCharge(charge+1)
-        print(tostring(player:GetActiveCharge()))
+        local config = Isaac.GetItemConfig()
+        local itemnum = tonumber(args)
+        if config:GetCollectible(itemnum):IsAvailable() == true then
+            print("True!")
+        else
+            print("False...")
+        end
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_EXECUTE_CMD, WarpZone.test_command)
