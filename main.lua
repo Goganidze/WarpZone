@@ -114,7 +114,7 @@ DSSInitializerFunction(WarpZone)
 -----------------------------------
 
 --pastkiller
-local pickupindex = RNG():RandomInt(10000) + 10000 --this makes it like a 1 in 10,000 chance there's any collision with existing pedestals
+local pickupindex = 10000 --this makes it like a 1 in 10,000 chance there's any collision with existing pedestals
 local itemPool = game:GetItemPool()
 
 
@@ -493,9 +493,10 @@ local function getVectorFromDirection(dir)
     end
 end
 
-local function RandomFloatRange(greater)
+---@param rng RNG
+local function RandomFloatRange(greater, rng)
     local lower = 0
-    return lower + math.random()  * (greater - lower);
+    return lower + rng:RandomFloat()  * (greater - lower);
 end
 
 local function tableContains(table_, value, removeValue)
@@ -572,6 +573,10 @@ function WarpZone:GetPtrHashEntity(entity)
         end
     end
     return nil
+end
+
+local function Random()
+    error("Attempting to set RNG object to a random number. Use correct methods for this, e.g. GetCollectibleRNG",2)
 end
 
 function WarpZone:GetPlayerFromTear(tear)
@@ -1377,7 +1382,7 @@ function WarpZone:postRender(player)
             end
         end
 
-    if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
+    --[[if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
         and Input.IsActionTriggered(ButtonAction.ACTION_DROP, controllerid) then
            if not data.WarpZone_unsavedata then
                 data.WarpZone_unsavedata = {}
@@ -1393,10 +1398,10 @@ function WarpZone:postRender(player)
                 player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS)
                 player:EvaluateItems()
            end
-    end
+    end]]
     
 
-        if player and WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS == player:GetActiveItem() 
+    if player and WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS == player:GetActiveItem() 
         and data.primeShot ~= nil and (Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, controllerid) or
         Input.IsActionPressed(ButtonAction.ACTION_SHOOTDOWN, controllerid) or
         Input.IsActionPressed(ButtonAction.ACTION_SHOOTLEFT, controllerid) or
@@ -1409,7 +1414,7 @@ function WarpZone:postRender(player)
             data.primeShot = nil
             tear:GetData().FocusShot = true
             tear:GetData().FocusIndicator = true
-        end
+    end
 
         
     end
@@ -1546,12 +1551,13 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
     if player == nil then
         return
     end
+    local data = player:GetData()
     
-    if game:GetFrameCount() - isNil(player:GetData().MurderFrame, -999) < 15 then
+    if game:GetFrameCount() - isNil(data.MurderFrame, -999) < 15 then
         return false
     end
 
-    if game:GetFrameCount() - isNil(player:GetData().InGravityState, -999) < 150 then
+    if game:GetFrameCount() - isNil(data.InGravityState, -999) < 150 then
         return false
     end
 
@@ -1650,8 +1656,8 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
         end
     end]]
 
-    if player:GetNumCoins() > 0 and player:GetData().inIdolDamage ~= true and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
-        player:GetData().inIdolDamage = true
+    if player:GetNumCoins() > 0 and data.inIdolDamage ~= true and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
+        data.inIdolDamage = true
         if amount == 1 then
             player:TakeDamage(amount, damageflags, source, countdownframes)
         end
@@ -1660,15 +1666,16 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
         player:AddCoins(-coinsToLose)
 
         local coinsToDrop = math.floor(coinsToLose/2)
+        local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL)
         
         for i = 1, coinsToDrop do
-            local vel = RandomVector() * (RandomFloatRange(0.5) + 0.5) * 16.0
+            local vel = RandomVector() * (RandomFloatRange(0.5,rng) + 0.5) * 16.0
             local coin = Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_COIN, CoinSubType.COIN_PENNY, player.Position, vel, player):ToPickup()
-            coin.Timeout = 45 + math.floor(RandomFloatRange(15))
+            coin.Timeout = 45 + math.floor(RandomFloatRange(15,rng))
             coin:GetSprite():SetFrame(math.floor(coinsToDrop - i))
         end
         
-        player:GetData().inIdolDamage = nil
+        data.inIdolDamage = nil
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.OnTakeHit, EntityType.ENTITY_PLAYER)
@@ -1869,6 +1876,8 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
 
 function WarpZone:multiPlayerInit(player)
+    myRNG:SetSeed(Isaac.GetPlayer().DropSeed, 35)
+
     local data = player:GetData()
     local numPlayers = game:GetNumPlayers()
     --if game:GetRoom():GetFrameCount() > 0 and numPlayers > 0 then
@@ -2565,6 +2574,7 @@ WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, WarpZone.EvaluateCache)
 function WarpZone:postPlayerUpdate(player)
     local data = player:GetData()
     local spr = player:GetSprite()
+    local effects = player:GetEffects()
 
     if data.WarpZone_unsavedata.fireGlove == true then
         WarpZone:fireGlove(player)
@@ -2581,7 +2591,7 @@ function WarpZone:postPlayerUpdate(player)
         player:AddCacheFlags(CacheFlag.CACHE_SPEED)
         player:EvaluateItems()
         spr.Color = Color(1, 1, 1, 1, 0, 0, 0)
-        player:GetEffects():RemoveCollectibleEffect(CollectibleType.COLLECTIBLE_LEO, 1)
+        effects:RemoveCollectibleEffect(CollectibleType.COLLECTIBLE_LEO, 1)
     end
 
     if game:GetFrameCount() - isNil(data.InGravityState, -999) == 8 or (player:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) and game:GetFrameCount() - isNil(data.InGravityState, -999) == -142) then
@@ -2724,7 +2734,7 @@ function WarpZone:postPlayerUpdate(player)
         WarpZone.GreedButtEffect(player, data, spr)
     end
     
-    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
+    --[[if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
         and data.WarpZone_unsavedata
         and data.WarpZone_unsavedata.HasCrowdfunder ~= nil
         and (Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, player.ControllerIndex) or
@@ -2755,7 +2765,9 @@ function WarpZone:postPlayerUpdate(player)
             
         end
         player.FireDelay = 1
-    end
+    end]]
+
+    WarpZone.Crowdfunder_PlayerUpdate(player, effects)
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpdate, 0)
 
@@ -3211,11 +3223,11 @@ function WarpZone:dropArrow(entity)
         end
     end
 
-    if entity:GetData().CrowdfunderShot == 2 then
+    if data.CrowdfunderShot == 2 then
         local rng = entity:GetDropRNG()
         if rng:RandomInt(2) == 1 then
             local coin = Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_COIN, CoinSubType.COIN_PENNY, entity.Position, entity.Velocity * 0.25, nil):ToPickup()
-            coin.Timeout = 75 + math.floor(RandomFloatRange(15))
+            coin.Timeout = 75 + math.floor(RandomFloatRange(15, rng))
             coin:GetSprite():SetFrame(1)
         end
     end
@@ -3225,16 +3237,18 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, WarpZone.dropArrow)
 
 function WarpZone:hitEnemy(entitytear, collider, low)
     local tear = entitytear:ToTear()
+    local data = entitytear:GetData()
 
-    if collider:IsEnemy() and tear:GetData().BleedIt == true then
+    if collider:IsEnemy() and data.BleedIt == true then
         collider:AddEntityFlags(EntityFlag.FLAG_BLEED_OUT)
     end
 
-    if entitytear:GetData().CrowdfunderShot == 2 then
-        entitytear:GetData().CrowdfunderShot = 1
+    if data.CrowdfunderShot == 2 then
+        data.CrowdfunderShot = 1
         local rng = entitytear:GetDropRNG()
         if collider:IsActiveEnemy() and not collider:IsBoss() and rng:RandomInt(3) == 1 then
-            collider:AddEntityFlags(EntityFlag.FLAG_MIDAS_FREEZE)
+            --collider:AddEntityFlags(EntityFlag.FLAG_MIDAS_FREEZE)
+            collider:AddMidasFreeze(EntityRef(tear), 30)
         end
 
     end
@@ -3361,8 +3375,7 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, WarpZone.OnFrame)
 function WarpZone:OnEntitySpawn(npc)
     local player = doesAnyoneHave(WarpZone.WarpZoneTypes.COLLECTIBLE_STRANGE_MARBLE, false)
     if player ~= nil then
-        local rng = RNG()
-        rng:SetSeed(Random(), 1)
+        local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_STRANGE_MARBLE)
         if not npc:IsChampion() and not npc:IsBoss() and rng:RandomInt(8) == 1 then
             npc:MakeChampion(rng:GetSeed())
         end
@@ -3542,22 +3555,24 @@ WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, update_orbital, Lollipop.V
 
 
 local function pre_orbital_collision(_, orbital, collider, low)
+    local daat = orbital:GetData()
 	if collider:IsVulnerableEnemy() then
         --if enemy_obj.HitPoints < enemy_obj.MaxHitPoints then
         --    collider:AddHealth(1)
         --end
-        if math.random(Lollipop.CHARM_CHANCE) == 1 then
+        local rng = orbital.Player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_LOLLIPOP)
+        if rng:RandomInt(Lollipop.CHARM_CHANCE) == 1 then
             collider:AddCharmed(EntityRef(orbital), Lollipop.CHARM_DURATION, true)
         end
 	elseif collider:ToProjectile() ~= nil then
-        if orbital:GetData().PopHP == nil then
-            orbital:GetData().PopHP = 6
+        if daat.PopHP == nil then
+            daat.PopHP = 6
         else
-            orbital:GetData().PopHP = orbital:GetData().PopHP-1
+            daat.PopHP = daat.PopHP-1
         end
 
         
-        if orbital:GetData().PopHP == 0 then
+        if daat.PopHP == 0 then
             local orbitalPosition = orbital.Position
             Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_HEART, 0, orbitalPosition, Vector(0, 0), orbital)
             local player = orbital.Player
@@ -3570,12 +3585,12 @@ local function pre_orbital_collision(_, orbital, collider, low)
             if player:HasCollectible(CollectibleType.COLLECTIBLE_BFFS) then
                 player:GetData().WarpZone_data.roomsSinceBreak = 4
             end
-        elseif orbital:GetData().PopHP < 2 then
+        elseif daat.PopHP < 2 then
             local sprite = orbital:GetSprite()
             sprite:Load("gfx/Lollipop_cracked_2.anm2",false)
 			sprite:LoadGraphics()
             sprite:Play("Float", true)
-        elseif orbital:GetData().PopHP < 4 then
+        elseif daat.PopHP < 4 then
             local sprite = orbital:GetSprite()
             sprite:Load("gfx/Lollipop_cracked.anm2",false)
 			sprite:LoadGraphics()
@@ -3592,11 +3607,13 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, pre_orbital_collisi
 ---@param cache_flag integer
 local function update_cache(_, player, cache_flag)
 	if cache_flag == CacheFlag.CACHE_FAMILIARS then
+        local daat = player:GetData()
+
 		local pop_pickups = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_LOLLIPOP)
 		local pop_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_LOLLIPOP)
 		player:CheckFamiliar(Lollipop.VARIANT, pop_pickups, pop_rng)
         
-        local tumor_count = player:GetData().WarpZone_data.playerTumors
+        local tumor_count = daat.WarpZone_data.playerTumors
         if tumor_count and game:GetFrameCount() > 1 then
             local smalltumors = 0
             local midtumors = 0
@@ -3614,15 +3631,16 @@ local function update_cache(_, player, cache_flag)
                 smalltumors = 1
             end
 
-            local myRNG1 = RNG()
-            myRNG1:SetSeed(Random(), 1)
-            local myRNG2 = RNG()
-            myRNG2:SetSeed(Random(), 1)
-            local myRNG3 = RNG()
-            myRNG3:SetSeed(Random(), 1)
-            player:CheckFamiliar(LargeTumor.VARIANT, largetumors, myRNG1)
-            player:CheckFamiliar(MidTumor.VARIANT, midtumors, myRNG2)
-            player:CheckFamiliar(SmallTumor.VARIANT, smalltumors, myRNG3)
+            --local myRNG1 = RNG()
+            --myRNG1:SetSeed(Random(), 1)
+            --local myRNG2 = RNG()
+            --myRNG2:SetSeed(Random(), 1)
+            --local myRNG3 = RNG()
+            --myRNG3:SetSeed(Random(), 1)
+            local tumorRNG = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_BALL_OF_TUMORS)
+            player:CheckFamiliar(LargeTumor.VARIANT, largetumors, tumorRNG)
+            player:CheckFamiliar(MidTumor.VARIANT, midtumors, tumorRNG)
+            player:CheckFamiliar(SmallTumor.VARIANT, smalltumors, tumorRNG)
         end
 
         local ball_pickups = player:GetCollectibleNum(WarpZone.FOOTBALL.ITEM) --CollectibleType.COLLECTIBLE_FOOTBALL
@@ -3645,28 +3663,28 @@ local function update_cache(_, player, cache_flag)
         local junkan_walk_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN)  --RNG()
         --junkan_walk_rng:SetSeed(Random(), 1)
 
-        local junk_count = isNil(player:GetData().WarpZone_data.GetJunkCollected, 0)
+        local junk_count = isNil(daat.WarpZone_data.GetJunkCollected, 0)
         local flyFamiliars = math.min(junkan_pickups, math.floor(junk_count/7))
         local walkFamiliars = junkan_pickups-flyFamiliars
         player:CheckFamiliar(SerJunkanFly, flyFamiliars, junkan_fly_rng)
         player:CheckFamiliar(SerJunkanWalk, walkFamiliars, junkan_walk_rng)
 
-        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
-        and player:GetData().WarpZone_unsavedata
-        and player:GetData().WarpZone_unsavedata.HasCrowdfunder ~= nil
+        --[[if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
+        and daat.WarpZone_unsavedata
+        and daat.WarpZone_unsavedata.HasCrowdfunder 
         then
-            local crowd_rng = RNG()
-            crowd_rng:SetSeed(Random(), 1)
+            local crowd_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
             player:CheckFamiliar(CrowdfunderVar, 1, crowd_rng)
         elseif player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
-            and player:GetData().WarpZone_unsavedata
-            and player:GetData().WarpZone_unsavedata.HasCrowdfunder == nil then
-            local crowd_rng = RNG()
-            crowd_rng:SetSeed(Random(), 1)
+            and daat.WarpZone_unsavedata
+            and not daat.WarpZone_unsavedata.HasCrowdfunder then
+            local crowd_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
             player:CheckFamiliar(CrowdfunderVar, 0, crowd_rng)
-        end
+        end]]
 
+        --WarpZone.Crowdfunder_EvaluateCache(_, player)
     end
+    WarpZone.Crowdfunder_EvaluateCache(_, player, cache_flag)
 end
 
 WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, update_cache)
@@ -4166,9 +4184,10 @@ function WarpZone:BibleKillSatanWrapper(card, player, useflags)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.BibleKillSatanWrapper, Card.CARD_REVERSE_DEVIL)
 
+---@param player EntityPlayer
 function WarpZone:UseWitchCube(card, player, useflags)
-    local witchRNG = RNG()
-    witchRNG:SetSeed(Random(), 1)
+    local witchRNG = player:GetCardRNG(card)
+    
     if witchRNG:RandomInt(100) > 50 then
         player:UseActiveItem(CollectibleType.COLLECTIBLE_NECRONOMICON, false, false, true, false, -1, 0)
         local entities = Isaac.GetRoomEntities()
@@ -4185,8 +4204,8 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseWitchCube, WarpZone.WarpZoneTypes.CARD_WITCH_CUBE)
 
 function WarpZone:UseLootCard(card, player, useflags)
-    local lootRNG = RNG()
-    lootRNG:SetSeed(Random(), 1)
+    local lootRNG = player:GetCardRNG(card)
+    
     local isTrinket = lootRNG:RandomInt(900) < 184
     if not isTrinket then
         local ranPool = lootRNG:RandomInt(ItemPoolType.NUM_ITEMPOOLS)
@@ -4211,8 +4230,8 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseLootCard, WarpZone.Wa
 function WarpZone:useCow(card, player, useflags)
     local entities = Isaac.FindByType(EntityType.ENTITY_PICKUP)
     local itemID = nil
-    local cowRNG =  RNG()
-    cowRNG:SetSeed(Random(), 1)
+    local cowRNG = player:GetCardRNG(card)
+    
     SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_COW_TRASH, 2)
     for i, entity in ipairs(entities) do
         if entity.Variant == PickupVariant.PICKUP_COLLECTIBLE then
@@ -4277,8 +4296,8 @@ function WarpZone:useBlank(card, player, useflags)
 			end
 		end
 	end
-    local blankRNG =  RNG()
-    blankRNG:SetSeed(Random(), 1)
+    local blankRNG = player:GetCardRNG(card)
+    
 	--Push enemies back
 	for _, entity in ipairs(Isaac.FindInRadius(center, radius * 3, EntityPartition.ENEMY)) do
 		if entity:IsActiveEnemy(false) and entity:IsVulnerableEnemy() then
@@ -4405,8 +4424,8 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_PLAYER_COLLISION, WarpZone.OnPlayerColl
 function WarpZone:FinishTransit(room)
     local spawnedEnemies= false
     --local isBossRoom = inTransit
-    local emergencyRNG =  RNG()
-    emergencyRNG:SetSeed(Random(), 1)
+    local emergencyRNG = RNG()
+    emergencyRNG:SetSeed(game:GetRoom():GetSpawnSeed(), 35)
     if inTransit == 2 then
         isBossEmergency = true
     end
@@ -4450,9 +4469,10 @@ function WarpZone:FinishTransit(room)
         room:SetClear(false)
     end
 
-    while next (enemiesToMove) do
-        enemiesToMove[next(enemiesToMove)]=nil
-    end
+    --while next (enemiesToMove) do
+    --    enemiesToMove[next(enemiesToMove)]=nil
+    --end
+    enemiesToMove = {}
     
     for i = 0, 7 do
         local door = room:GetDoor(i)
@@ -4468,8 +4488,8 @@ end
 function WarpZone:UseFiendFire(card, player, useflags)
     local data = player:GetData()
     local entities = Isaac.FindByType(EntityType.ENTITY_PICKUP)
-    local fireRng = RNG()
-    fireRng:SetSeed(Random(), 1)
+    local fireRng = player:GetCardRNG(card)
+    
     for i, entity in ipairs(entities) do
         if entity.Variant <= 90 or
         entity.Variant == PickupVariant.PICKUP_REDCHEST
@@ -4534,17 +4554,17 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseMurderCard, WarpZone.
 
 function WarpZone:UseAmberChunk(card, player, useflags)
     local entities = Isaac.FindByType(EntityType.ENTITY_PICKUP)
-    local amberRng = RNG()
-    amberRng:SetSeed(Random(), 1)
+    local amberRng = player:GetCardRNG(card)
 
     if preservedItems == nil then
         preservedItems = {}
     end
     local preserveSwitch = TabDeepCopy(preservedItems)
     
-    while next (preservedItems) do
-        preservedItems[next(preservedItems)]=nil
-    end
+    --while next (preservedItems) do
+    --    preservedItems[next(preservedItems)]=nil
+    --end
+    preservedItems = {}
     for i, entity in ipairs(entities) do --somehow it isn't working anymore. time to pay the piper
         if entity.Variant <= 90 or
         entity.Variant == PickupVariant.PICKUP_REDCHEST
@@ -4630,6 +4650,7 @@ local extrafiles = {
     "lua.johnnys_knives",
     "lua.ser_junkan",
     "lua.greed_butt",
+    "lua.crowdfunder",
 }
 for i=1,#extrafiles do
     local module = include(extrafiles[i])
@@ -4793,7 +4814,7 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_flying_junkan, SerJunkanFly)
 ]]
 
-local function crowdfundAnimation(degrees, fam, player)
+--[[local function crowdfundAnimation(degrees, fam, player)
     local prefix = "Shoot"
     local suffix = ""
 
@@ -4859,5 +4880,5 @@ function WarpZone:update_crowdfunder(fam)
 
     crowdfundAnimation(rotation:GetAngleDegrees(), fam, player)
 end
-WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_crowdfunder, CrowdfunderVar)
+WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_crowdfunder, CrowdfunderVar)]]
 
