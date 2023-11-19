@@ -259,12 +259,10 @@ return function (mod)
                                     if dist < 140 then
                                         pathshitter.CanJump = true
                                         pathshitter.NewTargetPos = fpos
-                                        --print("hhh")
                                         break
                                     end
                                     if dist > 60 and pathfinder:HasPathToPos(fpos, false) then
                                         pathshitter.NewTargetPos = fpos
-                                        --print("hhh2")
                                         break
                                     end
                                 end
@@ -296,7 +294,7 @@ return function (mod)
                                 pathshitter.Angle = 0
                                 pathshitter.FindDist = 30
                                 pathshitter.level = 0
-                                --print("c")
+                                
                             elseif dist < 50 then
                                 local power = math.min(10, math.max(0, pathshitter.NewTargetPos:Distance(fam.Position))/10 )
                                 fam.Velocity = fam.Velocity * 0.6 + (pathshitter.NewTargetPos-fam.Position):Resized(power) * 0.4
@@ -311,9 +309,7 @@ return function (mod)
                                 end
                             end
                         end
-                        --print("b")
                     else
-                        --print("a")
                         data.pathshitter.active = false
                         data.pathshitter.NewTargetPos = nil
                         pathfinder:FindGridPath(followPos, 1.1, 0, true)

@@ -62,7 +62,7 @@ return function(mod)
 	--стырено из ff
 	mod:AddCallback(ModCallbacks.MC_PRE_ENTITY_SPAWN, function(_, typ, var, subt, pos, vel, spawner, seed)
 		if typ == EntityType.ENTITY_BOMBDROP then
-			if not blockbombvars[var] then
+			if not blockbombvars[var] and var <= 20 then
 				if spawner then
 					local player = WarpZone.TryGetPlayer(spawner)
 	
