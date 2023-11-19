@@ -392,7 +392,7 @@ if EID then
     EID:addCard(WarpZone.WarpZoneTypes.CARD_BLANK, "Clears all enemy projectiles in the room.#Pushes nearby enemies away#There is one use left", "Blank", "en_us")
     EID:addCard(WarpZone.WarpZoneTypes.CARD_BLANK_2, "Clears all enemy projectiles in the room.#Pushes nearby enemies away#There are two uses left", "Blank", "en_us")
     EID:addCard(WarpZone.WarpZoneTypes.CARD_BLANK_3, "Clears all enemy projectiles in the room.#Pushes nearby enemies away#You can use this 3 times before it disappears", "Blank", "en_us")
-    EID:addCard(WarpZone.WarpZoneTypes.CARD_JESTER_CUBE, "On use, all {{Collectible}} items in the room will cycle between 6 additional choices, similar to {{Collectible[689]}} Glitched Crown", "Jester", "en_us")
+    EID:addCard(WarpZone.WarpZoneTypes.CARD_JESTER_CUBE, "On use, all {{Collectible}} items in the room will cycle between 6 additional choices, similar to Glitched Crown", "Jester", "en_us")
     EID:addCard(WarpZone.WarpZoneTypes.CARD_WITCH_CUBE, "50% chance to deal 40 damage to all enemies in the room and apply burn.#50% chance to spawn another Witch and fire off a poison fart", "Witch", "en_us")
     EID:addCard(WarpZone.WarpZoneTypes.CARD_MURDER, "For a quarter second, increase speed to 4 and kill everything you touch.#Gain a {{Stompy}} Stompy effect for the room", "Murder!", "en_us")
     EID:addCard(WarpZone.WarpZoneTypes.CARD_AMBER_CHUNK, "All pickups in the room, including {{Collectible}} items and the final chest at the end of the game, will be removed and saved.#The previous items you consumed in this way will respawn, even across games#You will also receive a {{Coin}} lucky penny", "Chunk of Amber", "en_us")
@@ -4260,7 +4260,6 @@ function WarpZone:UseLootCard(card, player, useflags)
             Vector(0,0),
             nil)
     end
-    
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseLootCard, WarpZone.WarpZoneTypes.CARD_LOOT_CARD)
 
