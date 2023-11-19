@@ -1929,7 +1929,7 @@ function WarpZone:LevelStart()
                 Isaac.Spawn(EntityType.ENTITY_PICKUP,
                             spawn_type,
                             0,
-                            game:GetRoom():FindFreePickupSpawnPosition(game:GetRoom():GetCenterPos()),
+                            game:GetRoom():FindFreePickupSpawnPosition(Vector(445, 235)),
                             Vector(0,0),
                             nil)
             end
@@ -1939,14 +1939,14 @@ function WarpZone:LevelStart()
             Isaac.Spawn(EntityType.ENTITY_PICKUP,
                             PickupVariant.PICKUP_TAROTCARD,
                             0,
-                            game:GetRoom():FindFreePickupSpawnPosition(game:GetRoom():GetCenterPos()),
+                            game:GetRoom():FindFreePickupSpawnPosition(Vector(445, 235)),
                             Vector(0,0),
                             nil)
 
             Isaac.Spawn(EntityType.ENTITY_PICKUP,
                             PickupVariant.PICKUP_TAROTCARD,
                             0,
-                            game:GetRoom():FindFreePickupSpawnPosition(game:GetRoom():GetCenterPos()),
+                            game:GetRoom():FindFreePickupSpawnPosition(Vector(445, 235)),
                             Vector(0,0),
                             nil)
         end
