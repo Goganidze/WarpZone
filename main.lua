@@ -272,6 +272,8 @@ WarpZone.WarpZoneTypes = {}
 
 WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL = Isaac.GetItemIdByName("Golden Idol")
 WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER = Isaac.GetItemIdByName("Gun that can kill the Past")
+WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_2x = Isaac.GetItemIdByName(" Gun that can kill the Past ")
+WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_1x = Isaac.GetItemIdByName("  Gun that can kill the Past  ")
 WarpZone.WarpZoneTypes.COLLECTIBLE_BIRTHDAY_CAKE = Isaac.GetItemIdByName("Birthday Cake")
 WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON = Isaac.GetItemIdByName("Rusty Spoon")
 WarpZone.WarpZoneTypes.COLLECTIBLE_NEWGROUNDS_TANK = Isaac.GetItemIdByName("Newgrounds Tank")
@@ -302,7 +304,6 @@ WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP = Isaac.GetItemIdByName("Pop Pop")
 WarpZone.WarpZoneTypes.COLLECTIBLE_FOOTBALL = Isaac.GetItemIdByName("Football")
 WarpZone.WarpZoneTypes.COLLECTIBLE_BALL_OF_TUMORS = Isaac.GetItemIdByName("Ball of Tumors")
 WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW = Isaac.GetItemIdByName("Bow and Arrow")
-WarpZone.WarpZoneTypes.COLLECTIBLE_TEST_ACTIVE = Isaac.GetItemIdByName("Test Active")
 WarpZone.WarpZoneTypes.COLLECTIBLE_EMERGENCY_MEETING = Isaac.GetItemIdByName("Emergency Meeting")
 WarpZone.WarpZoneTypes.COLLECTIBLE_BOXING_GLOVE = Isaac.GetItemIdByName("Boxing Glove")
 WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY = Isaac.GetItemIdByName("Gravity")
@@ -339,6 +340,8 @@ WarpZone.WarpZoneTypes.SOUND_GUN_SWAP = Isaac.GetSoundIdByName("GunSwap")
 if EID then
 	EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL, "#The player has a 50% chance of receiving a fading nickel when a room is cleared#Getting damage causes the player to lose half their money, dropping some of it on the ground as fading {{Coin}} coins.#When the player is holding money, damage is always 1 full heart {{Heart}}", "Golden Idol", "en_us")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER, "#Removes the first 3 {{Collectible}}items from your inventory, including quest items like the Key Pieces#3 sets of 3 choice pedestals appear#The new {{Collectible}}items are from the same pools as the ones you lost", "Gun that can Kill the Past", "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_2x, "#Removes the first 3 {{Collectible}}items from your inventory, including quest items like the Key Pieces#3 sets of 3 choice pedestals appear#The new {{Collectible}}items are from the same pools as the ones you lost", "Gun that can Kill the Past", "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_1x, "#Removes the first 3 {{Collectible}}items from your inventory, including quest items like the Key Pieces#3 sets of 3 choice pedestals appear#The new {{Collectible}}items are from the same pools as the ones you lost", "Gun that can Kill the Past", "en_us")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BIRTHDAY_CAKE, "{{Heart}} +1 HP#A random consumable and pickups of each type now spawn at the start of a floor#When the player holds Binge Eater,{{Speed}} -0.03 Speed and {{Tears}} +0.5 Tears", "Birthday Cake", "en_us")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON, "#10% chance to fire a homing tear that inflicts {{BleedingOut}}bleed#100% chance at 18 {{Luck}}Luck", "Rusty Spoon", "en_us")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NEWGROUNDS_TANK, "{{Speed}}-0.3 Speed#{{Tears}}+0.27 Tears#{{Damage}}+0.5 Damage#{{Range}}+1 Range#{{Shotspeed}}+0.16 Shot Speed#{{Luck}}+1 Luck#On taking a hit, the player has a 10% chance to shield from damage", "Newgrounds Tank", "en_us")
@@ -389,7 +392,7 @@ if EID then
     EID:addCard(WarpZone.WarpZoneTypes.CARD_BLANK, "Clears all enemy projectiles in the room.#Pushes nearby enemies away#There is one use left", "Blank", "en_us")
     EID:addCard(WarpZone.WarpZoneTypes.CARD_BLANK_2, "Clears all enemy projectiles in the room.#Pushes nearby enemies away#There are two uses left", "Blank", "en_us")
     EID:addCard(WarpZone.WarpZoneTypes.CARD_BLANK_3, "Clears all enemy projectiles in the room.#Pushes nearby enemies away#You can use this 3 times before it disappears", "Blank", "en_us")
-    EID:addCard(WarpZone.WarpZoneTypes.CARD_JESTER_CUBE, "On use, all {{Collectible}} items in the room will cycle between 6 additional choices, similar to {{Collectible[689]}} Glitched Crown", "Jester", "en_us")
+    EID:addCard(WarpZone.WarpZoneTypes.CARD_JESTER_CUBE, "On use, all {{Collectible}} items in the room will cycle between 6 additional choices, similar to Glitched Crown", "Jester", "en_us")
     EID:addCard(WarpZone.WarpZoneTypes.CARD_WITCH_CUBE, "50% chance to deal 40 damage to all enemies in the room and apply burn.#50% chance to spawn another Witch and fire off a poison fart", "Witch", "en_us")
     EID:addCard(WarpZone.WarpZoneTypes.CARD_MURDER, "For a quarter second, increase speed to 4 and kill everything you touch.#Gain a {{Stompy}} Stompy effect for the room", "Murder!", "en_us")
     EID:addCard(WarpZone.WarpZoneTypes.CARD_AMBER_CHUNK, "All pickups in the room, including {{Collectible}} items and the final chest at the end of the game, will be removed and saved.#The previous items you consumed in this way will respawn, even across games#You will also receive a {{Coin}} lucky penny", "Chunk of Amber", "en_us")
@@ -434,6 +437,8 @@ if EID then
 
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL, "Зачистка комнаты имеет 50% шанс оставить никель, пропадающий через 2 секунды.#При получении урона игрок теряет половину своих монет, и бросает на пол эти монеты (они пропадают через 1 секунду).#Если у игрока есть монеты, урон будет в полное сердце.", "Золотой Идол", "ru")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER, "Удаляет первые три предмета,полученных в забеге (Может удалить сюжетные предметы).#Создает по три пьедестала с предметами из того же пула за каждый потерянный предмет, из 3х предметов можно взять только 1.#The new items are from the same pools as the ones you lost.", "Пушка, Убивающая Прошлое", "ru")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_2x, "Удаляет первые три предмета,полученных в забеге (Может удалить сюжетные предметы).#Создает по три пьедестала с предметами из того же пула за каждый потерянный предмет, из 3х предметов можно взять только 1.#The new items are from the same pools as the ones you lost.", "Пушка, Убивающая Прошлое", "ru")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_1x, "Удаляет первые три предмета,полученных в забеге (Может удалить сюжетные предметы).#Создает по три пьедестала с предметами из того же пула за каждый потерянный предмет, из 3х предметов можно взять только 1.#The new items are from the same pools as the ones you lost.", "Пушка, Убивающая Прошлое", "ru")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BIRTHDAY_CAKE, "{{ArrowUp}} +1 Контейнер Сердца #Случайная карта/пилюля/руна, случайная монета, бомба и ключ появляются в начале каждого этажа.#Предмет еды, С Кутежником дает -.03 скорости и +.5 скорострельности.", "Именинный Торт", "ru")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON, "10% шанс выстрелить самонаводящейся слезой, накладывающей кровотечение#100% шанс при 18 удачи", "Ржавая Ложка", "ru")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NEWGROUNDS_TANK, "{{ArrowDown}}  -.3 Скорости#{{ArrowUp}} +.27 Скорострельности#{{ArrowUp}} +.5 Урона#{{ArrowUp}} +.04 Дальности#{{ArrowUp}} +.16 Скорости слезы#{{ArrowUp}} +1 Удачи#При получении урона, 10% шанс предотвратить его.", "Танк Newgrounds", "ru")
@@ -524,7 +529,7 @@ function WarpZone:refreshItemsTaken()
         local data = player:GetData()
         if data.WarpZone_data and data.WarpZone_data.LastTotalItems ~= player:GetCollectibleCount() then
             data.WarpZone_data.LastTotalItems = player:GetCollectibleCount()
-            local itemConfig = Isaac:GetItemConfig()
+            local itemConfig = Isaac.GetItemConfig()
             for itemID=1, itemConfig:GetCollectibles().Size-1 do
                 local item = itemConfig:GetCollectible(itemID)
                 local pool = game:GetItemPool():GetLastPool()
@@ -2134,28 +2139,11 @@ function WarpZone:NewRoom()
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, WarpZone.NewRoom)
 
-function WarpZone:usePastkiller(collectible, rng, entityplayer, useflags, activeslot, customvardata)
+function WarpZone:usePastkiller(entityplayer)
 
     local player =  entityplayer:ToPlayer()
     --debug_str = tostring(player.ControllerIndex)
     local data = player:GetData()
-    
-    local shift = 0
-    for i, item_tag in ipairs(data.WarpZone_data.itemsTaken) do
-        if player:HasCollectible(item_tag) == false then
-            table.remove(data.WarpZone_data.itemsTaken, i-shift)
-            table.remove(data.WarpZone_data.poolsTaken, i-shift)
-            shift = shift + 1
-        end
-    end
-    local itemsTakenHere = data.WarpZone_data.itemsTaken
-    if #itemsTakenHere < 3 then
-        return {
-            Discharge = false,
-            Remove = false,
-            ShowAnim = false
-        }
-    end
 
 
     local pos = game:GetRoom():GetCenterPos() + Vector(-160, -160)
@@ -2170,7 +2158,7 @@ function WarpZone:usePastkiller(collectible, rng, entityplayer, useflags, active
         spacing = 40
     end
     
-    for j = 1, 3 do
+    --for j = 1, 3 do
         pickupindex = pickupindex + 1
         pool = table.remove(data.WarpZone_data.poolsTaken, 1)
         item_removed  = table.remove(data.WarpZone_data.itemsTaken, 1)
@@ -2179,23 +2167,110 @@ function WarpZone:usePastkiller(collectible, rng, entityplayer, useflags, active
             local pedestal = Isaac.Spawn(EntityType.ENTITY_PICKUP,
                         PickupVariant.PICKUP_COLLECTIBLE,
                         itemPool:GetCollectible(pool),
-                        game:GetRoom():FindFreePickupSpawnPosition(pos + Vector(spacing * i, 80 * j)),
+                        game:GetRoom():FindFreePickupSpawnPosition(pos + Vector(spacing * i, 160)),
                         Vector(0,0),
                         nil)
             pedestal:ToPickup().OptionsPickupIndex = pickupindex
         end
-    end
+    --end
+end
+
+function WarpZone:usePastkiller3x(collectible, rng, entityplayer, useflags, activeslot, customvardata)
+    local player =  entityplayer:ToPlayer()
+    --debug_str = tostring(player.ControllerIndex)
+    local data = player:GetData()
     
+    local shift = 0
+    for i, item_tag in ipairs(data.WarpZone_data.itemsTaken) do
+        if player:HasCollectible(item_tag) == false then
+            table.remove(data.WarpZone_data.itemsTaken, i-shift)
+            table.remove(data.WarpZone_data.poolsTaken, i-shift)
+            shift = shift + 1
+        end
+    end
+    local itemsTakenHere = data.WarpZone_data.itemsTaken
+    if #itemsTakenHere < 1 then
+        return {
+            Discharge = false,
+            Remove = false,
+            ShowAnim = false
+        }
+    end
+    SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT, 2)
+    WarpZone:usePastkiller(player)
+    swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_2x, ActiveSlot.SLOT_PRIMARY, player, 0)
+    return {
+        Discharge = false,
+        Remove = false,
+        ShowAnim = true
+    }
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.usePastkiller3x, WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER)
+
+function WarpZone:usePastkiller2x(collectible, rng, entityplayer, useflags, activeslot, customvardata)
+    local player =  entityplayer:ToPlayer()
+    --debug_str = tostring(player.ControllerIndex)
+    local data = player:GetData()
+    
+    local shift = 0
+    for i, item_tag in ipairs(data.WarpZone_data.itemsTaken) do
+        if player:HasCollectible(item_tag) == false then
+            table.remove(data.WarpZone_data.itemsTaken, i-shift)
+            table.remove(data.WarpZone_data.poolsTaken, i-shift)
+            shift = shift + 1
+        end
+    end
+    local itemsTakenHere = data.WarpZone_data.itemsTaken
+    if #itemsTakenHere < 1 then
+        return {
+            Discharge = false,
+            Remove = false,
+            ShowAnim = false
+        }
+    end
+    SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT_SPREAD, 2)
+    WarpZone:usePastkiller(player)
+    swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_1x, ActiveSlot.SLOT_PRIMARY, player, 0)
+    return {
+        Discharge = false,
+        Remove = false,
+        ShowAnim = true
+    }
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.usePastkiller2x, WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_2x)
+
+function WarpZone:usePastkiller1x(collectible, rng, entityplayer, useflags, activeslot, customvardata)
+    local player =  entityplayer:ToPlayer()
+    --debug_str = tostring(player.ControllerIndex)
+    local data = player:GetData()
+    
+    local shift = 0
+    for i, item_tag in ipairs(data.WarpZone_data.itemsTaken) do
+        if player:HasCollectible(item_tag) == false then
+            table.remove(data.WarpZone_data.itemsTaken, i-shift)
+            table.remove(data.WarpZone_data.poolsTaken, i-shift)
+            shift = shift + 1
+        end
+    end
+    local itemsTakenHere = data.WarpZone_data.itemsTaken
+    if #itemsTakenHere < 1 then
+        return {
+            Discharge = false,
+            Remove = false,
+            ShowAnim = false
+        }
+    end
     SfxManager:Play(SoundEffect.SOUND_GFUEL_AIR_HORN, 1)
     SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT_SPREAD, 4)
-
+    WarpZone:usePastkiller(player)
     return {
         Discharge = false,
         Remove = true,
         ShowAnim = true
     }
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.usePastkiller, WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER)
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.usePastkiller1x, WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_1x)
+
 
 function WarpZone:UseFocus(collectible, rng, entityplayer, useflags, activeslot, customvardata)
     local player =  entityplayer:ToPlayer()
@@ -3954,10 +4029,17 @@ function WarpZone:BeggarUpdate()
         if beggar:GetSprite():IsEventTriggered("Prize") then
 			local prizepos = game:GetRoom():FindFreePickupSpawnPosition(beggar.Position)
             local pickup_num
-
+            local item_config = Isaac.GetItemConfig()
             for i = 1, 10000 do
-                pickup_num = myRNG:RandomInt(733)
-                if Isaac.GetItemConfig():GetCollectible(pickup_num) and Isaac.GetItemConfig():GetCollectible(pickup_num).Type == ItemType.ITEM_ACTIVE  and not (pickup_num >= 550 and pickup_num <= 552) and pickup_num ~= 714 and pickup_num ~= 715 then
+                pickup_num = myRNG:RandomInt(item_config:GetCollectibles().Size-1)
+                if item_config:GetCollectible(pickup_num) and item_config:GetCollectible(pickup_num).Type == ItemType.ITEM_ACTIVE and item_config:GetCollectible(pickup_num):IsAvailable() 
+                and not (pickup_num >= 550 and pickup_num <= 552) and pickup_num ~= 714 and pickup_num ~= 715 
+                and pickup_num ~= WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS
+                and pickup_num ~= WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_2 
+                and pickup_num ~= WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_3
+                and pickup_num ~= WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE
+                and pickup_num ~= WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_1x
+                and pickup_num ~= WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_2x then
                     break
                 end
             end
@@ -4104,32 +4186,6 @@ function WarpZone:FootballCollide(familiar, collider, low)
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.FootballCollide, FamiliarVariant.CUBE_BABY)
 
-function WarpZone:FindEffects(collectible, rng, entityplayer, useflags, activeslot, customvardata)
-    local entities = Isaac.GetRoomEntities()
-    local debbug = ""
-    for i, entity_pos in ipairs(entities) do
-        if entity_pos.Type == EntityType.ENTITY_LARRYJR then
-            debbug = tostring(entity_pos.Variant) .. "-" .. tostring(entity_pos.Position) .. " --  " ..  tostring(entity_pos.Parent.Position)
-            print(debbug)
-        end
-    end
-
-    local room = game:GetRoom()
-    for i=1, room:GetGridSize() do
-        local ge = room:GetGridEntity(i)
-        if ge and ge:GetType() == GridEntityType.GRID_TRAPDOOR then
-            --print(ge:GetGridIndex())
-        end
-
-    end
-    return {
-        Discharge = false,
-        Remove = false,
-        ShowAnim = true
-    }
-end
-WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.FindEffects, WarpZone.WarpZoneTypes.COLLECTIBLE_TEST_ACTIVE)
-
 
 function WarpZone:DisableCreep(entity)
     if entity.SpawnerType == 0 then
@@ -4223,7 +4279,6 @@ function WarpZone:UseLootCard(card, player, useflags)
             Vector(0,0),
             nil)
     end
-    
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseLootCard, WarpZone.WarpZoneTypes.CARD_LOOT_CARD)
 
@@ -4882,3 +4937,16 @@ function WarpZone:update_crowdfunder(fam)
 end
 WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_crowdfunder, CrowdfunderVar)]]
 
+function WarpZone:test_command(cmd, args)
+    if cmd == "availability" then
+        local player = Isaac.GetPlayer(0)
+        local config = Isaac.GetItemConfig()
+        local itemnum = tonumber(args)
+        if config:GetCollectible(itemnum):IsAvailable() == true then
+            print("True!")
+        else
+            print("False...")
+        end
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_EXECUTE_CMD, WarpZone.test_command)
