@@ -1,6 +1,6 @@
 <items gfxroot="gfx/items/" deathanm2="gfx/death items.anm2" version="1">
     <passive id="1"	gfx="Collectibles_1_GoldenIdol.png" name="Golden Idol" description="Cursed wealth" quality="1" rags="lazarusshared summonable"/>
-    <active	id="2" gfx="Collectibles_2_Past_Killer.png" name="Gun that can kill the Past" description="Leave your past behind" maxcharges = "0" quality="2"/>
+    <active	id="2" gfx="Collectibles_2_Past_Killer_3x.png" name="Gun that can kill the Past" description="Leave your past behind" maxcharges = "0" quality="2"/>
     <passive id="3"	gfx="Collectibles_3_Birthday_Cake.png" name="Birthday Cake" description="Happy me!" maxhearts="2" hearts="4" tags="food nolostbr nocantrip lazarusshared summonable" quality = "2"/>
     <passive id="4"	gfx="Collectibles_4_Rusty_Spoon.png" name="Rusty Spoon" description="You like touching them..." cache="tearcolor color" tags="offensive summonable" quality="3"/>
     <passive id="5"	gfx="Collectibles_5_Newgrounds_Tank.png" name="Newgrounds Tank" description="Become a tank!" maxhearts="2" hearts="4" cache="firedelay damage speed range shotspeed luck" tags="offensive summonable" quality="3"/>
@@ -37,8 +37,8 @@
     <familiar id="36" gfx="Collectibles_33_Johnnys_Knives.png" name="Johnny's Knives" description="I need you to keep bleeding..." quality="3" devilprice="2" tags="summonable monstermanual"/>
     <familiar id="37" gfx="Collectibles_34_Ser_Junkan.png" name="Ser Junkan" description="He's a scrappy little fella!" quality="3" tags="summonable monstermanual"/>
     <familiar id="38" gfx="Collectibles_35_Crowdfunder.png" name="The Crowdfunder" description="Pump 'em full of gold!" quality="2" coins = "10"/>
-    <active	id="39" gfx="Collectibles_2_Past_Killer.png" name=" Gun that can kill the Past " description="Leave your past behind" maxcharges = "0" quality="2"/>
-    <active	id="40" gfx="Collectibles_2_Past_Killer.png" name="  Gun that can kill the Past  " description="Leave your past behind" maxcharges = "0" quality="2"/>
+    <active	id="39" gfx="Collectibles_2_Past_Killer_2x.png" name=" Gun that can kill the Past " description="Leave your past behind" maxcharges = "0" quality="2"/>
+    <active	id="40" gfx="Collectibles_2_Past_Killer_1x.png" name="  Gun that can kill the Past  " description="Leave your past behind" maxcharges = "0" quality="2"/>
     
 
 
