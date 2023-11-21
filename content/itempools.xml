@@ -20,6 +20,7 @@
         <Item Name="Gravity" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Ser Junkan" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="The Crowdfunder" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Polar Star" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
 	<Pool Name="curse">
         <Item Name="Golden Idol" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>

@@ -311,6 +311,8 @@ WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY = Isaac.GetItemIdByName("Gravity")
 WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES = Isaac.GetItemIdByName("Johnny's Knives")
 WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN = Isaac.GetItemIdByName("Ser Junkan")
 WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER = Isaac.GetItemIdByName("The Crowdfunder")
+WarpZone.WarpZoneTypes.COLLECTIBLE_POLARSTAR = Isaac.GetItemIdByName("Polar Star")
+WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2 = Isaac.GetItemIdByName("Booster V2.0")
 
 WarpZone.WarpZoneTypes.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of the Snake")
 WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS = Isaac.GetTrinketIdByName("Hunky Boys")
