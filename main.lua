@@ -341,6 +341,7 @@ WarpZone.WarpZoneTypes.SOUND_GUN_SWAP = Isaac.GetSoundIdByName("GunSwap")
 
 
 WarpZone.WarpZoneTypes.COSTUME_DIOGENES_ON = Isaac.GetCostumeIdByPath("gfx/characters/DiogenesPotCostume.anm2")
+WarpZone.WarpZoneTypes.COSTUME_BOOSTERV2 = Isaac.GetCostumeIdByPath("gfx/characters/Booster v2.anm2")
 
 WarpZone.WarpZoneTypes.CHALLENGE_GETTING_UNDER_IT = Isaac.GetChallengeIdByName("Getting Under It")
 WarpZone.WarpZoneTypes.CHALLENGE_HOLE_IN_MY_POCKET = Isaac.GetChallengeIdByName("Hole In My Pocket")
@@ -2575,6 +2576,7 @@ end
 function WarpZone:EvaluateCache(entityplayer, Cache)
     local data = entityplayer:GetData()
     local cakeBingeBonus = 0
+    data.WarpZone_data = data.WarpZone_data or {}
 
     local tank_qty =  entityplayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_NEWGROUNDS_TANK)
     
@@ -2672,6 +2674,8 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
     if Cache == CacheFlag.CACHE_SHOTSPEED then
         entityplayer.ShotSpeed = entityplayer.ShotSpeed + (tank_qty * .16)
     end
+
+    WarpZone.PolarStarBoosterv2_Cache(_, entityplayer, Cache)
 
 end
 WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, WarpZone.EvaluateCache)
@@ -2891,6 +2895,7 @@ function WarpZone:postPlayerUpdate(player)
     end]]
 
     WarpZone.Crowdfunder_PlayerUpdate(player, effects)
+    WarpZone.PolarStarBoosterv2_Update(_, player)
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpdate, 0)
 
@@ -4759,236 +4764,13 @@ local extrafiles = {
     "lua.ser_junkan",
     "lua.greed_butt",
     "lua.crowdfunder",
+    "lua.polar_star"
 }
 for i=1,#extrafiles do
     local module = include(extrafiles[i])
     module(WarpZone)
 end
 
---moved to lua/ser_junkan.lua
-
---[[function WarpZone:DestroyItemPedestalCheck(bomb, player)
-    local entities = Isaac.FindInRadius(bomb.Position, 100)
-    local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN)
-    for i, entity in ipairs(entities) do
-        if entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == PickupVariant.PICKUP_COLLECTIBLE then
-            Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, -1, entity.Position, entity.Velocity, bomb)
-            entity:Remove()
-            --local loops = rng:RandomInt(3) + 3
-            --for j=1, loops, 1 do
-            local velocity = Vector(rng:RandomInt(8), rng:RandomInt(8))
-            Isaac.Spawn(EntityType.ENTITY_PICKUP, SerJunkPickupVar, 1, entity.Position, velocity, bomb)
-            --end
-        end
-    end
-end
-
-local fammovespeed = 60
-local chasingspeed = 100
-
-local function normalizedirection(currentpos, targetpos, chasing)
-	local moveVector = targetpos - currentpos
-	if chasing then
-		moveVector = moveVector:Normalized() * chasingspeed
-	else
-		moveVector = moveVector:Normalized() * fammovespeed
-	end
-	moveVector = currentpos/1 + moveVector
-	return moveVector
-end
-
-function WarpZone:update_junkan(fam)
-    local animName = "Idle"
-    local player = fam.Player
-    local data = player:GetData()
-    local spr = fam:GetSprite()
-    local junkCount = (isNil(data.WarpZone_data.GetJunkCollected, 0) % 7) + 1
-    local followPos = fam.Position
-    local enemyEntity= nil
-    
-    if fam.GridCollisionClass ~= EntityGridCollisionClass.GRIDCOLL_GROUND then
-        fam.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_GROUND
-    end
-    local entities = Isaac.FindInRadius(fam.Position, 100, EntityPartition.ENEMY)
-    for i, entity in ipairs(entities) do
-        if entity:IsVulnerableEnemy() then
-            if enemyEntity == nil then
-                enemyEntity = entity
-            else
-                if fam.Position:Distance(enemyEntity.Position) > fam.Position:Distance(entity.Position) then
-                    enemyEntity = entity
-                end
-            end
-        end
-    end
-    if enemyEntity ~= nil and (enemyEntity.Position-fam.Position):Length() > math.min(5, enemyEntity.Size) then
-        --followPos = normalizedirection(fam.Position, enemyEntity.Position, true)
-        followPos = enemyEntity.Position
-        animName = "Walk"
-    elseif player.Position:Distance(fam.Position) > 60 and enemyEntity == nil then
-        --followPos = normalizedirection(fam.Position, player.Position, false)
-        followPos = player.Position
-        animName = "Walk"
-    end
-    if enemyEntity ~= nil and (enemyEntity.Position-fam.Position):Length() <= 15 then
-        animName = "Attack"
-    end
-    if followPos and fam.FrameCount % 2 == 0 then
-        fam.Velocity = (followPos-fam.Position):Resized(followPos:Distance(fam.Position)/40)    --followPos
-    end
-    --fam:FollowPosition(followPos)
-    
-    animName = animName .. tostring(junkCount)
-    if spr:GetAnimation() ~= animName then
-        if spr:GetAnimation():sub(-1) ~= animName:sub(-1) then
-            Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, -1, fam.Position, Vector(0, 0), fam)
-        end
-        spr:Play(animName)
-    end
-    if fam.Velocity.X < 0 then
-        spr.FlipX = true
-    else
-        spr.FlipX = false
-    end
-
-    local damage = 0
-    if enemyEntity and spr:IsEventTriggered("BumpAttack") then
-        damage = junkCount/2 + 1
-    elseif enemyEntity and spr:IsEventTriggered("SwordSwing") then
-        damage = junkCount
-    elseif enemyEntity and spr:IsEventTriggered("SpinAttack") then
-        damage = 0.7
-        if junkCount == 7 then
-            damage = 1
-        end
-    end
-    if enemyEntity and damage > 0 then
-        enemyEntity:TakeDamage(damage, 0, EntityRef(fam), 1)
-    end
-end
-WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_junkan, SerJunkanWalk)
-
-
-function WarpZone:update_flying_junkan(fam)
-    local animName = "Idle"
-    local player = fam.Player
-    local data = player:GetData()
-    local followPos = fam.Position
-    local lastFrameShot = isNil(data.LastFrameShot, 0)
-    local currentframe = game:GetFrameCount()
-    local enemyEntity= nil
-    local entities = Isaac.FindInRadius(fam.Position, 250)
-
-    for i, entity in ipairs(entities) do
-        if entity:IsVulnerableEnemy() then
-            if enemyEntity == nil then
-                enemyEntity = entity
-            else
-                if fam.Position:Distance(enemyEntity.Position) > fam.Position:Distance(entity.Position) then
-                    enemyEntity = entity
-                end
-            end
-        end
-    end
-    
-    if player.Position:Distance(fam.Position) > 60 then
-        followPos = normalizedirection(fam.Position, player.Position, true)
-    end
-
-    if lastFrameShot + 180 <= currentframe and enemyEntity ~= nil then
-        animName = "Shoot"
-        data.LastFrameShot = currentframe
-    elseif lastFrameShot + 60 >= currentframe then
-        animName = "Shoot"
-    end
-
-    if fam:GetSprite():GetAnimation() == "Shoot" and enemyEntity ~= nil and (currentframe - lastFrameShot) % 12 == 0 then
-        local direction = (enemyEntity.Position - fam.Position):Normalized()
-        local proj = fam:FireProjectile(direction)
-
-        proj:AddTearFlags(TearFlags.TEAR_SPECTRAL)
-        proj:AddTearFlags(TearFlags.TEAR_HOMING)
-        proj:GetSprite().Color = Color(.91, .187, .371, 1, 0, 0, 0)
-        proj.CollisionDamage = 8
-    end
-
-    if fam:GetSprite():GetAnimation() ~= animName then
-        fam:GetSprite():Play(animName)
-    end
-
-    fam:FollowPosition(followPos)
-end
-
-WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_flying_junkan, SerJunkanFly)
-]]
-
---[[local function crowdfundAnimation(degrees, fam, player)
-    local prefix = "Shoot"
-    local suffix = ""
-
-    local controllerid = player.ControllerIndex
-
-
-    if not Input.IsActionPressed(ButtonAction.ACTION_SHOOTLEFT, controllerid) and
-    not Input.IsActionPressed(ButtonAction.ACTION_SHOOTRIGHT, controllerid) and
-    not Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, controllerid) and
-    not Input.IsActionPressed(ButtonAction.ACTION_SHOOTDOWN, controllerid) then
-        if fam:GetSprite():GetAnimation():sub(1, 9) == "ShootLoop" then
-            prefix = "ShootEnd"
-        elseif not fam:GetSprite():IsFinished() and fam:GetSprite():GetAnimation():sub(1, 8) == "ShootEnd" then
-            prefix = "ShootEnd"
-        else
-            prefix = "Idle"
-        end
-    else
-        --print(fam:GetSprite():GetAnimation():sub(1, 10))
-        if not fam:GetSprite():IsFinished() and fam:GetSprite():GetAnimation():sub(1, 10) == "ShootBegin" then
-            prefix = "ShootBegin"
-        elseif fam:GetSprite():GetAnimation():sub(1, 4) == "Idle" then
-            prefix = "ShootBegin"
-        else
-            prefix = "ShootLoop"
-        end
-    end
-
-
-
-    if degrees == 0 then
-        suffix = "Right"
-    elseif degrees == 180 then
-        suffix = "Left"
-    elseif degrees < 180 and degrees > 0 then
-        suffix = "Down"
-    elseif degrees < 0 then
-        suffix = "Up"
-    else
-        suffix = "Down"
-    end
-
-    local animName = prefix .. suffix
-    if fam:GetSprite():GetAnimation() ~= animName then
-        fam:GetSprite():Play(animName)
-    end
-
-end
-
-function WarpZone:update_crowdfunder(fam)
-    local player = fam.Player
-    local headRotation = getVectorFromDirection(player:GetHeadDirection())
-    local rotation = player:GetAimDirection()
-
-    if rotation.X == 0 and rotation.Y == 0 then
-        rotation = headRotation
-    end
-
-    fam:GetSprite().Rotation = rotation:GetAngleDegrees()
-    local newPos = player.Position + (rotation:Normalized() * 25)
-    newPos = newPos + Vector(0, -10)
-    fam.Velocity = newPos - fam.Position
-
-    crowdfundAnimation(rotation:GetAngleDegrees(), fam, player)
-end
-WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_crowdfunder, CrowdfunderVar)]]
 
 function WarpZone:test_command(cmd, args)
     if cmd == "availability" then
