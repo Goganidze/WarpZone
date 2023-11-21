@@ -1,5 +1,5 @@
 <AnimatedActor>
-	<Info CreatedBy="Unknown" CreatedOn="20.11.2023 16:05:32" Version="3" Fps="45"/>
+	<Info CreatedBy="Unknown" CreatedOn="21.11.2023 22:47:21" Version="5" Fps="45"/>
 	<Content>
 		<Spritesheets>
 			<Spritesheet Path="costumes\Backpack_body.png" Id="0"/>
@@ -8,14 +8,14 @@
 			<Layer Name="body" Id="0" SpritesheetId="0"/>
 		</Layers>
 		<Nulls>
-			<Null Name="warp_zone_boosterOffset" Id="0" ShowRect="false"/>
+			<Null Name="HeadTransform" Id="0" ShowRect="false"/>
 		</Nulls>
 		<Events/>
 	</Content>
 	<Animations DefaultAnimation="WalkDown">
 		<Animation Name="WalkDown" FrameNum="16" Loop="true">
 			<RootAnimation>
-				<Frame XPosition="0" YPosition="0" XScale="100" YScale="100" Delay="1" Visible="true" RedTint="255" GreenTint="255" BlueTint="255" AlphaTint="255" RedOffset="0" GreenOffset="0" BlueOffset="0" Rotation="0" Interpolated="false"/>
+				<Frame XPosition="0" YPosition="0" XScale="100" YScale="100" Delay="16" Visible="true" RedTint="255" GreenTint="255" BlueTint="255" AlphaTint="255" RedOffset="0" GreenOffset="0" BlueOffset="0" Rotation="0" Interpolated="false"/>
 			</RootAnimation>
 			<LayerAnimations>
 				<LayerAnimation LayerId="0" Visible="true">
@@ -41,7 +41,7 @@
 		</Animation>
 		<Animation Name="WalkLeft" FrameNum="16" Loop="true">
 			<RootAnimation>
-				<Frame XPosition="0" YPosition="0" XScale="100" YScale="100" Delay="1" Visible="true" RedTint="255" GreenTint="255" BlueTint="255" AlphaTint="255" RedOffset="0" GreenOffset="0" BlueOffset="0" Rotation="0" Interpolated="false"/>
+				<Frame XPosition="0" YPosition="0" XScale="100" YScale="100" Delay="16" Visible="true" RedTint="255" GreenTint="255" BlueTint="255" AlphaTint="255" RedOffset="0" GreenOffset="0" BlueOffset="0" Rotation="0" Interpolated="false"/>
 			</RootAnimation>
 			<LayerAnimations>
 				<LayerAnimation LayerId="0" Visible="true">
@@ -67,7 +67,7 @@
 		</Animation>
 		<Animation Name="WalkRight" FrameNum="16" Loop="true">
 			<RootAnimation>
-				<Frame XPosition="0" YPosition="0" XScale="100" YScale="100" Delay="1" Visible="true" RedTint="255" GreenTint="255" BlueTint="255" AlphaTint="255" RedOffset="0" GreenOffset="0" BlueOffset="0" Rotation="0" Interpolated="false"/>
+				<Frame XPosition="0" YPosition="0" XScale="100" YScale="100" Delay="16" Visible="true" RedTint="255" GreenTint="255" BlueTint="255" AlphaTint="255" RedOffset="0" GreenOffset="0" BlueOffset="0" Rotation="0" Interpolated="false"/>
 			</RootAnimation>
 			<LayerAnimations>
 				<LayerAnimation LayerId="0" Visible="true">
@@ -93,7 +93,7 @@
 		</Animation>
 		<Animation Name="WalkUp" FrameNum="16" Loop="true">
 			<RootAnimation>
-				<Frame XPosition="0" YPosition="0" XScale="100" YScale="100" Delay="1" Visible="true" RedTint="255" GreenTint="255" BlueTint="255" AlphaTint="255" RedOffset="0" GreenOffset="0" BlueOffset="0" Rotation="0" Interpolated="false"/>
+				<Frame XPosition="0" YPosition="0" XScale="100" YScale="100" Delay="16" Visible="true" RedTint="255" GreenTint="255" BlueTint="255" AlphaTint="255" RedOffset="0" GreenOffset="0" BlueOffset="0" Rotation="0" Interpolated="false"/>
 			</RootAnimation>
 			<LayerAnimations>
 				<LayerAnimation LayerId="0" Visible="true">
