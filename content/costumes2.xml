@@ -16,4 +16,5 @@
     <costume id = "32" anm2path = "bow.anm2" type = "passive"/>
     <costume id = "34" anm2path = "boxglove.anm2" type = "passive" hasSkinAlt = "true"/>
     <costume id = "42" anm2path = "Booster v2.anm2" type = "passive" hasSkinAlt = "true"/>
+    <costume anm2path="DiogenesPotCostume.anm2" type="none" />
 </costumes>

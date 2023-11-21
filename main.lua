@@ -63,6 +63,7 @@ defaultData.WarpZone_unsavedata = {
     arrowTimeLeft = 0,
     arrowTimeRight = 0,
 }
+defaultData.dioCostumeEquipped = false
 
 
 local function TabDeepCopy(tbl)
@@ -338,12 +339,20 @@ WarpZone.WarpZoneTypes.SOUND_MURDER_STING = Isaac.GetSoundIdByName("MurderSting"
 WarpZone.WarpZoneTypes.SOUND_MURDER_KILL = Isaac.GetSoundIdByName("MurderKillSnd")
 WarpZone.WarpZoneTypes.SOUND_GUN_SWAP = Isaac.GetSoundIdByName("GunSwap")
 
+
+WarpZone.WarpZoneTypes.COSTUME_DIOGENES_ON = Isaac.GetCostumeIdByPath("gfx/characters/DiogenesPotCostume.anm2")
+
+WarpZone.WarpZoneTypes.CHALLENGE_GETTING_UNDER_IT = Isaac.GetChallengeIdByName("Getting Under It")
+WarpZone.WarpZoneTypes.CHALLENGE_HOLE_IN_MY_POCKET = Isaac.GetChallengeIdByName("Hole In My Pocket")
+WarpZone.WarpZoneTypes.CHALLENGE_CHAMPIONSHIP = Isaac.GetChallengeIdByName("Championship")
+WarpZone.WarpZoneTypes.CHALLENGE_CURSE_OF_THE_LOSS = Isaac.GetChallengeIdByName("Curse Of The Loss")
+
 --external item descriptions
 if EID then
 	EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL, "#The player has a 50% chance of receiving a fading nickel when a room is cleared#Getting damage causes the player to lose half their money, dropping some of it on the ground as fading {{Coin}} coins.#When the player is holding money, damage is always 1 full heart {{Heart}}", "Golden Idol", "en_us")
-    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER, "#Removes the first 3 {{Collectible}}items from your inventory, including quest items like the Key Pieces#3 sets of 3 choice pedestals appear#The new {{Collectible}}items are from the same pools as the ones you lost", "Gun that can Kill the Past", "en_us")
-    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_2x, "#Removes the first 3 {{Collectible}}items from your inventory, including quest items like the Key Pieces#3 sets of 3 choice pedestals appear#The new {{Collectible}}items are from the same pools as the ones you lost", "Gun that can Kill the Past", "en_us")
-    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_1x, "#Removes the first 3 {{Collectible}}items from your inventory, including quest items like the Key Pieces#3 sets of 3 choice pedestals appear#The new {{Collectible}}items are from the same pools as the ones you lost", "Gun that can Kill the Past", "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER, "#Removes the oldest {{Collectible}}item from your inventory, including quest items like the Key Pieces#3 choice pedestals appear#The new {{Collectible}}items are from the same pools as the one you lost. It can be used 3 times.", "Gun that can Kill the Past", "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_2x, "#Removes the oldest {{Collectible}}item from your inventory, including quest items like the Key Pieces#3 choice pedestals appear#The new {{Collectible}}items are from the same pools as the one you lost. It can be used 3 times.", "Gun that can Kill the Past", "en_us")
+    EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_1x, "#Removes the oldest {{Collectible}}item from your inventory, including quest items like the Key Pieces#3 choice pedestals appear#The new {{Collectible}}items are from the same pools as the one you lost. It can be used 3 times.", "Gun that can Kill the Past", "en_us")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BIRTHDAY_CAKE, "{{Heart}} +1 HP#A random consumable and pickups of each type now spawn at the start of a floor#When the player holds Binge Eater,{{Speed}} -0.03 Speed and {{Tears}} +0.5 Tears", "Birthday Cake", "en_us")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON, "#10% chance to fire a homing tear that inflicts {{BleedingOut}}bleed#100% chance at 18 {{Luck}}Luck", "Rusty Spoon", "en_us")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NEWGROUNDS_TANK, "{{Speed}}-0.3 Speed#{{Tears}}+0.27 Tears#{{Damage}}+0.5 Damage#{{Range}}+1 Range#{{Shotspeed}}+0.16 Shot Speed#{{Luck}}+1 Luck#On taking a hit, the player has a 10% chance to shield from damage", "Newgrounds Tank", "en_us")
@@ -1896,6 +1905,19 @@ function WarpZone:multiPlayerInit(player)
             end
         end
     --end
+    if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_GETTING_UNDER_IT then
+        player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE)
+    end
+    if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_HOLE_IN_MY_POCKET then
+        player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL)
+    end
+    if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_CHAMPIONSHIP then
+        player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_STRANGE_MARBLE)
+        player:UseActiveItem(CollectibleType.COLLECTIBLE_SMELTER)
+    end
+    if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_CURSE_OF_THE_LOSS then
+        player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK)
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, WarpZone.multiPlayerInit)
 
@@ -1927,7 +1949,7 @@ function WarpZone:LevelStart()
                 Isaac.Spawn(EntityType.ENTITY_PICKUP,
                             spawn_type,
                             0,
-                            game:GetRoom():FindFreePickupSpawnPosition(game:GetRoom():GetCenterPos()),
+                            game:GetRoom():FindFreePickupSpawnPosition(Vector(445, 235)),
                             Vector(0,0),
                             nil)
             end
@@ -1937,14 +1959,14 @@ function WarpZone:LevelStart()
             Isaac.Spawn(EntityType.ENTITY_PICKUP,
                             PickupVariant.PICKUP_TAROTCARD,
                             0,
-                            game:GetRoom():FindFreePickupSpawnPosition(game:GetRoom():GetCenterPos()),
+                            game:GetRoom():FindFreePickupSpawnPosition(Vector(445, 235)),
                             Vector(0,0),
                             nil)
 
             Isaac.Spawn(EntityType.ENTITY_PICKUP,
                             PickupVariant.PICKUP_TAROTCARD,
                             0,
-                            game:GetRoom():FindFreePickupSpawnPosition(game:GetRoom():GetCenterPos()),
+                            game:GetRoom():FindFreePickupSpawnPosition(Vector(445, 235)),
                             Vector(0,0),
                             nil)
         end
@@ -2480,6 +2502,14 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
         return true
     end
 
+    local item_config = Isaac.GetItemConfig():GetCollectible(entity.SubType)
+    if item_config and entity.Type == EntityType.ENTITY_PICKUP and
+    entity.Variant == PickupVariant.PICKUP_COLLECTIBLE
+    and Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_GETTING_UNDER_IT
+    and item_config.Type == ItemType.ITEM_ACTIVE then
+        return false
+    end
+
     if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant == PickupVariant.PICKUP_COLLECTIBLE) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_TONY) then
         --local dmg_config = Isaac.GetItemConfig():GetCollectible(entity.SubType)
         if entity.SubType ~= 0 and data.WarpZone_data.tonyBuff > 1 and entity:GetData().collected ~= true then -- and (dmg_config.CacheFlags & CacheFlag.CACHE_DAMAGE == CacheFlag.CACHE_DAMAGE)
@@ -2810,7 +2840,22 @@ function WarpZone:postPlayerUpdate(player)
     if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) then
         WarpZone.GreedButtEffect(player, data, spr)
     end
+    if data.WarpZone_data then
+        if data.WarpZone_data.dioCostumeEquipped == true
+        and not player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE) then
+            data.WarpZone_data.dioCostumeEquipped = nil
+            player:TryRemoveNullCostume(WarpZone.WarpZoneTypes.COSTUME_DIOGENES_ON)
+        elseif data.WarpZone_data.dioCostumeEquipped ~= true
+        and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE) then
+            data.WarpZone_data.dioCostumeEquipped = true
+            player:AddNullCostume(WarpZone.WarpZoneTypes.COSTUME_DIOGENES_ON)
+        end
+    end
     
+    if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_GETTING_UNDER_IT and
+    not player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE) then
+        player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE)
+    end
     --[[if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
         and data.WarpZone_unsavedata
         and data.WarpZone_unsavedata.HasCrowdfunder ~= nil
@@ -2842,6 +2887,7 @@ function WarpZone:postPlayerUpdate(player)
             
         end
         player.FireDelay = 1
+
     end]]
 
     WarpZone.Crowdfunder_PlayerUpdate(player, effects)
@@ -3279,7 +3325,7 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, WarpZone.updateTear)
 
 function WarpZone:dropArrow(entity)
     local data = entity:GetData()
-    if data.WarpZone_data and data.WarpZone_data.BowArrowPiercing and data.WarpZone_data.BowArrowPiercing > 0 then
+    if data and data.WarpZone_data and data.WarpZone_data.BowArrowPiercing and data.WarpZone_data.BowArrowPiercing > 0 then
         if game:GetRoom():GetFrameCount() == 0 then
             local player = entity.SpawnerEntity
             if player and player:ToPlayer() ~= nil then
@@ -3478,8 +3524,12 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseDiogenes, WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT)
 
 function WarpZone:SheathDiogenes(collectible, rng, entityplayer, useflags, activeslot, customvardata)
-    swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT, ActiveSlot.SLOT_PRIMARY, entityplayer, 0)
-    SfxManager:Play(SoundEffect.SOUND_URN_CLOSE)
+    if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_GETTING_UNDER_IT then
+        SfxManager:Play(SoundEffect.SOUND_BOSS2INTRO_ERRORBUZZ)
+    else
+        swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT, ActiveSlot.SLOT_PRIMARY, entityplayer, 0)
+        SfxManager:Play(SoundEffect.SOUND_URN_CLOSE)
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.SheathDiogenes, WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE)
 
@@ -4696,6 +4746,7 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.useGravity, WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY)
 
 
+
 --extra files and translation
 local ItemTranslate = include("lua.ItemTranslate")
 ItemTranslate("WarpZone")
@@ -4949,6 +5000,9 @@ function WarpZone:test_command(cmd, args)
         else
             print("False...")
         end
+    end
+    if cmd == "printthis" then
+        print(WarpZone.WarpZoneTypes.COSTUME_DIOGENES_ON)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_EXECUTE_CMD, WarpZone.test_command)
