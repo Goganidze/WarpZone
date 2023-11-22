@@ -348,6 +348,8 @@ WarpZone.WarpZoneTypes.CHALLENGE_HOLE_IN_MY_POCKET = Isaac.GetChallengeIdByName(
 WarpZone.WarpZoneTypes.CHALLENGE_CHAMPIONSHIP = Isaac.GetChallengeIdByName("Championship")
 WarpZone.WarpZoneTypes.CHALLENGE_CURSE_OF_THE_LOSS = Isaac.GetChallengeIdByName("Curse Of The Loss")
 
+WarpZone.WarpZoneTypes.TEAR_POLAR_STAR_BULLET = Isaac.GetEntityVariantByName("[Warp Zone] polar star bullet")
+
 --external item descriptions
 if EID then
 	EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL, "#The player has a 50% chance of receiving a fading nickel when a room is cleared#Getting damage causes the player to lose half their money, dropping some of it on the ground as fading {{Coin}} coins.#When the player is holding money, damage is always 1 full heart {{Heart}}", "Golden Idol", "en_us")
@@ -606,7 +608,7 @@ function WarpZone:GetPlayerFromTear(tear)
         end
         if check then
             if check.Type == EntityType.ENTITY_PLAYER then
-                return WarpZone:GetPtrHashEntity(check):ToPlayer()
+                return check:ToPlayer()   -- WarpZone:GetPtrHashEntity(check):ToPlayer()
             elseif check.Type == EntityType.ENTITY_FAMILIAR and (check.Variant == FamiliarVariant.INCUBUS or check.Variant == FamiliarVariant.TWISTED_BABY) then
                 local data = tear:GetData()
                 data.IsIncubusTear = true
@@ -1217,6 +1219,8 @@ function WarpZone:OnUpdate()
             end
         end
     end
+
+    WarpZone.SomeoneHasPolarStar = nil
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.OnUpdate)
 
@@ -1277,6 +1281,17 @@ WarpZone.DoubleTapCallback = {
         end
     end, totalFrameDelay}
 }
+
+function WarpZone.isSirenCharmed(familiar)
+	local helpers = Isaac.FindByType(EntityType.ENTITY_SIREN_HELPER, -1, -1, true)
+	for i=1, #helpers do
+        local helper = helpers[i]
+		if helper.Target and helper.Target.Index == familiar.Index and helper.Target.InitSeed == familiar.InitSeed then
+			return true, helper
+		end
+	end
+	return false, nil
+end
 
 
 ---@param player EntityPlayer
@@ -2903,7 +2918,7 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpda
 function WarpZone:checkTear(entitytear)
     ---@type EntityTear
     local tear = entitytear:ToTear()
-    local player = WarpZone:GetPlayerFromTear(entitytear)
+    local player = WarpZone:GetPlayerFromTear(entitytear) -- WarpZone.TryGetPlayer(entitytear.SpawnerEntity)
     local data = player and player:GetData()
     if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) then
         local chance = player.Luck * 5 + 10
@@ -3170,7 +3185,7 @@ function WarpZone:updateTear(entitytear)
     local spr = entitytear:GetSprite()
     local data = tear:GetData()
     local focusshot = false
-    local player = WarpZone:GetPlayerFromTear(tear)
+    local player = WarpZone:GetPlayerFromTear(tear) --WarpZone.TryGetPlayer(tear.SpawnerEntity)
     
     if data then
         focusshot = data.FocusShot == true
@@ -3651,7 +3666,7 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_POST_KNIFE_UPDATE, WarpZone.OnKnifeUpdate)
 
 WarpZone:AddCallback(ModCallbacks.MC_POST_FIRE_TEAR, function(_, tear)
-	local player = WarpZone:GetPlayerFromTear(tear)
+	local player = WarpZone:GetPlayerFromTear(tear) --WarpZone.TryGetPlayer(tear.SpawnerEntity)
     
     if player then
         if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE) then
@@ -3873,85 +3888,6 @@ WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_tumor_s, S
 WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_tumor_m, MidTumor.VARIANT)
 WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_tumor_l, LargeTumor.VARIANT)
 
-
-
---[[function WarpZone:UpdateKnifeHappy(knife, renderoffset)
-    local player = knife.Player
-    local direction = player:GetHeadDirection()
-    local dir_vector = getVectorFromDirection(direction)
-    local offset = Vector(0, 0)
-    local faceDirection = 17
-    local sideDirection = 23
-    local rotationSpace = 45
-    if dir_vector then
-        if direction == Direction.DOWN then
-            offset = Vector(-sideDirection, faceDirection)
-        elseif direction == Direction.UP then
-            offset = Vector(sideDirection, -faceDirection)
-        elseif direction == Direction.LEFT then
-            offset = Vector(-faceDirection, -sideDirection)
-        elseif direction == Direction.RIGHT then
-            offset = Vector(faceDirection, sideDirection)
-        end
-        knife.Position = player.Position + offset
-        knife.SpriteRotation = dir_vector:GetAngleDegrees() - (90 - rotationSpace)
-    end
-end
-function WarpZone:UpdateKnifeSad(knife, renderoffset)
-    local player = knife.Player
-    local direction = player:GetHeadDirection()
-    local dir_vector = getVectorFromDirection(direction)
-    local offset = Vector(0, 0)
-    local faceDirection = 17
-    local sideDirection = 23
-    local rotationSpace = 45
-    if dir_vector then
-        if direction == Direction.DOWN then
-            offset = Vector(sideDirection, faceDirection)
-        elseif direction == Direction.UP then
-            offset = Vector(-sideDirection, -faceDirection)
-        elseif direction == Direction.LEFT then
-            offset = Vector(-faceDirection, sideDirection)
-        elseif direction == Direction.RIGHT then
-            offset = Vector(faceDirection, -sideDirection)
-        end
-        --print(tostring(knife.Position))
-        --print(tostring(player.Position))
-        --print(tostring(offset))
-        knife.Position = player.Position + offset
-        knife.SpriteRotation = dir_vector:GetAngleDegrees() - (90 + rotationSpace)
-    end
-end]]
-
---WarpZone:AddCallback(ModCallbacks.MC_POST_FAMILIAR_RENDER, WarpZone.UpdateKnifeHappy, KnifeVariantHappy)
---WarpZone:AddCallback(ModCallbacks.MC_POST_FAMILIAR_RENDER, WarpZone.UpdateKnifeSad, KnifeVariantSad)
-
-
---[[function WarpZone:OnJohnnyTouch(knife, collider, low)
-    if collider and collider:IsVulnerableEnemy() then
-        local damage = 6
-        local frameCount = Game():GetFrameCount()
-        
-        if frameCount % 2 == 0 then
-            if collider.HitPoints < damage then
-                --collider:GetData().KilledByJohnny = true
-                --print(collider.Mass)
-                --print("kill1")
-            end
-            collider:TakeDamage(damage, 0, EntityRef(knife), 0)
-        end
-    end
-end]]
---WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.OnJohnnyTouch, KnifeVariantHappy)
---WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.OnJohnnyTouch, KnifeVariantSad)
-
-
---function WarpZone:OnJohnnyKill(entity)
---    if entity:GetData().KilledByJohnny == true then
-        
---    end
---end
---WarpZone:AddCallback(ModCallbacks.MC_POST_ENTITY_KILL, WarpZone.OnJohnnyKill)
 
 
 function WarpZone:pre_tumor_collision(orbital, collider, low)
@@ -4788,3 +4724,7 @@ function WarpZone:test_command(cmd, args)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_EXECUTE_CMD, WarpZone.test_command)
+
+--local config = Isaac.GetItemConfig()
+--local it = config:GetNullItem(WarpZone.WarpZoneTypes.COSTUME_BOOSTERV2)
+--print(it.Costume.IsFlying)

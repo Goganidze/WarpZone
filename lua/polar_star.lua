@@ -4,6 +4,7 @@ return function(mod)
     local game = Game()
 
     local PolarStarVar = Isaac.GetEntityVariantByName("[Warp Zone] Polar Star")
+    local PolarStarEXTent = Isaac.GetEntityVariantByName("[Warp Zone] polar star exp")
 
     local function swapOutActive(activeToAdd, slot, player, charge)
         local activeToRemove = player:GetActiveItem(slot)
@@ -13,6 +14,57 @@ return function(mod)
     local lerpAngle = function(a, b, t)
         return (a - (((a+180)-b)%360-180)*t) % 360
     end
+
+    ---@param source Entity|EntityPlayer?
+    function WarpZone.FirePolarStar(pos, vec, flag, source)
+        --local firePosition = pos + vec:Resized(12) --+ Vector(0, 13)
+        local tear
+        if source then
+            if source.Type == EntityType.ENTITY_PLAYER then
+                tear = source:FireTear(pos, vec, false, false, false, source, 1)
+            else
+                local param = ProjectileParams()
+                param.Color = Color(2,.5,.5)
+                param.FallingSpeedModifier = 3
+                
+                tear = source:ToNPC():FireBossProjectiles(1, pos+vec:Resized(160), 0, param)
+                tear.Velocity = vec:Resized(13)
+                tear.FallingSpeed = 0.2
+                tear.FallingAccel = 0.02
+                local sprite = tear:GetSprite()
+                sprite:Load("gfx/polar star_bullet.anm2",true)
+                sprite:Play(sprite:GetDefaultAnimation())
+                tear.SpriteRotation = vec:GetAngleDegrees()
+
+                return
+            end
+        else
+            tear = Isaac.Spawn(2, 0, 0, pos, vec, nil):ToTear()
+        end
+
+        local sprite = tear:GetSprite()
+        tear:AddTearFlags(flag)
+        tear.CollisionDamage = tear.CollisionDamage * 1.5
+        tear:ResetSpriteScale()
+        local anm = sprite:GetAnimation()
+        tear:ChangeVariant(WarpZone.WarpZoneTypes.TEAR_POLAR_STAR_BULLET)
+        --tear:ChangeVariant(TearVariant.CUPID_BLUE)
+        
+        --sprite:Load("gfx/polar star_bullet.anm2",true)
+        sprite:Play(sprite:GetDefaultAnimation())
+        sprite:Play(anm)
+        tear.Scale = 1
+        tear.SpriteRotation = vec:GetAngleDegrees()
+        
+        tear:ResetSpriteScale()
+    end
+
+    ---@param tear EntityTear
+    function WarpZone.PolarStarBulletUpdate(_, tear)
+        tear.SpriteRotation = (tear.Velocity):GetAngleDegrees()
+    end
+    WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, WarpZone.PolarStarBulletUpdate, WarpZone.WarpZoneTypes.TEAR_POLAR_STAR_BULLET)
+
 
     ---@param fam EntityFamiliar
     function WarpZone.PolarStar_EntLogic(_, fam)
@@ -24,8 +76,13 @@ return function(mod)
         local rotation = aim
         local wasShoot = fam.OrbitAngleOffset & 2
         local wasShootb = wasShoot==2
-       
-    
+        local IsSirenCharmed, SirenHelper = WarpZone.isSirenCharmed(fam)
+        --player:GetData().WarpZone_unsavedata.PolarStarIsCharmed = IsSirenCharmed
+        if not IsSirenCharmed then
+            player.FireDelay = math.max(player.FireDelay, 5)
+        end
+
+
         if not isAim and not wasShootb then
             rotation = player:GetMovementInput():Length()>0.05 and Vector.FromAngle(player:GetSmoothBodyRotation()) or Vector(0,1)  --headRotation
             fam.Coins = math.min(20, fam.Coins + 1)
@@ -35,7 +92,8 @@ return function(mod)
         local rotationAngle = rotation:GetAngleDegrees()
 
         spr.Rotation = lerpAngle(spr.Rotation, rotationAngle, 0.4)
-        local newPos = player.Position + Vector.FromAngle(spr.Rotation):Resized(25)   --(rotation:Normalized() * 25)
+        local distfromplay = IsSirenCharmed and 40 or 25
+        local newPos = player.Position + Vector.FromAngle(spr.Rotation):Resized(distfromplay)   --(rotation:Normalized() * 25)
         newPos = newPos --+ Vector(0, -10)
         fam.Velocity = newPos - fam.Position
 
@@ -53,6 +111,7 @@ return function(mod)
         else
             suffix = "Down"
         end
+        local IsnotFinished
         --print(spr:GetAnimation(), suffix, degrees)
         if isAim then
             if fam.FireCooldown <= 0 then
@@ -62,23 +121,46 @@ return function(mod)
                 end
                 sfx:Play(SoundEffect.SOUND_GFUEL_GUNSHOT, vol, 3, false, 1.2)
                 local anm = "Shoot" .. suffix
+
                 if spr:GetAnimation() == anm and spr:GetFrame()>2 then
-                    spr:SetFrame(0)
-                else
-                    spr:Play(anm)
+                    --spr:SetFrame(0)
+                    spr:Play(anm, true)
+                    IsnotFinished = true
+                elseif spr:GetAnimation() ~= anm then
+                    spr:Play(anm, true)
+                    IsnotFinished = true
                 end
+                
                 fam.LastDirection = math.floor(rotationAngle) % 360
                 wasShoot = 2
                 wasShootb = true
                 fam.FireCooldown = math.floor(player.MaxFireDelay * 1.5)
 
+                local udata = player:GetData().WarpZone_unsavedata
 
+                local num = udata and udata.PolarStarNumTears or 1
+
+                local mainvec = aim:Resized(player.ShotSpeed*15+5) 
+
+                local angle = udata and udata.PolarStarTearAngleBetween or 2
+                local start = mainvec:Rotated(-num*angle/2)
+
+                for i = 1, num do
+                    local vec = start:Resized(player.ShotSpeed*15+5):Rotated(i*angle)
+                    vec = vec + player:GetTearMovementInheritance(vec)
+                    --local pos = fam.Position --+ aim:Resized(12)
+                    WarpZone.FirePolarStar(fam.Position, vec, 0, SirenHelper or player)
+                end
+
+                sfx:Stop(SoundEffect.SOUND_TEARS_FIRE)
             end
         end
         
-        if wasShootb and spr:IsFinished() then
+        if wasShootb and spr:IsFinished() and not IsnotFinished then
             wasShoot = 0
             spr:Play("Idle" .. suffix)
+        elseif wasShootb then
+            spr:SetAnimation("Shoot" .. suffix, false)
         end
         fam.FireCooldown = fam.FireCooldown - 1
 
@@ -143,6 +225,7 @@ return function(mod)
 
         udata.HasPolarStar = nil
         udata.HasBoosterV2Costume = true
+        player:AddNullCostume(WarpZone.WarpZoneTypes.COSTUME_BOOSTERV2)
     end
     WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.PolarStar_Use, WarpZone.WarpZoneTypes.COLLECTIBLE_POLARSTAR)
 
@@ -154,7 +237,8 @@ return function(mod)
         swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_POLARSTAR, slot, player, 0)
 
         udata.HasPolarStar = true
-        udata.HasBoosterV2Costume = nil
+        udata.HasBoosterV2Costume = false
+        player:TryRemoveNullCostume(WarpZone.WarpZoneTypes.COSTUME_BOOSTERV2)
         player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS | CacheFlag.CACHE_FLYING | CacheFlag.CACHE_SPEED)
     end
     WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.Boosterv2_Use, WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2)
@@ -168,6 +252,14 @@ return function(mod)
 
         local data = player:GetData()
         local udata = data.WarpZone_unsavedata
+        WarpZone.SomeoneHasPolarStar = WarpZone.SomeoneHasPolarStar or boos or polstr
+        if udata.HasPolarStar then 
+            if not udata.PolarStarLevel then
+                udata.PolarStarLVL = 1
+                udata.PolarStarEXP = 0
+            end
+        end
+
         if boos then
             if not udata.HasBoosterV2Costume then
                 player:AddNullCostume(WarpZone.WarpZoneTypes.COSTUME_BOOSTERV2)
@@ -198,7 +290,9 @@ return function(mod)
 
 
         if polstr then
-            player.FireDelay = math.max(player.FireDelay, 5)
+            --if not udata.PolarStarIsCharmed then
+            --    player.FireDelay = math.max(player.FireDelay, 5)
+            --end
             if not udata.HasPolarStar then
                 udata.HasPolarStar = true
                 player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS)
@@ -212,7 +306,6 @@ return function(mod)
                 player:EvaluateItems()
             end
         end
-        --print(udata.HasPolarStar)
 
         if Isaac.GetFrameCount()%60 == 0 then
             local inner_count = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_INNER_EYE)
@@ -220,25 +313,45 @@ return function(mod)
             local ochki_count = player:GetCollectibleNum(CollectibleType.COLLECTIBLE_20_20)
 
             local ingoreochkov = false
-            local num = 0
-            if inner_count > 0 then
-                num = num + 2 + (inner_count-1)
+            local num = 1
+            local angle = 4
+            --if inner_count > 0 then
+            --    num = num + 2 + (inner_count-1)
+            --    ingoreochkov = true
+            --end
+            if mutant_count > 0 then
+                num = num + 3 + (mutant_count-1)*2
                 ingoreochkov = true
             end
-            if mutant_count > 0 then
-                num = num + 3 + (mutant_count-1)
+            if inner_count > 0 then
+                if num > 1 then
+                    num = num + 1 + (inner_count-1)
+                else
+                    num = num + 2 + (inner_count-1)
+                end
                 ingoreochkov = true
             end
             if ochki_count > 0 then
-                
+                if ingoreochkov then
+                    num = num + ochki_count-1
+                else
+                    num = num + ochki_count
+                end
+                angle = 2
             end
+            if player:HasPlayerForm(PlayerForm.PLAYERFORM_BOOK_WORM) then
+                if player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_POLARSTAR):RandomInt(2) == 1 then
+                    num = num + 1
+                end
+            end
+            udata.PolarStarNumTears = num
+            udata.PolarStarTearAngleBetween = angle
+            udata.PolarStarConjoin = player:HasPlayerForm(PlayerForm.PLAYERFORM_BABY)
 
         end
 
 
     end
-
-
 
     ---@param player EntityPlayer
     function WarpZone.PolarStarBoosterv2_Cache(_, player, cache)
@@ -265,5 +378,102 @@ return function(mod)
         end
     end
 
+    function WarpZone.SpawnPolarStarEXP(pos, amout, rng, source)
+        amout = amout or 1
+        for i=1, amout do
+            local seed = rng:RandomInt(300000000)+1
+            local vec
+            if not Renderer then
+                vec = rng:RandomVector():Resized(rng:RandomInt(3)+1)
+            else
+                vec = Vector(rng:RandomInt(70)-35, rng:RandomInt(70)-35) / 10
+            end
+            
+            local eff = game:Spawn(EntityType.ENTITY_EFFECT, PolarStarEXTent, pos, vec, source, 0, seed):ToEffect()
+            eff:GetSprite():Play("point_idle", true)
+            eff.FallingSpeed = -4 - rng:RandomFloat()*2
+            eff.FallingAcceleration = 0.43
+            eff.LifeSpan = 30
+            local data = eff:GetData()
+        end
+    end
+
+    ---@param ent Entity
+    function WarpZone.PolarStar_NPCKill(_, ent)
+        if WarpZone.SomeoneHasPolarStar then
+            if ent:IsActiveEnemy(true) and ent:CanShutDoors() then
+                
+                local amout = math.ceil( ent.MaxHitPoints / 30 )
+                if ent:IsBoss() then
+                    amout = amout + 5
+                end
+                WarpZone.SpawnPolarStarEXP(ent.Position, amout, ent:GetDropRNG(), Isaac.GetPlayer())
+            end
+        end
+    end
+    WarpZone:AddCallback(ModCallbacks.MC_POST_ENTITY_KILL, WarpZone.PolarStar_NPCKill)
+
+    ---@param ent EntityEffect
+    function WarpZone.PolarStarEXPEnt_update(_, ent)
+        local spr = ent:GetSprite()
+        local pos = ent.Position
+        --if ent.SubType == 0 then
+            ent.PositionOffset = ent.PositionOffset + Vector(0, ent.FallingSpeed)
+            if ent.PositionOffset.Y > 0 then
+                ent.FallingSpeed = -4 - ent:GetDropRNG():RandomFloat()*2 -- -ent.FallingSpeed *0.95
+                ent.PositionOffset = Vector(ent.PositionOffset.X, 0)
+            else
+                ent.FallingSpeed = ent.FallingSpeed + ent.FallingAcceleration
+            end
+            
+            local room = game:GetRoom()
+            if room:GetGridCollisionAtPos(pos) >= GridCollisionClass.COLLISION_WALL then
+                local gridpos = room:GetGridPosition(room:GetGridIndex(pos))
+                local angle = math.floor((((pos-ent.Velocity-gridpos):GetAngleDegrees()+45)%360)/90)
+                
+                if angle == 2 or angle == 0 then
+                    ent.Velocity = Vector(-ent.Velocity.X, ent.Velocity.Y)
+                elseif angle == 3 or angle == 1 then
+                    ent.Velocity = Vector(ent.Velocity.X, -ent.Velocity.Y)
+                end
+                ent.Position = room:GetClampedPosition(pos, 0)
+                --ent:AddVelocity((pos-gridpos):Resized(1))
+            end
+
+            if not ent.Target then
+                for i=0, game:GetNumPlayers()-1 do
+                    local player = Isaac.GetPlayer(i)
+                    if player and player.Position:Distance(pos) < 200 then
+                        ent.Target = player
+                        break
+                    end
+                end
+            elseif ent.Target:Exists() then
+                local target = ent.Target
+                local dist = math.max(0, 200 - target.Position:Distance(pos))
+
+                local vel = (target.Position+target.Velocity-pos):Resized(dist/10)
+                ent.Velocity = ent.Velocity * 0.9 + vel * 0.1
+
+                if dist > 200-target.Size*3 then
+                    local tardata = target:GetData()
+                    if tardata.WarpZone_unsavedata then
+                        tardata.WarpZone_unsavedata.PolarStarEXP = tardata.WarpZone_unsavedata.PolarStarEXP + 3
+                    end
+                    local eff = Isaac.Spawn(EntityType.ENTITY_EFFECT, 102, 0,
+                        pos, Vector(0,0), ent):ToEffect()
+                    eff.PositionOffset = ent.PositionOffset
+                    eff:Update()
+                    local sprr = eff:GetSprite()
+                    sprr:Load("gfx/effects/polar star_level.anm2", true)
+                    sprr:Play("point_pickup")
+
+                    sfx:Play(SoundEffect.SOUND_SOUL_PICKUP)
+                    ent:Remove()
+                end
+            end
+        --end
+    end
+    WarpZone:AddCallback(ModCallbacks.MC_POST_EFFECT_UPDATE, WarpZone.PolarStarEXPEnt_update, PolarStarEXTent)
 
 end
