@@ -4,7 +4,7 @@ return function (mod)
     local SerJunkPickupVar = Isaac.GetEntityVariantByName("Junk_Pickup")
     local SerJunkanWalk = Isaac.GetEntityVariantByName("SerJunkanWalk")
     local SerJunkanFly = Isaac.GetEntityVariantByName("SerJunkanFly")
-    local proxyNPCtype = Isaac.GetEntityTypeByName("WZ proxy npc")
+    local proxyNPCtype = Isaac.GetEntityTypeByName("[Warp Zone] proxy npc")
 
     local game = Game()
     local function isNil(value, replacement)

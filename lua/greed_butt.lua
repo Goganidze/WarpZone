@@ -19,7 +19,7 @@ return function (mod)
         end
     end
 
-    local GreedButtEffectType = Isaac.GetEntityVariantByName("WZ greed butt effect")
+    local GreedButtEffectType = Isaac.GetEntityVariantByName("[Warp Zone] greed butt effect")
 
     function WarpZone.GreedButtCoinPickup(player, value)
         if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) then
