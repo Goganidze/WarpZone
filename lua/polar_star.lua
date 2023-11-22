@@ -383,7 +383,7 @@ return function(mod)
         for i=1, amout do
             local seed = rng:RandomInt(300000000)+1
             local vec
-            if not Renderer then
+            if Renderer then
                 vec = rng:RandomVector():Resized(rng:RandomInt(3)+1)
             else
                 vec = Vector(rng:RandomInt(70)-35, rng:RandomInt(70)-35) / 10
