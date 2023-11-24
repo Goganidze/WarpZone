@@ -3386,7 +3386,7 @@ function WarpZone:hitEnemy(entitytear, collider, low)
         collider:AddEntityFlags(EntityFlag.FLAG_BLEED_OUT)
     end
 
-    if data.CrowdfunderShot == 2 then
+    if data.CrowdfunderShot and data.CrowdfunderShot >= 2 then
         data.CrowdfunderShot = 1
         local rng = entitytear:GetDropRNG()
         if collider:IsActiveEnemy() and not collider:IsBoss() and rng:RandomInt(3) == 1 then

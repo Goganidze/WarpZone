@@ -40,7 +40,7 @@
     <active	id="39" gfx="Collectibles_2_Past_Killer_2x.png" name=" Gun that can kill the Past " description="Leave your past behind" maxcharges = "0" quality="2"/>
     <active	id="40" gfx="Collectibles_2_Past_Killer_1x.png" name="  Gun that can kill the Past  " description="Leave your past behind" maxcharges = "0" quality="2"/>
     <active	id="41" gfx="Collectibles_36_polar_star.png" name="Polar Star" description="Fight and flight response" maxcharges = "0" quality="2" cache="speed flying damage familiars"/>
-    <active	id="42" gfx="Collectibles_36_boosterv2.png" name="Booster V2.0" description="Fight and flight response" maxcharges = "0" quality="2" cache="speed flying damage familiars"/>
+    <active	id="42" gfx="Collectibles_36_boosterv2.png" name="Booster V2.0" description="Fight and flight response" maxcharges = "0" quality="2" />
     
 
 
