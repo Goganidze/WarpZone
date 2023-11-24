@@ -89,7 +89,10 @@
     <entity anm2path="effects/greed butt effect.anm2" name="[Warp Zone] greed butt effect" id="1000" variant="8549" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="0" collisionRadius="0" friction="1" numGridCollisionPoints="0" shadowSize="0" stageHP="0">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
-    <entity anm2path="effects/polar star_level.anm2" name="[Warp Zone] polar star exp" id="1000"  baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="0" collisionRadius="0" friction="1" numGridCollisionPoints="0" shadowSize="0" stageHP="0">
+    <entity anm2path="effects/polar star_level.anm2" name="[Warp Zone] polar star exp" id="1000" variant="8550" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="0" collisionRadius="0" friction="1" numGridCollisionPoints="0" shadowSize="0" stageHP="0">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
+    </entity>
+    <entity anm2path="polar star_bullet_poof.anm2" name="[Warp Zone] polar star bullet poof" id="1000" variant="8550" subtype="10" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="0" collisionRadius="0" friction="1" numGridCollisionPoints="0" shadowSize="0" stageHP="0">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
 </entities>

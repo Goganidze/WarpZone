@@ -94,7 +94,16 @@ return function (mod)
                 fam.Coins = math.max(fam.Coins - 1, -120)
 
                 SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT, nil, 1, false, 0.7)
-                player:AddCoins(-1)
+                local udata = player:GetData().WarpZone_unsavedata
+                local chan = fam.Coins > 0 and 1 or .7
+                local lossChan =  udata and udata.CrowdfunderLossCache and (chan * udata.CrowdfunderLossCache) or chan
+                local lossed = false
+                
+                --if fam.Coins > 0 or player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER):RandomInt(2) == 0 then
+                if player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER):RandomFloat() <= lossChan then
+                    player:AddCoins(-1)
+                    lossed = true
+                end
                 local weakhandissue = fam.Coins<0 and (fam:GetDropRNG():RandomInt(-fam.Coins)+fam.Coins/2)/4 or 0
                
                 local aimspeed = player:GetAimDirection():Rotated(weakhandissue) * 16
@@ -107,7 +116,11 @@ return function (mod)
                 --sprite:Load("gfx/002.020_coin tear.anm2",true)
                 --sprite:Play("Rotate2")
                 cointear:ResetSpriteScale()
-                cointear:GetData().CrowdfunderShot = 2
+                if lossed then
+                    cointear:GetData().CrowdfunderShot = 2
+                else
+                    cointear:GetData().CrowdfunderShot = 3
+                end
 
                 player:AddVelocity(-aimspeed/10)
 
@@ -195,12 +208,61 @@ return function (mod)
         end
     end
 
+    WarpZone.Crowdfunder_moneyLowItemList = {
+        [CollectibleType.COLLECTIBLE_STEAM_SALE] = true,
+        [CollectibleType.COLLECTIBLE_SACK_OF_PENNIES] = true,
+        [CollectibleType.COLLECTIBLE_MONEY_EQUALS_POWER] = true,
+        [CollectibleType.COLLECTIBLE_IV_BAG] = true,
+        [CollectibleType.COLLECTIBLE_PAGEANT_BOY] = true,
+        [CollectibleType.COLLECTIBLE_BUM_FRIEND] = true,
+        [CollectibleType.COLLECTIBLE_3_DOLLAR_BILL] = true,
+        [CollectibleType.COLLECTIBLE_MIDAS_TOUCH] = true,
+        [CollectibleType.COLLECTIBLE_PIGGY_BANK] = true,
+        [CollectibleType.COLLECTIBLE_PAY_TO_PLAY] = true,
+        [CollectibleType.COLLECTIBLE_BUMBO] = true,
+        [CollectibleType.COLLECTIBLE_DADS_LOST_COIN] = true,
+        [CollectibleType.COLLECTIBLE_GREEDS_GULLET] = true,
+        [CollectibleType.COLLECTIBLE_MEMBER_CARD] = true,
+        [CollectibleType.COLLECTIBLE_SAUSAGE] = true,
+        [CollectibleType.COLLECTIBLE_KEEPERS_SACK] = true
+    }
+    WarpZone.Crowdfunder_moneyStrongItemList = {
+        [CollectibleType.COLLECTIBLE_DOLLAR] = true,
+        [CollectibleType.COLLECTIBLE_QUARTER] = true,
+        [CollectibleType.COLLECTIBLE_MAGIC_FINGERS] = true,
+        [CollectibleType.COLLECTIBLE_WOODEN_NICKEL] = true,
+        [CollectibleType.COLLECTIBLE_PORTABLE_SLOT] = true,
+        [CollectibleType.COLLECTIBLE_HEAD_OF_THE_KEEPER] = true,
+        [CollectibleType.COLLECTIBLE_EYE_OF_GREED] = true,
+        [CollectibleType.COLLECTIBLE_CROOKED_PENNY] = true,
+        [CollectibleType.COLLECTIBLE_COUPON] = true,
+        [CollectibleType.COLLECTIBLE_GOLDEN_RAZOR] = true,
+        [CollectibleType.COLLECTIBLE_SACK_OF_PENNIES] = true,
+        [CollectibleType.COLLECTIBLE_KEEPERS_BOX] = true,
+    }
+
     ---@param player EntityPlayer
     ---@param effects TemporaryEffects
     function WarpZone.Crowdfunder_PlayerUpdate(player, effects)
         local data = player:GetData()
         if effects:HasCollectibleEffect(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER) then
             player.FireDelay = math.max(player.FireDelay, 5)
+            if Isaac.GetFrameCount()%60 == 0 then
+                local bonus = 1
+                for i in pairs(WarpZone.Crowdfunder_moneyStrongItemList) do
+                    if player:HasCollectible(i) then
+                        bonus = 0.7
+                        break
+                    end
+                end
+                for i in pairs(WarpZone.Crowdfunder_moneyLowItemList) do
+                    if player:HasCollectible(i) then
+                        bonus = 0.9
+                        break
+                    end
+                end
+                data.WarpZone_unsavedata.CrowdfunderLossCache = bonus
+            end
         elseif data.WarpZone_unsavedata.Crowdfunder 
         and not player:GetEffects():HasCollectibleEffect(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER) then
             data.WarpZone_unsavedata.Crowdfunder = nil
