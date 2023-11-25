@@ -592,7 +592,7 @@ return function(mod)
         if player and damage > 0
         and fg & DamageFlag.DAMAGE_NO_PENALTIES == 0 and fg &  DamageFlag.DAMAGE_FAKE == 0
         and fg & DamageFlag.DAMAGE_RED_HEARTS == 0 then
-            print(fg)
+            
             local boos = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2)
             local udata = player:GetData().WarpZone_unsavedata
             if boos and udata.PolarStarLVL > 2 then
