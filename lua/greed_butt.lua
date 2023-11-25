@@ -103,7 +103,21 @@ return function (mod)
 
     ---@param player EntityPlayer
     ---@param ent Entity
-    function WarpZone.GreedButt_PlayerCollide(_, ent, player)
+    function WarpZone.GreedButt_PlayerCollide(ent, player)
+        local pdata = player:GetData()
+        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) 
+        and pdata.WarpZone_data.GreedButtCoints >= 5 then
+            if ent.Type == EntityType.ENTITY_PROJECTILE or ent:IsActiveEnemy() then
+                effect(player, ent)
+                pdata.WarpZone_data.GreedButtCoints = 0
+                pdata.WarpZone_unsavedata.GreedButt.rush = perdotyaga
+                pdata.WarpZone_unsavedata.GreedButt.ent:GetData()["перди"] = true
+                ent.Velocity = (ent.Position - player.Position):Resized(5)
+                return true
+            end
+        end
+    end
+    --[[function WarpZone.GreedButt_PlayerCollide(_, ent, player)
         player = player:ToPlayer()
         if not player then return end
         local pdata = player:GetData()
@@ -120,7 +134,8 @@ return function (mod)
         end
     end
     WarpZone:AddCallback(ModCallbacks.MC_PRE_NPC_COLLISION, WarpZone.GreedButt_PlayerCollide)
-    WarpZone:AddCallback(ModCallbacks.MC_PRE_PROJECTILE_COLLISION, WarpZone.GreedButt_PlayerCollide)
+    WarpZone:AddCallback(ModCallbacks.MC_PRE_PROJECTILE_COLLISION, WarpZone.GreedButt_PlayerCollide)]]
+
 
 
     ---@param e EntityEffect

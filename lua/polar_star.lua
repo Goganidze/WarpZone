@@ -2,6 +2,7 @@ return function(mod)
     local sfx = SFXManager()
     local Isaac = Isaac
     local game = Game()
+    local Wtr = 20/13
 
     local PolarStarVar = Isaac.GetEntityVariantByName("[Warp Zone] Polar Star")
     local PolarStarEXTent = Isaac.GetEntityVariantByName("[Warp Zone] polar star exp")
@@ -16,7 +17,7 @@ return function(mod)
     end
 
     ---@param source Entity|EntityPlayer?
-    function WarpZone.FirePolarStar(pos, vec, flag, source, dmgmulti)
+    function WarpZone.FirePolarStar(pos, vec, flag, source, dmgmulti, LifeTime)
         --local firePosition = pos + vec:Resized(12) --+ Vector(0, 13)
         local tear
         if source then
@@ -45,21 +46,19 @@ return function(mod)
         local sprite = tear:GetSprite()
         tear:AddTearFlags(flag)
         tear.CollisionDamage = tear.CollisionDamage * 1.5
-        --tear.Scale = dmgmulti or 1
+        
         tear:ResetSpriteScale()
         local anm = sprite:GetAnimation()
         tear:ChangeVariant(WarpZone.WarpZoneTypes.TEAR_POLAR_STAR_BULLET)
-        --tear:ChangeVariant(TearVariant.CUPID_BLUE)
-        
-        --sprite:Load("gfx/polar star_bullet.anm2",true)
+
         sprite:Play(sprite:GetDefaultAnimation())
         sprite:Play(anm)
         --tear.Scale = dmgmulti or 1
         tear.SpriteRotation = vec:GetAngleDegrees()
         
-        tear.FallingSpeed = tear.FallingSpeed  + 1
-        tear.FallingAcceleration = tear.FallingAcceleration * 2
-        
+        --tear.FallingSpeed = tear.FallingSpeed  + 1
+        --tear.FallingAcceleration = tear.FallingAcceleration * 2
+        tear:GetData().WarpZone_Timeout = LifeTime
         
         tear:ResetSpriteScale()
     end
@@ -72,11 +71,26 @@ return function(mod)
             local ef = Isaac.Spawn(EntityType.ENTITY_EFFECT, PolarStarEXTent, 10,
                 tear.Position+tear.Velocity+tear.PositionOffset, Vector(0,0), tear)
 
+            ef.Color = tear.Color
             ef.SpriteScale = Vector(1.5, 1.5) * tear.Scale
             if tear:GetDropRNG():RandomInt(4) == 0 then
                 ef:GetSprite():Play("2")
             else
                 ef:GetSprite():Play("1")
+            end
+        else
+            local data = tear:GetData()
+            local time = data.WarpZone_Timeout
+            if not time or time <= 0 then
+                local he = tear.PositionOffset.Y+4 -- tear.Height
+                tear.Height = 0
+                data.WarpZone_Timeout = 2
+                tear.PositionOffset = Vector(0, he)
+                tear.Position = tear.Position - tear.Velocity
+                tear:Update()
+                tear.Height = he
+            else
+                 data.WarpZone_Timeout = time - 1
             end
         end
     end
@@ -157,27 +171,35 @@ return function(mod)
 
                 local num = udata and udata.PolarStarNumTears or 1
 
-                local mainvec = aim:Resized(player.ShotSpeed*15+5) 
+                local tearspeed = player.ShotSpeed*15+5
+                local mainvec = aim:Resized(tearspeed) 
 
                 local angle = udata and udata.PolarStarTearAngleBetween or 2
                 local start = mainvec:Rotated(-(num-1)*angle/2)
-                local shootPos = player.Position + aim:Resized(distfromplay)
+                local shootPos = player.Position + aim:Resized(distfromplay/2)
 
+                local lifeTime = math.floor ((player.TearRange-distfromplay) / tearspeed) - 1
+                
+                local source = SirenHelper or player
+
+                local prevec = start:Resized(tearspeed)
+                local Inher = player:GetTearMovementInheritance(prevec)
                 if udata.PolarStarLVL ~= 2 then
+                    local dmgmulti = udata.PolarStarLVL == 3 and 2.5
                     for i = 0, num-1 do
-                        local vec = start:Resized(player.ShotSpeed*15+5):Rotated(i*angle)
-                        vec = vec + player:GetTearMovementInheritance(vec)
+                        local vec = prevec:Rotated(i*angle)
+                        vec = vec + Inher
                         --local pos = fam.Position --+ aim:Resized(12)
-                        WarpZone.FirePolarStar(shootPos, vec, 0, SirenHelper or player, udata.PolarStarLVL == 3 and 2.5)
+                        WarpZone.FirePolarStar(shootPos, vec, 0, source, dmgmulti, lifeTime)
                     end
                 elseif udata.PolarStarLVL == 2 then
                     for i = 0, num-1 do
-                        local vec = start:Resized(player.ShotSpeed*15+5):Rotated(i*angle)
-                        vec = vec + player:GetTearMovementInheritance(vec)
+                        local vec = prevec:Rotated(i*angle)
+                        vec = vec + Inher
                         local off = aim:Rotated(90):Resized(10)
-                        WarpZone.FirePolarStar(shootPos+off, vec, 0, SirenHelper or player, 0.8)
-                        
-                        WarpZone.FirePolarStar(shootPos-off, vec, 0, SirenHelper or player, 0.8)
+
+                        WarpZone.FirePolarStar(shootPos+off, vec, 0, source, 0.8, lifeTime)       
+                        WarpZone.FirePolarStar(shootPos-off, vec, 0, source, 0.8, lifeTime)
                     end
                 end
 
@@ -196,17 +218,6 @@ return function(mod)
         local prefix = "Idle"
 
         if not wasShootb then
-            --[[if degrees > 315 or degrees <= 45 then
-                suffix = "Right"
-            elseif degrees > 45 and degrees <= 135 then
-                suffix = "Down"
-            elseif degrees > 135 and degrees <= 225 then
-                suffix = "Left"
-            elseif degrees > 225 then
-                suffix = "Up"
-            else
-                suffix = "Down"
-            end]]
         
         --if suffix then
             local animName = prefix .. suffix
@@ -286,7 +297,7 @@ return function(mod)
         local data = player:GetData()
         local udata = data.WarpZone_unsavedata
         WarpZone.SomeoneHasPolarStar = WarpZone.SomeoneHasPolarStar or boos or polstr
-        if udata.HasPolarStar then 
+        if boos or polstr then 
             if not udata.PolarStarLVL then
                 udata.PolarStarLVL = 1
                 udata.PolarStarEXP = 0
@@ -318,22 +329,48 @@ return function(mod)
         end
 
         if boos then
+            local lvl = udata.PolarStarLVL
             if not udata.HasBoosterV2Costume then
                 player:AddNullCostume(WarpZone.WarpZoneTypes.COSTUME_BOOSTERV2)
                 udata.HasBoosterV2Costume = true
                 player:AddCacheFlags(CacheFlag.CACHE_FLYING | CacheFlag.CACHE_SPEED)
                 player:EvaluateItems()
             end
-            if Isaac.GetFrameCount() % 10 == 0 and player.Velocity:Length()>2 then
-                local ef = Isaac.Spawn(EntityType.ENTITY_EFFECT, 102, 0,
-                    player.Position, Vector(0,0), player):ToEffect()
+            if udata.Boosterv2_ForceSpeed and lvl > 2 then
+                player.MoveSpeed = math.min(2.2, player.MoveSpeed + udata.Boosterv2_ForceSpeed)
+                udata.Boosterv2_ForceSpeed = nil
+            end
+            local ggh = lvl > 1 and 7 or 10
+            if not udata.bosv2_rendMannul and Isaac.GetFrameCount() % ggh == 0 and player.Velocity:Length()>2 then
+                if lvl > 1 then
+                    local ef = Isaac.Spawn(EntityType.ENTITY_EFFECT, PolarStarEXTent, 5,
+                        player.Position, Vector(0,0), player):ToEffect()
+                    local es = ef:GetSprite()
+                    es:Load("gfx/effects/booster v2 effect.anm2", true)
+                    es:Play(es:GetDefaultAnimation())
+                    es.Color = Color(2,.4,.2,.2)
+                    --es.Scale = v5
+                    --es.Offset = bosv2Off
+
+                    local list = Isaac.FindInRadius(player.Position, 60, EntityPartition.ENEMY)
+                    for i=1, #list do
+                        local e = list[i]
+                        if e:IsActiveEnemy() and not e:IsInvincible() then
+                            e:AddBurn(EntityRef(player), 30, player.Damage)
+                        end
+                    end
+                else
+                    local ef = Isaac.Spawn(EntityType.ENTITY_EFFECT, 102, 0,
+                        player.Position, Vector(0,0), player):ToEffect()
                     local es = ef:GetSprite()
                     es:Load("gfx/effects/booster v2 effect.anm2", true)
                     es:Play(es:GetDefaultAnimation())
                     es.Color = Color(1,1,1,.5)
                     es.Scale = v5
                     es.Offset = bosv2Off
+                end
             end
+
 
         elseif not boos then
             
@@ -345,6 +382,115 @@ return function(mod)
             end
         end
 
+        if udata.Boosterv2_shilaVjope then
+            local spr = player:GetSprite()
+            if not udata.Bosv2_3Frame then
+                udata.Bosv2_3Frame = 0
+                udata.Bosv2_RefScale = spr.Scale/1
+                udata.bosv2_renderpos = 0
+                --player:SetMinDamageCooldown(120)
+                sfx:Play(SoundEffect.SOUND_BATTERYCHARGE, Options.SFXVolume+0.4, nil, nil, 0.5)
+            end
+            local endThis
+            local frame = udata.Bosv2_3Frame
+            if frame < 5 then
+                spr.Scale = Vector((1+frame/20) * udata.Bosv2_RefScale.X, (1-frame/20) * udata.Bosv2_RefScale.Y )
+
+            elseif frame == 5 then
+                --game:BombExplosionEffects
+                local ef = Isaac.Spawn(EntityType.ENTITY_EFFECT, 102, 0,
+                        player.Position, Vector(0,0), player):ToEffect()
+                local es = ef:GetSprite()
+                es:Load("gfx/effects/booster v2 effect.anm2", true)
+                es:Play(es:GetDefaultAnimation())
+                es.Color = Color(1,1,1,.5)
+                es.Scale = Vector(2,2)
+                sfx:Play(SoundEffect.SOUND_LIGHTBOLT_CHARGE, nil, nil, nil, 0.9)
+            elseif frame < 50 then
+                if frame % 2 == 0 then
+                    local ef = Isaac.Spawn(EntityType.ENTITY_EFFECT, 102, 0,
+                        player.Position, Vector(0,0), player):ToEffect()
+                    ef.PositionOffset = Vector(0,-udata.bosv2_renderpos*Wtr)
+                    local es = ef:GetSprite()
+                    es:Load("gfx/effects/booster v2 effect.anm2", true)
+                    es:Play(es:GetDefaultAnimation())
+                    es.Color = Color(1,1,1,.5)
+                    es.Scale = v5
+                    es.Offset = bosv2Off
+                    es.PlaybackSpeed = .5
+                    
+                end
+
+                player.PositionOffset = Vector(player.PositionOffset.X, 700)
+                --udata.bosv2_PO = player.PositionOffset
+                udata.bosv2_rendMannul = true
+                udata.bosv2_renderpos = udata.bosv2_renderpos* 0.96 + 120 * (1-0.96)
+                spr.Scale = Vector((.7+frame/200) * udata.Bosv2_RefScale.X, (1.3-frame/200) * udata.Bosv2_RefScale.Y )
+            --elseif frame < 70 then
+            --    local sfame = frame-60
+            --    spr.Scale = Vector((.7+sfame/50) * udata.Bosv2_RefScale.X, (1.3-sfame/50) * udata.Bosv2_RefScale.Y )
+            --    udata.bosv2_renderpos = udata.bosv2_renderpos* 0.96 + 130 * (1-0.96)
+                --spr.Rotation = spr.Rotation * 0.9 + 180 * 0.1
+            elseif frame < 60 then
+                if frame == 50 then
+                    sfx:Play(SoundEffect.SOUND_LIGHTBOLT_CHARGE, Options.SFXVolume+0.4, nil, nil, 0.8)
+                end
+                local sfame = frame-50
+                spr.Scale = Vector((1.0-sfame/50) * udata.Bosv2_RefScale.X, (1.0+sfame/50) * udata.Bosv2_RefScale.Y )
+                --player.SpriteRotation = player.SpriteRotation * 0.9 + 180 * 0.1
+            else
+
+                local ef = Isaac.Spawn(EntityType.ENTITY_EFFECT, 102, 0,
+                    player.Position, Vector(0,0), player):ToEffect()
+                ef.PositionOffset = Vector(0,-udata.bosv2_renderpos)
+                local es = ef:GetSprite()
+                es:Load("gfx/effects/booster v2 effect.anm2", true)
+                es:Play(es:GetDefaultAnimation())
+                es.Color = Color(1,1,1,.5)
+                es.Scale = v5
+                es.Offset = bosv2Off
+
+                spr.Scale = Vector(.7 * udata.Bosv2_RefScale.X, -1.3 * udata.Bosv2_RefScale.Y )
+                player.PositionOffset = Vector(player.PositionOffset.X, 700)
+                udata.bosv2_renderpos = udata.bosv2_renderpos - 13
+                if udata.bosv2_renderpos < 10 then
+                    game:BombExplosionEffects(player.Position, 100, player.TearFlags, nil, player, nil , true, true)
+                    spr.Scale = udata.Bosv2_RefScale
+                    endThis = true
+                end
+            end
+            
+            player.Velocity = player.Velocity * 0.8
+            udata.Bosv2_3Frame = udata.Bosv2_3Frame + .5
+            player.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+
+            if endThis then
+                player.EntityCollisionClass = EntityCollisionClass.ENTCOLL_ALL
+                player.PositionOffset = Vector(player.PositionOffset.X, 0)
+                spr.Rotation = 0
+                udata.Bosv2_3Frame = nil
+                udata.Bosv2_RefScale = nil
+                udata.bosv2_renderpos = nil
+                udata.bosv2_rendMannul = nil
+
+                udata.Boosterv2_shilaVjope = nil
+                player:SetMinDamageCooldown(30)
+                sfx:Play(SoundEffect.SOUND_LIGHTBOLT_CHARGE, Options.SFXVolume+0.4, nil, nil, 0.5)
+                sfx:Play(SoundEffect.SOUND_BATTERYCHARGE, Options.SFXVolume+0.4, nil, nil, 0.5)
+
+                udata.PolarStarLVL = udata.PolarStarLVL - 1
+                udata.PolarStarEXP = 0
+
+                local ef = Isaac.Spawn(EntityType.ENTITY_EFFECT, 102, 0,
+                    player.Position+Vector(0,-30), Vector(0,0), player):ToEffect()
+                ef.DepthOffset = 100
+                local es = ef:GetSprite()
+                es:Load("gfx/effects/polar star_level.anm2", true)
+                es:Play("level down")
+                player:AddCacheFlags(CacheFlag.CACHE_FLYING | CacheFlag.CACHE_SPEED)
+                player:EvaluateItems()
+            end
+        end
 
         if polstr then
             --if not udata.PolarStarIsCharmed then
@@ -435,14 +581,34 @@ return function(mod)
         elseif cache == CacheFlag.CACHE_SPEED then
             if boos then
                 player.MoveSpeed = math.max(1.5, (player.MoveSpeed + 0.1) * 1.5)
+                data.WarpZone_unsavedata.Boosterv2_ForceSpeed = math.max(0, player.MoveSpeed - 2)
             end
         end
     end
 
+    function WarpZone.PolarStarBoosterv2_PrePlayerDmg(_, ent, damage, fg, source)
+        local player = ent:ToPlayer()
+        
+        if player and damage > 0
+        and fg & DamageFlag.DAMAGE_NO_PENALTIES == 0 and fg &  DamageFlag.DAMAGE_FAKE == 0
+        and fg & DamageFlag.DAMAGE_RED_HEARTS == 0 then
+            
+            local boos = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2)
+            local udata = player:GetData().WarpZone_unsavedata
+            if boos and udata.PolarStarLVL > 2 then
+                udata.Boosterv2_shilaVjope = true
+                return false
+            end
+        end
+    end
+    WarpZone:AddPriorityCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, 1, WarpZone.PolarStarBoosterv2_PrePlayerDmg)
+
     function WarpZone.PolarStarBoosterv2_LastPlayerDmg(_, ent, damage, fg, source)
         local player = ent:ToPlayer()
         
-        if player and (Renderer or damage > 0) and fg & DamageFlag.DAMAGE_NO_PENALTIES == 0  then
+        if player and (Renderer or damage > 0) 
+        and fg & DamageFlag.DAMAGE_NO_PENALTIES == 0 and fg &  DamageFlag.DAMAGE_FAKE == 0
+        and fg & DamageFlag.DAMAGE_RED_HEARTS == 0 then
             local polstr = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POLARSTAR)
             local boos = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2)
             if polstr or boos then
@@ -457,6 +623,8 @@ return function(mod)
                     local es = ef:GetSprite()
                     es:Load("gfx/effects/polar star_level.anm2", true)
                     es:Play("level down")
+                    player:AddCacheFlags(CacheFlag.CACHE_FLYING | CacheFlag.CACHE_SPEED)
+                    player:EvaluateItems()
                 end
             end
         end
@@ -502,11 +670,8 @@ return function(mod)
     end
     WarpZone:AddCallback(ModCallbacks.MC_POST_ENTITY_KILL, WarpZone.PolarStar_NPCKill)
 
-    ---@param ent EntityEffect
-    function WarpZone.PolarStarEXPEnt_update(_, ent)
-        local spr = ent:GetSprite()
-        local pos = ent.Position
-        if ent.SubType == 0 then
+    local EXPLogic = {
+        [0] = function(ent,spr,pos)
             ent.PositionOffset = ent.PositionOffset + Vector(0, ent.FallingSpeed)
             if ent.PositionOffset.Y > 0 then
                 ent.FallingSpeed = -4 - ent:GetDropRNG():RandomFloat()*2 -- -ent.FallingSpeed *0.95
@@ -561,12 +726,59 @@ return function(mod)
                     ent:Remove()
                 end
             end
-        elseif ent.SubType == 10 then
+        end,
+        [5] = function(ent,spr,pos)
             if spr:IsFinished() then
                 ent:Remove()
             end
+            --[[if ent.SpawnerEntity and ent.FrameCount % 3 == 1 then
+                local player = ent.SpawnerEntity:ToPlayer()
+                if player then
+                    local list = Isaac.FindInRadius(pos, 60, EntityPartition.ENEMY)
+                    for i=1, #list do
+                        local e = list[i]
+                        if e:IsActiveEnemy() and not e:IsInvincible() then
+                            e:AddBurn(EntityRef(player), 30, player.Damage)
+                        end
+                    end
+                end
+            end]]
+        end,
+        [10] = function(ent,spr,pos)
+            if spr:IsFinished() then
+                ent:Remove()
+            end
+        end,
+    }
+
+
+
+    ---@param ent EntityEffect
+    function WarpZone.PolarStarEXPEnt_update(_, ent)
+        local spr = ent:GetSprite()
+        local pos = ent.Position
+        if EXPLogic[ent.SubType] and EXPLogic[ent.SubType](ent,spr,pos) then
+
         end
     end
     WarpZone:AddCallback(ModCallbacks.MC_POST_EFFECT_UPDATE, WarpZone.PolarStarEXPEnt_update, PolarStarEXTent)
+
+    local prevent = false
+    ---@param player EntityPlayer
+    function WarpZone.Boosterv2_playerRender(_, player, offset)
+        if prevent then return end
+        local spr = player:GetSprite()
+        local data = player:GetData()
+        local udata = data.WarpZone_unsavedata
+
+        if udata.bosv2_rendMannul then
+            local frame = udata.Bosv2_3Frame
+            prevent = true
+            local por = Vector(0,-player.PositionOffset.Y/Wtr - udata.bosv2_renderpos) + offset
+            player:Render(por)
+            prevent = false
+
+        end
+    end
 
 end

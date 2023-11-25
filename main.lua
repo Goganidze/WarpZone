@@ -1295,7 +1295,7 @@ end
 
 
 ---@param player EntityPlayer
-function WarpZone:postRender(player)
+function WarpZone:postRender(player, offset)
 	local actions = player:GetLastActionTriggers()
     local data = player:GetData()
     local controllerid = player.ControllerIndex
@@ -1461,6 +1461,8 @@ function WarpZone:postRender(player)
             data.WarpZone_unsavedata.TickLostItem = nil
         end
     end
+
+    WarpZone.Boosterv2_playerRender(nil, player, offset)
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_RENDER, WarpZone.postRender)
 
@@ -4685,6 +4687,21 @@ function WarpZone:useGravity(collectible, rng, player, useflags, activeslot, cus
     data.gravReticle.Color = Color(0.392, 0.917, 0.509, .5, 0, 0, 0)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.useGravity, WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY)
+
+---@param player EntityPlayer
+---@param ent Entity
+function WarpZone.PrePlayerDamageCollide(_, ent, player)
+    player = player:ToPlayer()
+    if not player then return end
+    local result
+    result = WarpZone.GreedButt_PlayerCollide(ent, player)
+    --result = 
+    if result ~= nil then
+        return result
+    end
+end
+WarpZone:AddCallback(ModCallbacks.MC_PRE_NPC_COLLISION, WarpZone.PrePlayerDamageCollide)
+WarpZone:AddCallback(ModCallbacks.MC_PRE_PROJECTILE_COLLISION, WarpZone.PrePlayerDamageCollide)
 
 
 
