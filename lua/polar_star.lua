@@ -46,6 +46,7 @@ return function(mod)
         local sprite = tear:GetSprite()
         tear:AddTearFlags(flag)
         tear.CollisionDamage = tear.CollisionDamage * 1.5
+        --tear.Height = -10
         
         tear:ResetSpriteScale()
         local anm = sprite:GetAnimation()
@@ -56,11 +57,12 @@ return function(mod)
         --tear.Scale = dmgmulti or 1
         tear.SpriteRotation = vec:GetAngleDegrees()
         
-        --tear.FallingSpeed = tear.FallingSpeed  + 1
-        --tear.FallingAcceleration = tear.FallingAcceleration * 2
+        --tear.FallingSpeed = -0.65 -- tear.FallingSpeed  + 1
+        --tear.FallingAcceleration = -0.05 -- tear.FallingAcceleration * 2
         tear:GetData().WarpZone_Timeout = LifeTime
         
         tear:ResetSpriteScale()
+        return tear
     end
 
     ---@param tear EntityTear
@@ -108,9 +110,12 @@ return function(mod)
         local wasShoot = fam.OrbitAngleOffset & 2
         local wasShootb = wasShoot==2
         local IsSirenCharmed, SirenHelper = WarpZone.isSirenCharmed(fam)
-        --player:GetData().WarpZone_unsavedata.PolarStarIsCharmed = IsSirenCharmed
+        
+        local firedelaay = player.MaxFireDelay
         if not IsSirenCharmed then
             player.FireDelay = math.max(player.FireDelay, 5)
+        else
+            firedelaay = 22
         end
 
 
@@ -145,7 +150,7 @@ return function(mod)
         local IsnotFinished
         
         if isAim then
-            if fam.FireCooldown <= 0 then
+            if fam.OrbitSpeed <= 0 then
                 local vol = Options.SFXVolume
                 if sfx:IsPlaying(SoundEffect.SOUND_GFUEL_GUNSHOT) then
                     vol = vol * .5
@@ -165,8 +170,9 @@ return function(mod)
                 fam.LastDirection = math.floor(rotationAngle) % 360
                 wasShoot = 2
                 wasShootb = true
-                fam.FireCooldown = math.floor(player.MaxFireDelay * 1.2 + 1)
                 
+                --fam.OrbitSpeed = fam.OrbitSpeed + (player.MaxFireDelay * 1.2 + 1) -- math.floor((player.MaxFireDelay * 1.2 + 1)*2)
+               
                 local udata = player:GetData().WarpZone_unsavedata
 
                 local num = udata and udata.PolarStarNumTears or 1
@@ -176,7 +182,7 @@ return function(mod)
 
                 local angle = udata and udata.PolarStarTearAngleBetween or 2
                 local start = mainvec:Rotated(-(num-1)*angle/2)
-                local shootPos = player.Position + aim:Resized(distfromplay/2)
+                --local shootPos = player.Position + aim:Resized(distfromplay/2)
 
                 local lifeTime = math.floor ((player.TearRange-distfromplay) / tearspeed) - 1
                 
@@ -184,22 +190,31 @@ return function(mod)
 
                 local prevec = start:Resized(tearspeed)
                 local Inher = player:GetTearMovementInheritance(prevec)
-                if udata.PolarStarLVL ~= 2 then
-                    local dmgmulti = udata.PolarStarLVL == 3 and 2.5
-                    for i = 0, num-1 do
-                        local vec = prevec:Rotated(i*angle)
-                        vec = vec + Inher
-                        --local pos = fam.Position --+ aim:Resized(12)
-                        WarpZone.FirePolarStar(shootPos, vec, 0, source, dmgmulti, lifeTime)
-                    end
-                elseif udata.PolarStarLVL == 2 then
-                    for i = 0, num-1 do
-                        local vec = prevec:Rotated(i*angle)
-                        vec = vec + Inher
-                        local off = aim:Rotated(90):Resized(10)
+                
+                for h=1, 10 do
+                    local shootPos = player.Position + aim:Resized(distfromplay/2) - aim:Resized(tearspeed/2 * -fam.OrbitSpeed ) 
+                    
+                    if udata.PolarStarLVL ~= 2 then
+                        local dmgmulti = udata.PolarStarLVL == 3 and 2.5
+                        for i = 0, num-1 do
+                            local vec = prevec:Rotated(i*angle)
+                            vec = vec + Inher
+                            --local pos = fam.Position --+ aim:Resized(12)
+                            WarpZone.FirePolarStar(shootPos, vec, 0, source, dmgmulti, lifeTime)
+                        end
+                    elseif udata.PolarStarLVL == 2 then
+                        for i = 0, num-1 do
+                            local vec = prevec:Rotated(i*angle)
+                            vec = vec + Inher
+                            local off = aim:Rotated(90):Resized(10)
 
-                        WarpZone.FirePolarStar(shootPos+off, vec, 0, source, 0.8, lifeTime)       
-                        WarpZone.FirePolarStar(shootPos-off, vec, 0, source, 0.8, lifeTime)
+                            WarpZone.FirePolarStar(shootPos+off, vec, 0, source, 0.8, lifeTime)       
+                            WarpZone.FirePolarStar(shootPos-off, vec, 0, source, 0.8, lifeTime)
+                        end
+                    end
+                    fam.OrbitSpeed = fam.OrbitSpeed + (firedelaay * 1.2 + 1)*2
+                    if fam.OrbitSpeed > 0 then
+                        break
                     end
                 end
 
@@ -213,7 +228,11 @@ return function(mod)
         elseif wasShootb then
             spr:SetAnimation("Shoot" .. suffix, false)
         end
-        fam.FireCooldown = fam.FireCooldown - 1
+        --for i=1,2 do
+            if fam.OrbitSpeed > 0 then
+                fam.OrbitSpeed = fam.OrbitSpeed - 2
+            end
+        --end
 
         local prefix = "Idle"
 
@@ -261,7 +280,7 @@ return function(mod)
         local udata = player:GetData().WarpZone_unsavedata
         sfx:Play(SoundEffect.SOUND_LIGHTBOLT_CHARGE, nil, nil, nil, 1.3)
         swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2, slot, player, 0)
-        player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS | CacheFlag.CACHE_FLYING | CacheFlag.CACHE_SPEED)
+        player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS | CacheFlag.CACHE_FLYING | CacheFlag.CACHE_SPEED | CacheFlag.CACHE_RANGE)
 
         udata.HasPolarStar = nil
         udata.HasBoosterV2Costume = true
@@ -282,7 +301,7 @@ return function(mod)
             udata.HasPolarStar = true
             udata.HasBoosterV2Costume = false
             player:TryRemoveNullCostume(WarpZone.WarpZoneTypes.COSTUME_BOOSTERV2)
-            player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS | CacheFlag.CACHE_FLYING | CacheFlag.CACHE_SPEED)
+            player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS | CacheFlag.CACHE_FLYING | CacheFlag.CACHE_SPEED | CacheFlag.CACHE_RANGE)
         end
     end
     WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.Boosterv2_Use, WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2)
@@ -293,7 +312,7 @@ return function(mod)
     function WarpZone.PolarStarBoosterv2_Update(_, player)
         local polstr = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POLARSTAR)
         local boos = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2)
-
+        
         local data = player:GetData()
         local udata = data.WarpZone_unsavedata
         WarpZone.SomeoneHasPolarStar = WarpZone.SomeoneHasPolarStar or boos or polstr
@@ -498,14 +517,14 @@ return function(mod)
             --end
             if not udata.HasPolarStar then
                 udata.HasPolarStar = true
-                player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS)
+                player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS | CacheFlag.CACHE_RANGE)
                 player:EvaluateItems()
             end
 
         else
             if udata.HasPolarStar then
                 udata.HasPolarStar = false
-                player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS)
+                player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS | CacheFlag.CACHE_RANGE)
                 player:EvaluateItems()
             end
         end
@@ -582,6 +601,10 @@ return function(mod)
             if boos then
                 player.MoveSpeed = math.max(1.5, (player.MoveSpeed + 0.1) * 1.5)
                 data.WarpZone_unsavedata.Boosterv2_ForceSpeed = math.max(0, player.MoveSpeed - 2)
+            end
+        elseif cache == CacheFlag.CACHE_RANGE then
+            if polstr then
+                player.TearHeight = player.TearHeight + 20
             end
         end
     end
@@ -672,11 +695,16 @@ return function(mod)
 
     local EXPLogic = {
         [0] = function(ent,spr,pos)
-            ent.PositionOffset = ent.PositionOffset + Vector(0, ent.FallingSpeed)
+            --if spr:GetAnimation() ~= "point_bounce" then
+                ent.PositionOffset = ent.PositionOffset + Vector(0, ent.FallingSpeed)
+            --end
             if ent.PositionOffset.Y > 0 then
                 ent.FallingSpeed = -4 - ent:GetDropRNG():RandomFloat()*2 -- -ent.FallingSpeed *0.95
                 ent.PositionOffset = Vector(ent.PositionOffset.X, 0)
-            else
+                spr:Play("point_bounce")
+                ent.TargetPosition = ent.Velocity/1
+                ent.Velocity = ent.Velocity/2
+            else --if spr:GetAnimation() ~= "point_bounce" then
                 ent.FallingSpeed = ent.FallingSpeed + ent.FallingAcceleration
             end
             
@@ -709,7 +737,7 @@ return function(mod)
                 local vel = (target.Position+target.Velocity-pos):Resized(dist/10)
                 ent.Velocity = ent.Velocity * 0.9 + vel * 0.1
 
-                if dist > 300-target.Size*3 then
+                if dist > 300-30 then --target.Size*3
                     local tardata = target:GetData()
                     if tardata.WarpZone_unsavedata then
                         tardata.WarpZone_unsavedata.PolarStarEXP = tardata.WarpZone_unsavedata.PolarStarEXP + 3
@@ -726,6 +754,17 @@ return function(mod)
                     ent:Remove()
                 end
             end
+            
+            if spr:IsFinished("point_bounce") then
+                spr:Play("point_idle")
+                ent.Velocity = ent.TargetPosition/1
+                if ent.FrameCount % 60 < 10 then
+                    spr:Play("point_круток")
+                end
+            elseif spr:IsFinished() then
+                spr:Play("point_idle")
+            end
+            ent.FlipX = ent.Velocity.X < 1
         end,
         [5] = function(ent,spr,pos)
             if spr:IsFinished() then
