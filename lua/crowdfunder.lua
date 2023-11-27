@@ -175,7 +175,7 @@ return function (mod)
     function WarpZone:Crowdfunder_Use(collectible, rng, player, useflags)
         local daat = player:GetData()
         daat.WarpZone_unsavedata.Crowdfunder = not daat.WarpZone_unsavedata.Crowdfunder
-        player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS | CacheFlag.CACHE_SPEED)
+        player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS | CacheFlag.CACHE_SPEED | CacheFlag.CACHE_RANGE)
         --player:EvaluateItems()
         SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_GUN_SWAP, Options.SFXVolume*20)
 
@@ -204,6 +204,10 @@ return function (mod)
         elseif cache == CacheFlag.CACHE_SPEED then
             if player:GetData().WarpZone_unsavedata.Crowdfunder then
                 player.MoveSpeed = player.MoveSpeed * 0.75
+            end
+        elseif cache == CacheFlag.CACHE_RANGE then
+            if player:GetData().WarpZone_unsavedata.Crowdfunder then
+                player.TearHeight = player.TearHeight + 20
             end
         end
     end
