@@ -310,8 +310,8 @@ return function(mod)
     local bosv2Off = Vector(0,-4)
     ---@param player EntityPlayer
     function WarpZone.PolarStarBoosterv2_Update(_, player)
-        local polstr = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POLARSTAR)
-        local boos = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2)
+        local polstr = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POLARSTAR) or Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_UNQUOTE
+        local boos = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2) or Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_UNQUOTE
         
         local data = player:GetData()
         local udata = data.WarpZone_unsavedata
@@ -580,8 +580,8 @@ return function(mod)
 
     ---@param player EntityPlayer
     function WarpZone.PolarStarBoosterv2_Cache(_, player, cache)
-        local polstr = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POLARSTAR)
-        local boos = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2)
+        local polstr = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POLARSTAR) or Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_UNQUOTE
+        local boos = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2) or Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_UNQUOTE
         local data = player:GetData()
 
         if cache == CacheFlag.CACHE_FAMILIARS then
@@ -616,7 +616,7 @@ return function(mod)
         and fg & DamageFlag.DAMAGE_NO_PENALTIES == 0 and fg &  DamageFlag.DAMAGE_FAKE == 0
         and fg & DamageFlag.DAMAGE_RED_HEARTS == 0 then
             
-            local boos = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2)
+            local boos = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2) or Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_UNQUOTE
             local udata = player:GetData().WarpZone_unsavedata
             if boos and udata.PolarStarLVL > 2 then
                 udata.Boosterv2_shilaVjope = true
@@ -632,8 +632,8 @@ return function(mod)
         if player and (Renderer or damage > 0) 
         and fg & DamageFlag.DAMAGE_NO_PENALTIES == 0 and fg &  DamageFlag.DAMAGE_FAKE == 0
         and fg & DamageFlag.DAMAGE_RED_HEARTS == 0 then
-            local polstr = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POLARSTAR)
-            local boos = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2)
+            local polstr = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POLARSTAR) or Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_UNQUOTE
+            local boos = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2) or Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_UNQUOTE
             if polstr or boos then
                 local udata = player:GetData().WarpZone_unsavedata
                 if udata.PolarStarLVL > 1 then
