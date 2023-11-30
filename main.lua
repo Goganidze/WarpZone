@@ -123,7 +123,7 @@ local itemPool = game:GetItemPool()
 local rustColor = Color(.68, .21, .1, 1, 0, 0, 0)
 
 --focus
-local FocusChargeMultiplier = 2.5
+local FocusChargeMultiplier = 4 --2.5
 local whiteColor = Color(1, 1, 1, 1, 0, 0, 0)
 whiteColor:SetColorize(1, 1, 1, 1)
 whiteColor:SetTint(20, 20, 20, 2)
@@ -471,7 +471,12 @@ if EID then
 
 end
 
-
+local ISFOCUSID = {
+    [WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS] = true,
+    [WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_2] = true,
+    [WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_3] = true,
+    [WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4] = true,
+}
 
 
 --util functions
@@ -1223,6 +1228,54 @@ function WarpZone:OnUpdate()
     end
 
     WarpZone.SomeoneHasPolarStar = nil
+
+    local numPlayers = game:GetNumPlayers()
+    if WarpZone.EnemyDamageBuffer > 0 then
+        for i=0, numPlayers-1, 1 do
+            local player =  Isaac.GetPlayer(i)
+            local data = player:GetData()
+            for slot=0,2 do
+                if ISFOCUSID[player:GetActiveItem(slot)] then
+                    local chargeMax = 1 + ((game:GetLevel():GetStage()-1) * FocusChargeMultiplier / 10)
+                    data.WarpZone_data.totalFocusDamage = data.WarpZone_data.totalFocusDamage + WarpZone.EnemyDamageBuffer/chargeMax
+                    --local chargeMax = (game:GetLevel():GetStage() * FocusChargeMultiplier * 2) + 3 * FocusChargeMultiplier
+                    --chargeMax = chargeMax * (1.6 / 20) -- / (250/20/20)
+                    --local chargeMax = 1 + ((game:GetLevel():GetStage()-1) * FocusChargeMultiplier / 10)
+                    local chargesToSet = math.floor(data.WarpZone_data.totalFocusDamage) -- math.floor((data.WarpZone_data.totalFocusDamage)/chargeMax)
+                    
+                    local chargeThreshold = 250 -- 20
+                    if player:HasCollectible(CollectibleType.COLLECTIBLE_BATTERY) then
+                        chargeThreshold = 500 -- 40
+                    end
+                    local pastCharge = player:GetActiveCharge()
+                    local newCharge = math.min(chargeThreshold, chargesToSet)
+
+                    local PrePre = math.ceil(math.max(0, pastCharge-50)/250*4)
+                    local NewNew = math.ceil(math.max(0, newCharge-50)/250*4)
+                    
+                    if PrePre < NewNew then
+                        if NewNew == 1 then
+                            swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS, slot, player, newCharge)
+                        else
+                            swapOutActive(WarpZone.WarpZoneTypes["COLLECTIBLE_FOCUS_"..NewNew], slot, player, newCharge)
+                        end
+                    end
+                    player:SetActiveCharge(newCharge, slot)
+                    --[[if pastCharge <= 38  and 38 < newCharge and newCharge <= 125 then
+                        swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_2, slot, player, newCharge)
+                    elseif pastCharge <= 125 and 125 < newCharge and newCharge <= 240 then
+                        swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_3, slot, player, newCharge)
+                    elseif pastCharge <=240 and newCharge and newCharge >= 250 then
+                        swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4, slot, player, newCharge)
+                        SfxManager:Play(SoundEffect.SOUND_BATTERYCHARGE)
+                    else
+                        player:SetActiveCharge(newCharge, slot)
+                    end]]
+                end
+            end
+        end
+    end
+    WarpZone.EnemyDamageBuffer = 0
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.OnUpdate)
 
@@ -1435,7 +1488,7 @@ function WarpZone:postRender(player, offset)
     end]]
     
 
-    if player and WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS == player:GetActiveItem() 
+    --[[if player and WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS == player:GetActiveItem() 
         and data.primeShot ~= nil and (Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, controllerid) or
         Input.IsActionPressed(ButtonAction.ACTION_SHOOTDOWN, controllerid) or
         Input.IsActionPressed(ButtonAction.ACTION_SHOOTLEFT, controllerid) or
@@ -1448,7 +1501,7 @@ function WarpZone:postRender(player, offset)
             data.primeShot = nil
             tear:GetData().FocusShot = true
             tear:GetData().FocusIndicator = true
-    end
+    end]]
 
         
     end
@@ -1503,16 +1556,17 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_RENDER, WarpZone.UIOnRender)
 function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
     if entity:IsVulnerableEnemy() then
         local numPlayers = game:GetNumPlayers()
-        for i=0, numPlayers-1, 1 do
+        --[[for i=0, numPlayers-1, 1 do
             local player =  Isaac.GetPlayer(i)
             local data = player:GetData()
             local source_entity = source.Entity
             if source_entity and source_entity:GetData() and source_entity:GetData().FocusIndicator == nil and
-                (WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS == player:GetActiveItem() or
-                WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
-                WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_3 == player:GetActiveItem() or
-                WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4 == player:GetActiveItem()
-                )
+                --(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS == player:GetActiveItem() or
+                --WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
+                --WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_3 == player:GetActiveItem() or
+                --WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4 == player:GetActiveItem()
+                --)
+                ISFOCUSID[player:GetActiveItem()]
             then
                 data.WarpZone_data.totalFocusDamage = data.WarpZone_data.totalFocusDamage + math.min(amount, entity.HitPoints)
                 local chargeMax = (game:GetLevel():GetStage() * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
@@ -1535,7 +1589,7 @@ function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
                     player:SetActiveCharge(newCharge)
                 end
             end
-        end
+        end]]
         
         local knives = Isaac.FindByType(EntityType.ENTITY_KNIFE)
         
@@ -1579,6 +1633,15 @@ function WarpZone:EnemyHit(entity, amount, damageflags, source, countdownframes)
 end
 WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.EnemyHit)
 
+
+WarpZone.EnemyDamageBuffer = 0
+
+function WarpZone:EnemyPostAllHit(entity, amount, damageflags, source, countdownframes)
+    if entity:IsVulnerableEnemy() then
+        WarpZone.EnemyDamageBuffer = WarpZone.EnemyDamageBuffer + math.min(amount, entity.HitPoints)
+    end
+end
+WarpZone:AddPriorityCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, 100, WarpZone.EnemyPostAllHit)
 
 
 function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes)
@@ -1954,14 +2017,21 @@ function WarpZone:LevelStart()
     for i=0, numPlayers-1, 1 do
         local player = Isaac.GetPlayer(i)
         local pdata = player:GetData()
-        if pdata.WarpZone_data.totalFocusDamage and pdata.WarpZone_data.totalFocusDamage > 0 and (WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS == player:GetActiveItem() or
-        WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
-        WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_3 == player:GetActiveItem() or
-        WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4 == player:GetActiveItem()) then
-            local one_unit_full_charge = (game:GetLevel():GetStage() * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
-            local one_unit_full_charge_prev = (math.min(game:GetLevel():GetStage()-1, 1) * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier
-            pdata.WarpZone_data.totalFocusDamage = pdata.WarpZone_data.totalFocusDamage * (one_unit_full_charge/one_unit_full_charge_prev)
-        end
+        --if pdata.WarpZone_data.totalFocusDamage and pdata.WarpZone_data.totalFocusDamage > 0 then
+        --    for slot=0,2 do
+        --        if ISFOCUSID[player:GetActiveItem(slot)] then
+            --if pdata.WarpZone_data.totalFocusDamage and pdata.WarpZone_data.totalFocusDamage > 0 and (WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS == player:GetActiveItem() or
+            --WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_2 == player:GetActiveItem() or
+            --WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_3 == player:GetActiveItem() or
+            --WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4 == player:GetActiveItem()) then
+                    --local one_unit_full_charge = (game:GetLevel():GetStage() * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier --350
+                    --local one_unit_full_charge = 1 + ((game:GetLevel():GetStage()) * FocusChargeMultiplier / 10)
+                    --local one_unit_full_charge_prev = (math.min(game:GetLevel():GetStage()-1, 1) * FocusChargeMultiplier * 40) + 60 * FocusChargeMultiplier -- 250
+                    --local one_unit_full_charge_prev =1 + ((game:GetLevel():GetStage()-1) * FocusChargeMultiplier / 10)
+                    --pdata.WarpZone_data.totalFocusDamage = pdata.WarpZone_data.totalFocusDamage * (one_unit_full_charge/one_unit_full_charge_prev)
+        --        end
+        --    end
+        --end
 
         if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BIRTHDAY_CAKE) then
             local spawnArray = {PickupVariant.PICKUP_BOMB, PickupVariant.PICKUP_COIN, PickupVariant.PICKUP_HEART, PickupVariant.PICKUP_KEY}
@@ -2323,7 +2393,7 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.usePastkiller1x, WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_1x)
 
 
-function WarpZone:UseFocus(collectible, rng, entityplayer, useflags, activeslot, customvardata)
+--[[function WarpZone:UseFocus(collectible, rng, entityplayer, useflags, activeslot, customvardata)
     local player =  entityplayer:ToPlayer()
 
     if not player:HasFullHearts() then
@@ -2353,8 +2423,20 @@ function WarpZone:UseFocus(collectible, rng, entityplayer, useflags, activeslot,
         Remove = false,
         ShowAnim = true
     }
+end]]
+function WarpZone:UseFocus(collectible, rng, entityplayer, useflags, activeslot, customvardata)
+    if not ISFOCUSID[collectible] then return end
+    local player =  entityplayer --:ToPlayer()
+
+    player:GetData().WarpZone_unsavedata.UsingFocus = {1, activeslot}
+    player:AnimateCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4, "LiftItem")
+    return {
+        Discharge = false,
+        Remove = false,
+        ShowAnim = false
+    }
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseFocus, WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4)
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseFocus)
 
 function WarpZone:UseDoorway(collectible, rng, entityplayer, useflags, activeslot, customvardata)
     local room = game:GetRoom()
@@ -2710,12 +2792,13 @@ WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, WarpZone.EvaluateCache)
 ---@param player EntityPlayer
 function WarpZone:postPlayerUpdate(player)
     local data = player:GetData()
+    local unsave = data.WarpZone_unsavedata
     local spr = player:GetSprite()
     local effects = player:GetEffects()
 
-    if data.WarpZone_unsavedata.fireGlove == true then
+    if unsave.fireGlove == true then
         WarpZone:fireGlove(player)
-        data.WarpZone_unsavedata.fireGlove = nil
+        unsave.fireGlove = nil
     end
     if(data.breakCap==false) then
         player.MoveSpeed = math.min(player.MoveSpeed+player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_HITOPS)*0.2, 3)
@@ -2922,6 +3005,114 @@ function WarpZone:postPlayerUpdate(player)
 
     WarpZone.Crowdfunder_PlayerUpdate(player, effects)
     WarpZone.PolarStarBoosterv2_Update(_, player)
+
+    if unsave.UsingFocus then
+        local act = unsave.UsingFocus[2] > 1 and ButtonAction.ACTION_PILLCARD or ButtonAction.ACTION_ITEM
+        if Input.IsActionPressed(act, player.ControllerIndex) then
+            local canRS = (player:CanPickRedHearts() or player:CanPickSoulHearts())
+            unsave.UsingFocus[1] = unsave.UsingFocus[1] + 1
+            local of = canRS and unsave.UsingFocus[1]/125 or unsave.UsingFocus[1]/240
+            player:SetColor(Color(1,1,1,1,of,of,of), 2, 1, false, false)
+
+            if unsave.UsingFocus[1]%2 == 0 and of > .5 then
+                local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS)
+                --game:SpawnParticles(player.Position, EffectVariant.EMBER_PARTICLE, 1, 3, Color(1,1,1,1,1,1,1), 1000000)
+                local ember = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.EMBER_PARTICLE, 0,
+                    player.Position, Vector((rng:RandomFloat()-.5)*8, (rng:RandomFloat()-.5)*8), player):ToEffect()
+                ember.PositionOffset = Vector(0, -20)
+                ember.Color = Color(1,1,1,1,1,1,1)
+            end
+
+            local slot = unsave.UsingFocus[2]
+            local charge = player:GetActiveCharge(slot) + player:GetBatteryCharge(slot)
+            if charge > 0 then
+                player:SetActiveCharge(charge-1, slot)
+                data.WarpZone_data.totalFocusDamage = math.min(250, data.WarpZone_data.totalFocusDamage - 1)
+
+                local PrePre = math.ceil(math.max(1, charge-30)/250*4)
+                local NewNew = math.ceil(math.max(1, charge-31)/250*4) 
+                
+                if PrePre > NewNew then
+                    if NewNew == 1 then
+                        swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS, slot, player, charge-1)
+                    else
+                        swapOutActive(WarpZone.WarpZoneTypes["COLLECTIBLE_FOCUS_"..NewNew], slot, player, charge-1)
+                    end
+                end
+            else
+                unsave.UsingFocus = nil
+                player:PlayExtraAnimation("HideItem")
+                goto focusend
+            end
+
+            
+
+            if unsave.UsingFocus[1] >= 120 and canRS then
+                game:SpawnParticles(player.Position, EffectVariant.EMBER_PARTICLE, 32, 4, Color(1,1,1,1,1,1,1), -40)
+                if not player:HasFullHearts() then
+                    player:AddHearts(2)
+                    --SfxManager:Play(SoundEffect.SOUND_DEATH_CARD, 3)
+                    if player:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) then
+                        player:AddHearts(2)
+                    end
+                elseif player:CanPickSoulHearts() then
+                    player:AddSoulHearts(1)
+                    if player:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) then
+                        player:AddSoulHearts(1)
+                    end
+                    --SfxManager:Play(SoundEffect.SOUND_ANGEL_WING, 2)
+                end
+                SfxManager:Play(SoundEffect.SOUND_ANGEL_WING, 2)
+                
+                unsave.UsingFocus = nil
+                player:PlayExtraAnimation("HideItem")
+                local nearby = Isaac.FindInRadius(player.Position, 100, EntityPartition.ENEMY)
+                local ref = EntityRef(player)
+                for i=1, #nearby do
+                    local ent = nearby[i]
+                    if ent:IsVulnerableEnemy() and ent:IsActiveEnemy() then
+                        ent:TakeDamage(80, DamageFlag.DAMAGE_IGNORE_ARMOR, ref, 0)
+                    end
+                end
+
+            elseif unsave.UsingFocus[1] >= 240 then
+                game:SpawnParticles(player.Position, EffectVariant.EMBER_PARTICLE, 32, 4, Color(1,1,1,1,1,1,1), -40)
+                if effects:GetCollectibleEffectNum(CollectibleType.COLLECTIBLE_HOLY_MANTLE) < 2 then
+                    effects:AddCollectibleEffect(CollectibleType.COLLECTIBLE_HOLY_MANTLE, true, 1)
+                end
+                SfxManager:Play(SoundEffect.SOUND_ANGEL_WING, 2)
+                unsave.UsingFocus = nil
+                player:PlayExtraAnimation("HideItem")
+
+                local nearby = Isaac.FindInRadius(player.Position, 100, EntityPartition.ENEMY)
+                local ref = EntityRef(player)
+                for i=1, #nearby do
+                    local ent = nearby[i]
+                    if ent:IsVulnerableEnemy() and ent:IsActiveEnemy() then
+                        ent:TakeDamage(150, DamageFlag.DAMAGE_IGNORE_ARMOR, ref, 0)
+                    end
+                end
+            end
+        else
+            unsave.UsingFocus = nil
+            player:PlayExtraAnimation("HideItem")
+        end
+        ::focusend::
+    else
+        if ISFOCUSID[player:GetActiveItem(0)] then
+            local charge = player:GetActiveCharge(0)
+            if charge >= 120 and charge < 250 and Input.IsActionTriggered(ButtonAction.ACTION_ITEM, player.ControllerIndex)  then
+                unsave.UsingFocus = {1, 0}
+                player:AnimateCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4, "LiftItem")
+            end
+        elseif ISFOCUSID[player:GetActiveItem(2)] then
+            local charge = player:GetActiveCharge(2)
+            if charge >= 120 and charge < 250 and Input.IsActionTriggered(ButtonAction.ACTION_PILLCARD, player.ControllerIndex)  then
+                unsave.UsingFocus = {1, 2}
+                player:AnimateCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4, "LiftItem")
+            end
+        end
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpdate, 0)
 
