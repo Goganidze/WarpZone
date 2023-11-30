@@ -2420,7 +2420,7 @@ function WarpZone:UseFocus(collectible, rng, entityplayer, useflags, activeslot,
     local player =  entityplayer --:ToPlayer()
 
     player:GetData().WarpZone_unsavedata.UsingFocus = {1, activeslot}
-    player:AnimateCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS, "LiftItem")
+    player:AnimateCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4, "LiftItem")
     return {
         Discharge = false,
         Remove = false,
