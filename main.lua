@@ -347,6 +347,8 @@ WarpZone.WarpZoneTypes.CHALLENGE_GETTING_UNDER_IT = Isaac.GetChallengeIdByName("
 WarpZone.WarpZoneTypes.CHALLENGE_HOLE_IN_MY_POCKET = Isaac.GetChallengeIdByName("Hole In My Pocket")
 WarpZone.WarpZoneTypes.CHALLENGE_CHAMPIONSHIP = Isaac.GetChallengeIdByName("Championship")
 WarpZone.WarpZoneTypes.CHALLENGE_CURSE_OF_THE_LOSS = Isaac.GetChallengeIdByName("Curse Of The Loss")
+WarpZone.WarpZoneTypes.CHALLENGE_BLIND_JOHNNY = Isaac.GetChallengeIdByName("Blind Johnny")
+WarpZone.WarpZoneTypes.CHALLENGE_UNQUOTE = Isaac.GetChallengeIdByName("Unquote")
 
 WarpZone.WarpZoneTypes.TEAR_POLAR_STAR_BULLET = Isaac.GetEntityVariantByName("[Warp Zone] polar star bullet")
 
@@ -1999,6 +2001,13 @@ function WarpZone:multiPlayerInit(player)
     if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_CURSE_OF_THE_LOSS then
         player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK)
     end
+    if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_BLIND_JOHNNY then
+        player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES)
+        player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS)
+        player:EvaluateItems()
+
+    end
+    
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, WarpZone.multiPlayerInit)
 
