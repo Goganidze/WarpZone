@@ -1,6 +1,8 @@
 return function(mod)
 
 	local game = Game()
+	
+	local tokenVariant = Isaac.GetEntityVariantByName("Tear_Token")
 
 	local blockbombvars = {
 		[BombVariant.BOMB_BIG] = true,
@@ -34,8 +36,9 @@ return function(mod)
 	end
 
 	---@param player EntityPlayer
-	function mod:postBombExplosion(bomb, player)
+	function mod:postBombExplosion(bomb, player, isfetus)
 		local data = bomb:GetData()
+		local pdata = player and player:GetData()
 		if data.SpelunkerBomb then
 			WarpZone:SpelunkerBombEffect(bomb.Position)
 			game:MakeShockwave(bomb.Position,0.02,0.06,4)
@@ -43,13 +46,45 @@ return function(mod)
 		if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN) then
 			WarpZone:DestroyItemPedestalCheck(bomb, player)
 		end
+		
+		if isfetus and player 
+		and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) and pdata.WarpZone_data.numArrows > 0 then
+			pdata.WarpZone_data.numArrows = pdata.WarpZone_data.numArrows - 1
+			local params = player:GetTearHitParams(WeaponType.WEAPON_TEARS, 1.5)
+			for i=1,8 do
+				local vec = Vector.FromAngle(i*(360/8)):Resized(player.ShotSpeed*12)
+				--local tear = player:FireTear(bomb.Position, vec, false, true, false, nil, 1.5)
+				local tear = Isaac.Spawn(2, TearVariant.CUPID_BLUE, 0 , bomb.Position, vec, bomb):ToTear()
+				tear.CollisionDamage = player.Damage * 2.5
+				tear.Scale = params.TearScale
+				tear:ResetSpriteScale()
+				local tdata = tear:GetData()
+				tdata.WarpZone_data = tdata.WarpZone_data or {}
+				tdata.WarpZone_data.BowArrowPiercing = 3
+
+				if not tdata.WarpZone_data.trail then
+					tdata.WarpZone_data.trail = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.SPRITE_TRAIL, 0, tear.Position, Vector(0,0), tear)
+					tdata.WarpZone_data.trail.Color = Color(.7,.5,.5,0.6)
+					tdata.WarpZone_data.trail:ToEffect().MinRadius = 0.21
+					tdata.WarpZone_data.trail:ToEffect():FollowParent(tear)
+				end
+			end
+			local arrow = Isaac.Spawn(EntityType.ENTITY_PICKUP,
+                        tokenVariant,
+                        1,
+                        bomb.Position,
+                        Vector(0,0),
+                        bomb)
+                --arrow:GetSprite():SetFrame(23)
+                arrow.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
+		end
 	end
 
 	---@param player EntityPlayer
 	function mod:MegaFetusRocketInit(rocket, player)
 		local data = rocket:GetData()
 		local rng = rocket:GetDropRNG()
-		if WarpZone.SpelunkersPackEffectType == 1 or WarpZone.SpelunkersPackEffectType == 3 
+		if (WarpZone.SpelunkersPackEffectType == 1 or WarpZone.SpelunkersPackEffectType == 3) 
 		and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK) then
 			local rchance = (1-WarpZone.SPELUNKERS_PACK.FetusBasicChance) * math.max(0, player.Luck / WarpZone.SPELUNKERS_PACK.FetusMaxLuck)
 			local luck = rchance >= 0.5 or WarpZone.SPELUNKERS_PACK.FetusBasicChance+rchance < rng:RandomFloat()
@@ -113,7 +148,7 @@ return function(mod)
 	
 	mod:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, function(_, bomb)
 		--if bomb:GetData().WarpZone_Player then
-			mod:postBombExplosion(bomb, bomb:GetData().WarpZone_Player)
+			mod:postBombExplosion(bomb:ToBomb(), bomb:GetData().WarpZone_Player, bomb:ToBomb().IsFetus)
 		--end
 	end,EntityType.ENTITY_BOMBDROP)
 
@@ -133,7 +168,7 @@ return function(mod)
 		and explosion.SpawnerVariant == EffectVariant.ROCKET then
 			local spawnerData = explosion.SpawnerEntity:GetData()
 			if spawnerData.WarpZone_RocketPlayer then
-				mod:postBombExplosion(explosion.SpawnerEntity, spawnerData.WarpZone_RocketPlayer)
+				mod:postBombExplosion(explosion.SpawnerEntity, spawnerData.WarpZone_RocketPlayer, true)
 			end
 		end
 	end, EffectVariant.BOMB_EXPLOSION)

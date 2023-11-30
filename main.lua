@@ -1636,9 +1636,14 @@ WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.EnemyHit)
 
 WarpZone.EnemyDamageBuffer = 0
 
+---@param entity Entity
 function WarpZone:EnemyPostAllHit(entity, amount, damageflags, source, countdownframes)
-    if entity:IsVulnerableEnemy() then
-        WarpZone.EnemyDamageBuffer = WarpZone.EnemyDamageBuffer + math.min(amount, entity.HitPoints)
+    if entity:IsVulnerableEnemy() and entity.CanShutDoors then
+        if entity:IsBoss() then
+            WarpZone.EnemyDamageBuffer = WarpZone.EnemyDamageBuffer + math.min(amount, entity.HitPoints/2)
+        else
+            WarpZone.EnemyDamageBuffer = WarpZone.EnemyDamageBuffer + math.min(amount, entity.HitPoints)
+        end
     end
 end
 WarpZone:AddPriorityCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, 100, WarpZone.EnemyPostAllHit)
@@ -3138,6 +3143,7 @@ function WarpZone:checkTear(entitytear)
     end
 
     if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) and data.WarpZone_data.numArrows > 0 then
+        print(tear.SpawnerEntity.Type)
         data.WarpZone_data.numArrows = data.WarpZone_data.numArrows - 1
         local tdata = tear:GetData()
         tdata.WarpZone_data = tdata.WarpZone_data or {}
@@ -3413,12 +3419,16 @@ function WarpZone:updateTear(entitytear)
         end
 
         if data.WarpZone_data then
-            if  data.WarpZone_data.BowArrowPiercing == 2 then
+            if  data.WarpZone_data.BowArrowPiercing == 2 or data.WarpZone_data.BowArrowPiercing == 3 then
                 spr:Load("gfx/arrow tear.anm2", true)
                 spr:Play(spr:GetDefaultAnimation())
                 spr:Play("RegularTear6")
 
-                data.WarpZone_data.BowArrowPiercing = 1
+                if data.WarpZone_data.BowArrowPiercing == 2 then
+                    data.WarpZone_data.BowArrowPiercing = 1
+                elseif data.WarpZone_data.BowArrowPiercing == 3 then
+                    data.WarpZone_data.BowArrowPiercing = -1
+                end
                 tear:AddTearFlags(TearFlags.TEAR_PIERCING)
                 tear.Position = tear.Position + tear.Velocity
                 tear.Velocity = tear.Velocity * Vector(1.5, 1.5)
@@ -3445,7 +3455,7 @@ function WarpZone:updateTear(entitytear)
                     end
                 end
 
-            elseif data.WarpZone_data.BowArrowPiercing == 1 then
+            elseif data.WarpZone_data.BowArrowPiercing == 1 or data.WarpZone_data.BowArrowPiercing == -1 then
                 tear:GetSprite().Rotation = Vector(tear.Velocity.X, tear.Velocity.Y + tear.FallingSpeed):GetAngleDegrees()
                 if tear.Child then
                     tear.Child:ToEffect().ParentOffset = tear.PositionOffset
@@ -3547,21 +3557,23 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, WarpZone.updateTear)
 
 function WarpZone:dropArrow(entity)
     local data = entity:GetData()
-    if data and data.WarpZone_data and data.WarpZone_data.BowArrowPiercing and data.WarpZone_data.BowArrowPiercing > 0 then
-        if game:GetRoom():GetFrameCount() == 0 then
-            local player = entity.SpawnerEntity
-            if player and player:ToPlayer() ~= nil then
-                player:GetData().WarpZone_data.numArrows = player:GetData().WarpZone_data.numArrows + 1
+    if data and data.WarpZone_data and data.WarpZone_data.BowArrowPiercing then
+        if data.WarpZone_data.BowArrowPiercing > 0 then
+            if game:GetRoom():GetFrameCount() == 0 then
+                local player = entity.SpawnerEntity
+                if player and player:ToPlayer() ~= nil then
+                    player:GetData().WarpZone_data.numArrows = player:GetData().WarpZone_data.numArrows + 1
+                end
+            else
+                local arrow = Isaac.Spawn(EntityType.ENTITY_PICKUP,
+                        tokenVariant,
+                        1,
+                        entity.Position-entity.Velocity*2,
+                        entity.Velocity * 0.25,
+                        nil)
+                arrow:GetSprite():SetFrame(23)
+                arrow.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
             end
-        else
-            local arrow = Isaac.Spawn(EntityType.ENTITY_PICKUP,
-                    tokenVariant,
-                    1,
-                    entity.Position-entity.Velocity*2,
-                    entity.Velocity * 0.25,
-                    nil)
-            arrow:GetSprite():SetFrame(23)
-            arrow.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
         end
         if data.WarpZone_data.trail then
             data.WarpZone_data.trail:Remove()
