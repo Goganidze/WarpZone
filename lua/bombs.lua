@@ -75,7 +75,6 @@ return function(mod)
                         bomb.Position,
                         Vector(0,0),
                         bomb)
-                --arrow:GetSprite():SetFrame(23)
                 arrow.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
 		end
 	end
