@@ -63,10 +63,10 @@ return function(mod)
 				tdata.WarpZone_data.BowArrowPiercing = 3
 
 				if not tdata.WarpZone_data.trail then
-					tdata.WarpZone_data.trail = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.SPRITE_TRAIL, 0, tear.Position, Vector(0,0), tear)
+					tdata.WarpZone_data.trail = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.SPRITE_TRAIL, 0, tear.Position, Vector(0,0), tear):ToEffect()
 					tdata.WarpZone_data.trail.Color = Color(.7,.5,.5,0.6)
-					tdata.WarpZone_data.trail:ToEffect().MinRadius = 0.21
-					tdata.WarpZone_data.trail:ToEffect():FollowParent(tear)
+					tdata.WarpZone_data.trail.MinRadius = 0.21
+					tdata.WarpZone_data.trail:FollowParent(tear)
 				end
 			end
 			local arrow = Isaac.Spawn(EntityType.ENTITY_PICKUP,

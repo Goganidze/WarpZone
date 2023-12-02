@@ -1350,6 +1350,28 @@ function WarpZone.isSirenCharmed(familiar)
 	return false, nil
 end
 
+---@param source EntityPlayer
+function WarpZone.ShotArrow(pos, vec, source, tearscale, dmg, sub, sync)
+    local tear
+    if not sync then
+        tear = Isaac.Spawn(2, TearVariant.CUPID_BLUE, 0 , pos, vec, source):ToTear()
+    else
+        tear = source:FireTear(pos, vec, false, true, false, source, 1.5)
+    end
+    tear.CollisionDamage = dmg
+    tear.Scale = tearscale
+    tear:ResetSpriteScale()
+    local tdata = tear:GetData()
+    tdata.WarpZone_data = tdata.WarpZone_data or {}
+    tdata.WarpZone_data.BowArrowPiercing = sub and 3 or 2
+
+    if not tdata.WarpZone_data.trail then
+        tdata.WarpZone_data.trail = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.SPRITE_TRAIL, 0, tear.Position, Vector(0,0), tear):ToEffect()
+        tdata.WarpZone_data.trail.Color = Color(.7,.5,.5,0.6)
+        tdata.WarpZone_data.trail.MinRadius = 0.21
+        tdata.WarpZone_data.trail:FollowParent(tear)
+    end
+end
 
 ---@param player EntityPlayer
 function WarpZone:postRender(player, offset)
@@ -3134,6 +3156,7 @@ function WarpZone:checkTear(entitytear)
     local tear = entitytear:ToTear()
     local player = WarpZone:GetPlayerFromTear(entitytear) -- WarpZone.TryGetPlayer(entitytear.SpawnerEntity)
     local data = player and player:GetData()
+    local tdata = tear:GetData()
     if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) then
         local chance = player.Luck * 5 + 10
         local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON)
@@ -3149,10 +3172,8 @@ function WarpZone:checkTear(entitytear)
         tear:GetData().NightmareColor = true
     end
 
-    if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) and data.WarpZone_data.numArrows > 0 then
-        print(tear.SpawnerEntity.Type)
+    if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) and data.WarpZone_data.numArrows > 0  then
         data.WarpZone_data.numArrows = data.WarpZone_data.numArrows - 1
-        local tdata = tear:GetData()
         tdata.WarpZone_data = tdata.WarpZone_data or {}
         tdata.WarpZone_data.BowArrowPiercing = 2
         local spr = tear:GetSprite()
@@ -3163,10 +3184,10 @@ function WarpZone:checkTear(entitytear)
         tear:ResetSpriteScale()]]
 
         if not tdata.WarpZone_data.trail then
-            tdata.WarpZone_data.trail = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.SPRITE_TRAIL, 0, tear.Position, Vector(0,0), tear)
+            tdata.WarpZone_data.trail = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.SPRITE_TRAIL, 0, tear.Position, Vector(0,0), tear):ToEffect()
             tdata.WarpZone_data.trail.Color = arrowTrail.col
-            tdata.WarpZone_data.trail:ToEffect().MinRadius = arrowTrail.MinRadius
-            tdata.WarpZone_data.trail:ToEffect():FollowParent(tear)
+            tdata.WarpZone_data.trail.MinRadius = arrowTrail.MinRadius
+            tdata.WarpZone_data.trail:FollowParent(tear)
         end
     end
 
@@ -3304,6 +3325,9 @@ function WarpZone:BrimSwirmInit(laser)
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_EFFECT_INIT, WarpZone.BrimSwirmInit, EffectVariant.BRIMSTONE_SWIRL)
 
+local brimvar
+
+
 ---@param entitylaser EntityLaser
 function WarpZone:checkLaser(entitylaser)
     local laser = entitylaser:ToLaser()
@@ -3314,6 +3338,9 @@ function WarpZone:checkLaser(entitylaser)
     local var = laser.Variant
     local subt = laser.SubType
     local ignoreLaserVar = ((var == 1 and subt == 3) or var == 5 or var == 12)
+
+    data.WZ_Player = player
+
     if player and not ignoreLaserVar then
         if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) then
             local chance = player.Luck * 5 + 10
@@ -3340,7 +3367,7 @@ function WarpZone:checkLaser(entitylaser)
                 entitylaser.MaxDistance = player.TearRange/2
             end
             entitylaser.Variant = 1
-            entitylaser:GetData().WZ_IsBigLaser = true
+            data.WZ_IsBigLaser = true
             entitylaser:SetSize(entitylaser.Size*3, Vector(1,1), 1)
             --entitylaser.Size = entitylaser.Size * 3
         --end
@@ -3375,21 +3402,55 @@ function WarpZone:checkLaser(entitylaser)
     end
     if player then
         pdata.LaserRedirect = false
+
+        if not ignoreLaserVar and laser.Variant ~= 10 and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW)
+        and pdata.WarpZone_data.numArrows > 0 then
+            
+			--pdata.WarpZone_data.numArrows = pdata.WarpZone_data.numArrows - 1
+            data.WZ_ShotArrow = true
+        end
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_LASER_INIT, WarpZone.checkLaser)
 
-
+---@param laser EntityLaser
 function WarpZone:updateLaser(laser)
-    if laser:GetData().WZ_IsBigLaser == true then
+    local data = laser:GetData()
+    local player = data.WZ_Player
+    if data.WZ_IsBigLaser == true then
         --laser.Size = laser.Size * 3
         laser:GetSprite().Scale = laser:GetSprite().Scale * 3
         laser:SetSize(laser.Size*3, Vector(1,1), 1)
-        laser:GetData().WZ_IsBigLaser = false
+        data.WZ_IsBigLaser = false
     end
-    if laser:GetData().SuppressZaps == true then
+    if data.SuppressZaps == true then
         SfxManager:Stop(SoundEffect.SOUND_REDLIGHTNING_ZAP)
         SfxManager:Stop(SoundEffect.SOUND_REDLIGHTNING_ZAP_WEAK)
+    end
+    if data.WZ_ShotArrow ~= nil and player then
+        if data.WZ_ShotArrow == true then
+            local params = player:GetTearHitParams(WeaponType.WEAPON_TEARS, 1.5)
+            
+            WarpZone.ShotArrow(laser.Position, Vector.FromAngle(laser.Angle):Resized(player.ShotSpeed*12), 
+                player, params.TearScale, player.Damage*2, nil, true)
+            data.WZ_ShotArrow = false
+        elseif data.WZ_ShotArrow == false and player:GetData().WarpZone_data.numArrows > 0 then
+            if not laser.OneHit then
+                if  laser.FrameCount % 3 == 0 then --laser.FrameCount < 30 and
+                    local params = player:GetTearHitParams(WeaponType.WEAPON_TEARS, .7)
+                    local miss = laser:GetDropRNG():RandomInt(30)-15
+                    WarpZone.ShotArrow(laser.Position, Vector.FromAngle(laser.Angle+miss):Resized(player.ShotSpeed*12), 
+                        laser, params.TearScale, player.Damage*.7, true)
+                        
+                end
+                if laser.FrameCount % 30 == 0 then
+                    local miss = laser:GetDropRNG():RandomInt(30)-15
+                    local params = player:GetTearHitParams(WeaponType.WEAPON_TEARS, 1)
+                    WarpZone.ShotArrow(laser.Position, Vector.FromAngle(laser.Angle+miss):Resized(player.ShotSpeed*12), 
+                        player, params.TearScale, player.Damage*1, nil, true)
+                end
+            end
+        end
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_LASER_UPDATE, WarpZone.updateLaser)
@@ -3443,7 +3504,7 @@ function WarpZone:updateTear(entitytear)
                 tear.CollisionDamage = tear.CollisionDamage * 2.5
                 tear.SpriteRotation = Vector(tear.Velocity.X, tear.Velocity.Y + tear.FallingSpeed):GetAngleDegrees()
                 if data.WarpZone_data.trail then
-                    data.WarpZone_data.trail:ToEffect().ParentOffset = tear.PositionOffset
+                    data.WarpZone_data.trail.ParentOffset = tear.PositionOffset
                 end
                 tear:ResetSpriteScale()
 
@@ -3464,8 +3525,8 @@ function WarpZone:updateTear(entitytear)
 
             elseif data.WarpZone_data.BowArrowPiercing == 1 or data.WarpZone_data.BowArrowPiercing == -1 then
                 tear:GetSprite().Rotation = Vector(tear.Velocity.X, tear.Velocity.Y + tear.FallingSpeed):GetAngleDegrees()
-                if tear.Child then
-                    tear.Child:ToEffect().ParentOffset = tear.PositionOffset
+                if data.WarpZone_data.trail then
+                    data.WarpZone_data.trail.ParentOffset = tear.PositionOffset
                 end
             end
 
