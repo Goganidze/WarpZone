@@ -1234,10 +1234,12 @@ function WarpZone:OnUpdate()
         for i=0, numPlayers-1, 1 do
             local player =  Isaac.GetPlayer(i)
             local data = player:GetData()
+            local maxchcar = player:HasCollectible(CollectibleType.COLLECTIBLE_9_VOLT) and 500 or 250
             for slot=0,2 do
                 if ISFOCUSID[player:GetActiveItem(slot)] then
                     local chargeMax = 1 + ((game:GetLevel():GetStage()-1) * FocusChargeMultiplier / 10)
                     data.WarpZone_data.totalFocusDamage = data.WarpZone_data.totalFocusDamage + WarpZone.EnemyDamageBuffer/chargeMax
+                    data.WarpZone_data.totalFocusDamage = math.max(0, math.min(maxchcar, data.WarpZone_data.totalFocusDamage))
                     --local chargeMax = (game:GetLevel():GetStage() * FocusChargeMultiplier * 2) + 3 * FocusChargeMultiplier
                     --chargeMax = chargeMax * (1.6 / 20) -- / (250/20/20)
                     --local chargeMax = 1 + ((game:GetLevel():GetStage()-1) * FocusChargeMultiplier / 10)
@@ -1251,7 +1253,7 @@ function WarpZone:OnUpdate()
                     local newCharge = math.min(chargeThreshold, chargesToSet)
 
                     local PrePre = math.ceil(math.max(0, pastCharge-50)/250*4)
-                    local NewNew = math.ceil(math.max(0, newCharge-50)/250*4)
+                    local NewNew = math.min(4, math.ceil(math.max(0, newCharge-50)/250*4))
                     
                     if PrePre < NewNew then
                         if NewNew == 1 then
@@ -2429,10 +2431,15 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.usePastkiller1x, WarpZon
         ShowAnim = true
     }
 end]]
-function WarpZone:UseFocus(collectible, rng, entityplayer, useflags, activeslot, customvardata)
-    if not ISFOCUSID[collectible] then return end
-    local player =  entityplayer --:ToPlayer()
 
+---@param player EntityPlayer
+function WarpZone:UseFocus(collectible, rng, player, useflags, activeslot, customvardata)
+    if not ISFOCUSID[collectible] then return end
+    
+    if player:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) and useflags & UseFlag.USE_CARBATTERY == 0 then
+        local charge = math.min(250, player:GetActiveCharge(activeslot)) + player:GetBatteryCharge(activeslot)
+        player:GetData().WarpZone_unsavedata.FocusForceCharge = charge
+    end
     player:GetData().WarpZone_unsavedata.UsingFocus = {1, activeslot}
     player:AnimateCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4, "LiftItem")
     return {
@@ -2974,45 +2981,13 @@ function WarpZone:postPlayerUpdate(player)
     not player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE) then
         player:AddCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE)
     end
-    --[[if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
-        and data.WarpZone_unsavedata
-        and data.WarpZone_unsavedata.HasCrowdfunder ~= nil
-        and (Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, player.ControllerIndex) or
-        Input.IsActionPressed(ButtonAction.ACTION_SHOOTDOWN, player.ControllerIndex) or
-        Input.IsActionPressed(ButtonAction.ACTION_SHOOTLEFT, player.ControllerIndex) or
-        Input.IsActionPressed(ButtonAction.ACTION_SHOOTRIGHT, player.ControllerIndex))
-    then
-        data.WarpZone_data.FramesHeldCrowdfund = isNil(data.WarpZone_data.FramesHeldCrowdfund, 0) + 1 
-    elseif player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER) then
-        data.WarpZone_data.FramesHeldCrowdfund = 0
-    end
-    if isNil(data.WarpZone_data.FramesHeldCrowdfund, 0) > 0 then
-        local frame = isNil(data.WarpZone_data.FramesHeldCrowdfund, 0) - 1
-        local multiplicator = math.min(3, math.floor(frame/60))
-        if frame % math.floor(20/multiplicator) == 0 and player:GetNumCoins() >=1 then
-            SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT)
-            player:AddCoins(-1)
-            local aimspeed = player:GetAimDirection() * 16
-            local firePosition = player.Position + (player:GetAimDirection() * 18) + Vector(0, 13)
-            local cointear = player:FireTear(firePosition, aimspeed, false, false, false, player, 1)
-            cointear.CollisionDamage = cointear.CollisionDamage + 10
-            cointear:AddTearFlags(TearFlags.TEAR_GREED_COIN)
-            local sprite = cointear:GetSprite()
-            sprite:Load("gfx/002.020_coin tear.anm2",true)
-            sprite:Play("Rotate2")
-            cointear:ResetSpriteScale()
-            cointear:GetData().CrowdfunderShot = 2
-            
-        end
-        player.FireDelay = 1
-
-    end]]
 
     WarpZone.Crowdfunder_PlayerUpdate(player, effects)
     WarpZone.PolarStarBoosterv2_Update(_, player)
 
     if unsave.UsingFocus then
         local act = unsave.UsingFocus[2] > 1 and ButtonAction.ACTION_PILLCARD or ButtonAction.ACTION_ITEM
+
         if Input.IsActionPressed(act, player.ControllerIndex) then
             local canRS = (player:CanPickRedHearts() or player:CanPickSoulHearts())
             unsave.UsingFocus[1] = unsave.UsingFocus[1] + 1
@@ -3030,12 +3005,16 @@ function WarpZone:postPlayerUpdate(player)
 
             local slot = unsave.UsingFocus[2]
             local charge = player:GetActiveCharge(slot) + player:GetBatteryCharge(slot)
+            if unsave.FocusForceCharge then
+                charge = unsave.FocusForceCharge
+                unsave.FocusForceCharge = unsave.FocusForceCharge - 1
+            end
             if charge > 0 then
                 player:SetActiveCharge(charge-1, slot)
                 data.WarpZone_data.totalFocusDamage = math.min(250, data.WarpZone_data.totalFocusDamage - 1)
 
                 local PrePre = math.ceil(math.max(1, charge-30)/250*4)
-                local NewNew = math.ceil(math.max(1, charge-31)/250*4) 
+                local NewNew = math.min(4, math.ceil(math.max(1, charge-31)/250*4))
                 
                 if PrePre > NewNew then
                     if NewNew == 1 then
@@ -3046,11 +3025,10 @@ function WarpZone:postPlayerUpdate(player)
                 end
             else
                 unsave.UsingFocus = nil
+                unsave.FocusForceCharge = nil
                 player:PlayExtraAnimation("HideItem")
                 goto focusend
             end
-
-            
 
             if unsave.UsingFocus[1] >= 120 and canRS then
                 game:SpawnParticles(player.Position, EffectVariant.EMBER_PARTICLE, 32, 4, Color(1,1,1,1,1,1,1), -40)
@@ -3070,6 +3048,7 @@ function WarpZone:postPlayerUpdate(player)
                 SfxManager:Play(SoundEffect.SOUND_ANGEL_WING, 2)
                 
                 unsave.UsingFocus = nil
+                unsave.FocusForceCharge = nil
                 player:PlayExtraAnimation("HideItem")
                 local nearby = Isaac.FindInRadius(player.Position, 100, EntityPartition.ENEMY)
                 local ref = EntityRef(player)
@@ -3082,11 +3061,14 @@ function WarpZone:postPlayerUpdate(player)
 
             elseif unsave.UsingFocus[1] >= 240 then
                 game:SpawnParticles(player.Position, EffectVariant.EMBER_PARTICLE, 32, 4, Color(1,1,1,1,1,1,1), -40)
-                if effects:GetCollectibleEffectNum(CollectibleType.COLLECTIBLE_HOLY_MANTLE) < 2 then
+                if not data.WarpZone_data.FocusMantle or data.WarpZone_data.FocusMantle < 2 then -- effects:GetCollectibleEffectNum(CollectibleType.COLLECTIBLE_HOLY_MANTLE) < 2 then
                     effects:AddCollectibleEffect(CollectibleType.COLLECTIBLE_HOLY_MANTLE, true, 1)
+                    data.WarpZone_data.FocusMantle = data.WarpZone_data.FocusMantle or 0
+                    data.WarpZone_data.FocusMantle = data.WarpZone_data.FocusMantle + 1
                 end
                 SfxManager:Play(SoundEffect.SOUND_ANGEL_WING, 2)
                 unsave.UsingFocus = nil
+                unsave.FocusForceCharge = nil
                 player:PlayExtraAnimation("HideItem")
 
                 local nearby = Isaac.FindInRadius(player.Position, 100, EntityPartition.ENEMY)
@@ -3100,6 +3082,7 @@ function WarpZone:postPlayerUpdate(player)
             end
         else
             unsave.UsingFocus = nil
+            unsave.FocusForceCharge = nil
             player:PlayExtraAnimation("HideItem")
         end
         ::focusend::
@@ -3115,6 +3098,30 @@ function WarpZone:postPlayerUpdate(player)
             if charge >= 120 and charge < 250 and Input.IsActionTriggered(ButtonAction.ACTION_PILLCARD, player.ControllerIndex)  then
                 unsave.UsingFocus = {1, 2}
                 player:AnimateCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4, "LiftItem")
+            end
+        end
+    end
+    if data.WarpZone_data.FocusMantle then
+        local room = game:GetLevel():GetCurrentRoomIndex()
+        if not unsave.focusroom then
+            unsave.focusroom = room
+            if effects:GetCollectibleEffectNum(CollectibleType.COLLECTIBLE_HOLY_MANTLE) < data.WarpZone_data.FocusMantle then
+                effects:AddCollectibleEffect(CollectibleType.COLLECTIBLE_HOLY_MANTLE, true, data.WarpZone_data.FocusMantle - effects:GetCollectibleEffectNum(CollectibleType.COLLECTIBLE_HOLY_MANTLE))
+            end
+        else
+            if unsave.focusroom ~= room then
+                effects:AddCollectibleEffect(CollectibleType.COLLECTIBLE_HOLY_MANTLE, true, data.WarpZone_data.FocusMantle)
+                unsave.focusroom = room
+            else
+                unsave.focusmantleref = unsave.focusmantleref or 0
+                if effects:GetCollectibleEffectNum(CollectibleType.COLLECTIBLE_HOLY_MANTLE)-unsave.focusmantleref < data.WarpZone_data.FocusMantle then
+                    data.WarpZone_data.FocusMantle = effects:GetCollectibleEffectNum(CollectibleType.COLLECTIBLE_HOLY_MANTLE)-unsave.focusmantleref
+                end
+                unsave.focusmantleref = effects:GetCollectibleEffectNum(CollectibleType.COLLECTIBLE_HOLY_MANTLE) - data.WarpZone_data.FocusMantle
+                if data.WarpZone_data.FocusMantle <= 0 then
+                    data.WarpZone_data.FocusMantle = nil
+                    unsave.focusmantleref = nil
+                end
             end
         end
     end
