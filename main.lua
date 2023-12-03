@@ -2854,7 +2854,14 @@ function WarpZone:postPlayerUpdate(player)
     end
 
     if data.gravReticle then
-        data.gravReticle.Position = player.Position
+        ---@type EntityEffect
+        local ret = data.gravReticle
+        ret.Position = player.Position
+        if ret.FrameCount % 16 < 8 then
+            ret.Color = Color(0.392, 0.917, 0.509, .9, 0, 0, 0)
+        else
+            ret.Color = Color(0.392, 0.917, 0.509, .9, 0.2, 0.2, 0.2)
+        end
     end
 
     if isNil(data.InGravityState, -999) > 0 and (game:GetFrameCount() - isNil(data.InGravityState, -999) >= 150) then
@@ -3733,9 +3740,9 @@ function WarpZone:OnFrame(player)
             data.reticle.Velocity = aimDir * 20
 
             if data.reticle.FrameCount % data.WarpZone_data.blinkTime < data.WarpZone_data.blinkTime/2 then
-                data.reticle.Color = Color(0, 0, 0, 0.5, -230, 100, 215)
+                data.reticle.Color = Color(0, 0, 0, 0.5, -230/255, 100/255, 215/255)
             else
-                data.reticle.Color = Color(0, 0, 0, 0.8, -200, 150, 255)
+                data.reticle.Color = Color(0, 0, 0, 0.8, -200/255, 150/255, 255/255)
             end
 
                 local stop = false
@@ -4961,10 +4968,12 @@ function WarpZone:useGravity(collectible, rng, player, useflags, activeslot, cus
     player:AddCacheFlags(CacheFlag.CACHE_FLYING)
     player:EvaluateItems()
     SfxManager:Play(SoundEffect.SOUND_THUMBSUP, 2)
-    data.gravReticle = Isaac.Spawn(1000, 30, 0, player.Position, Vector(0, 0), player)
-    data.gravReticle:GetSprite():ReplaceSpritesheet(0, "gfx/gravity_lander.png")
-    data.gravReticle:GetSprite():LoadGraphics()
-    data.gravReticle.Color = Color(0.392, 0.917, 0.509, .5, 0, 0, 0)
+    if  not data.gravReticle then
+        data.gravReticle = Isaac.Spawn(1000, 30, 0, player.Position, Vector(0, 0), player)
+        data.gravReticle:GetSprite():ReplaceSpritesheet(0, "gfx/gravity_lander.png")
+        data.gravReticle:GetSprite():LoadGraphics()
+        data.gravReticle.Color = Color(0.392, 0.917, 0.509, .5, 0, 0, 0)
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.useGravity, WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY)
 
