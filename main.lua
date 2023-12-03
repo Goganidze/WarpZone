@@ -2727,29 +2727,39 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
     end
 
     if Cache == CacheFlag.CACHE_FIREDELAY then
+        local teartoadd = 0
         local waterAmount = (entityplayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_FULL) * 2) + (entityplayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_MID) * 1.5) + (entityplayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_LOW) * .75)
-        if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NEWGROUNDS_TANK) then
-            entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - tank_qty
-        end
-        entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - waterAmount
-        entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - (cakeBingeBonus * 2)
-        entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - isNil(data.WarpZone_data.bonusFireDelay, 0)
+        --if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NEWGROUNDS_TANK) then
+            --entityplayer.MaxFireDelay = tearsUp(entityplayer.MaxFireDelay , tank_qty)
+            teartoadd = teartoadd + tank_qty
+        --end
+        --entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - waterAmount
+        --entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - (cakeBingeBonus * 2)
+        --entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - isNil(data.WarpZone_data.bonusFireDelay, 0)
+        teartoadd = teartoadd + waterAmount
+        teartoadd = teartoadd + (cakeBingeBonus * 2)
+        teartoadd = teartoadd + isNil(data.WarpZone_data.bonusFireDelay, 0)
 
         if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) and data.WarpZone_data.arrowTimeDelay > 0 then
             if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) then
-                entityplayer.MaxFireDelay = entityplayer.MaxFireDelay + 40
+                --entityplayer.MaxFireDelay = entityplayer.MaxFireDelay + 40
+                teartoadd = teartoadd - 2.3
             else
-                entityplayer.MaxFireDelay = entityplayer.MaxFireDelay + 30
+                --entityplayer.MaxFireDelay = entityplayer.MaxFireDelay + 30
+                teartoadd = teartoadd - 2
             end
             
         end
+
         --if entityplayer:GetData().JohnnyCreepTearBonus == true then
         --    entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - 2
         --end
         if data.WarpZone_unsavedata.johnnytearbonus then
             local power = entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BFFS) and 2 or 1
-            entityplayer.MaxFireDelay = tearsUp(entityplayer.MaxFireDelay, data.WarpZone_unsavedata.johnnytearbonus/4*power)
+            --entityplayer.MaxFireDelay = tearsUp(entityplayer.MaxFireDelay, data.WarpZone_unsavedata.johnnytearbonus/4*power)
+            teartoadd = teartoadd + data.WarpZone_unsavedata.johnnytearbonus/4*power
         end
+        entityplayer.MaxFireDelay = tearsUp(entityplayer.MaxFireDelay , teartoadd)
     end
         
     
@@ -2854,7 +2864,14 @@ function WarpZone:postPlayerUpdate(player)
     end
 
     if data.gravReticle then
-        data.gravReticle.Position = player.Position
+        ---@type EntityEffect
+        local ret = data.gravReticle
+        ret.Position = player.Position
+        if ret.FrameCount % 16 < 8 then
+            ret.Color = Color(0.392, 0.917, 0.509, .9, 0, 0, 0)
+        else
+            ret.Color = Color(0.392, 0.917, 0.509, .9, 0.2, 0.2, 0.2)
+        end
     end
 
     if isNil(data.InGravityState, -999) > 0 and (game:GetFrameCount() - isNil(data.InGravityState, -999) >= 150) then
@@ -3619,6 +3636,12 @@ function WarpZone:updateTear(entitytear)
         end
     end
     
+    if tear:IsDead() then
+        if data.NGd545 then
+            game:BombExplosionEffects(tear.Position, tear.CollisionDamage, nil, nil, player, math.min(1, 0.3*tear.Scale), 
+                nil, player)
+        end
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, WarpZone.updateTear)
 
@@ -3733,9 +3756,9 @@ function WarpZone:OnFrame(player)
             data.reticle.Velocity = aimDir * 20
 
             if data.reticle.FrameCount % data.WarpZone_data.blinkTime < data.WarpZone_data.blinkTime/2 then
-                data.reticle.Color = Color(0, 0, 0, 0.5, -230, 100, 215)
+                data.reticle.Color = Color(0, 0, 0, 0.5, -230/255, 100/255, 215/255)
             else
-                data.reticle.Color = Color(0, 0, 0, 0.8, -200, 150, 255)
+                data.reticle.Color = Color(0, 0, 0, 0.8, -200/255, 150/255, 255/255)
             end
 
                 local stop = false
@@ -3960,6 +3983,11 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_FIRE_TEAR, function(_, tear)
         end
         player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
         player:EvaluateItems()
+
+        if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NEWGROUNDS_TANK) then
+            local data = tear:GetData()
+            tear:GetData().NGd545 = true
+        end
     end
 end)
 
@@ -4147,6 +4175,13 @@ function WarpZone:update_tumor_s(orbital)
 	local center_pos = (orbital.Player.Position + orbital.Player.Velocity) + SmallTumor.ORBIT_CENTER_OFFSET
 	local orbit_pos = orbital:GetOrbitPosition(center_pos)
 	orbital.Velocity = orbit_pos - orbital.Position
+
+    if orbital.FrameCount % 30 == 0 then
+        local eff = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.PLAYER_CREEP_BLACK, 0,
+            orbital.Position, Vector(0,0), orbital)
+        eff:ToEffect().Scale = .6
+        eff:Update()
+    end
 end
 
 function WarpZone:update_tumor_m(orbital)
@@ -4156,6 +4191,13 @@ function WarpZone:update_tumor_m(orbital)
 	local center_pos = (orbital.Player.Position + orbital.Player.Velocity) + MidTumor.ORBIT_CENTER_OFFSET
 	local orbit_pos = orbital:GetOrbitPosition(center_pos)
 	orbital.Velocity = orbit_pos - orbital.Position
+
+    if orbital.FrameCount % 20 == 0 then
+        local eff = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.PLAYER_CREEP_BLACK, 0,
+            orbital.Position, Vector(0,0), orbital)
+        eff:ToEffect().Scale = 0.8
+        eff:Update()
+    end
 end
 
 function WarpZone:update_tumor_l(orbital)
@@ -4165,6 +4207,13 @@ function WarpZone:update_tumor_l(orbital)
 	local center_pos = (orbital.Player.Position + orbital.Player.Velocity) + LargeTumor.ORBIT_CENTER_OFFSET
 	local orbit_pos = orbital:GetOrbitPosition(center_pos)
 	orbital.Velocity = orbit_pos - orbital.Position
+
+    if orbital.FrameCount % 10 == 0 then
+        local eff = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.PLAYER_CREEP_BLACK, 0,
+            orbital.Position, Vector(0,0), orbital)
+        eff:ToEffect().Scale = 1.0
+        eff:Update()
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_tumor_s, SmallTumor.VARIANT)
 WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.update_tumor_m, MidTumor.VARIANT)
@@ -4961,10 +5010,12 @@ function WarpZone:useGravity(collectible, rng, player, useflags, activeslot, cus
     player:AddCacheFlags(CacheFlag.CACHE_FLYING)
     player:EvaluateItems()
     SfxManager:Play(SoundEffect.SOUND_THUMBSUP, 2)
-    data.gravReticle = Isaac.Spawn(1000, 30, 0, player.Position, Vector(0, 0), player)
-    data.gravReticle:GetSprite():ReplaceSpritesheet(0, "gfx/gravity_lander.png")
-    data.gravReticle:GetSprite():LoadGraphics()
-    data.gravReticle.Color = Color(0.392, 0.917, 0.509, .5, 0, 0, 0)
+    if  not data.gravReticle then
+        data.gravReticle = Isaac.Spawn(1000, 30, 0, player.Position, Vector(0, 0), player)
+        data.gravReticle:GetSprite():ReplaceSpritesheet(0, "gfx/gravity_lander.png")
+        data.gravReticle:GetSprite():LoadGraphics()
+        data.gravReticle.Color = Color(0.392, 0.917, 0.509, .5, 0, 0, 0)
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.useGravity, WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY)
 
