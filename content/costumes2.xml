@@ -8,7 +8,8 @@
     <costume id = "15" anm2path = "spelunker.anm2" type = "passive" hasSkinAlt = "true"/>
     <costume id = "18" anm2path = "GeorgeMaskCostume.anm2" type = "passive"/>
     <costume id = "25" anm2path = "AubreyMaskCostume.anm2" type = "passive"/>
-    <costume id = "26" anm2path = "TonyMaskCostume.anm2" type = "passive"/>
+    <costume id = "26" anm2path = "TonyMaskCostume_clean.anm2" type = "passive"/>
+    <costume anm2path = "TonyMaskCostume.anm2" type = "none"/>
     <costume id = "19" anm2path = "abe.anm2" type = "passive" hasSkinAlt = "true"/>
     <costume id = "5" anm2path = "NewgroundsTank.anm2" type = "passive" />
     <costume id = "29" anm2path = "costume_poppop.anm2" type = "passive"/>

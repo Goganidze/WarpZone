@@ -342,6 +342,7 @@ WarpZone.WarpZoneTypes.SOUND_GUN_SWAP = Isaac.GetSoundIdByName("GunSwap")
 
 WarpZone.WarpZoneTypes.COSTUME_DIOGENES_ON = Isaac.GetCostumeIdByPath("gfx/characters/DiogenesPotCostume.anm2")
 WarpZone.WarpZoneTypes.COSTUME_BOOSTERV2 = Isaac.GetCostumeIdByPath("gfx/characters/Booster v2.anm2")
+WarpZone.WarpZoneTypes.COSTUME_TONY_RAGE = Isaac.GetCostumeIdByPath("gfx/characters/TonyMaskCostume.anm2")
 
 WarpZone.WarpZoneTypes.CHALLENGE_GETTING_UNDER_IT = Isaac.GetChallengeIdByName("Getting Under It")
 WarpZone.WarpZoneTypes.CHALLENGE_HOLE_IN_MY_POCKET = Isaac.GetChallengeIdByName("Hole In My Pocket")
@@ -352,7 +353,7 @@ WarpZone.WarpZoneTypes.CHALLENGE_UNQUOTE = Isaac.GetChallengeIdByName("Unquote")
 
 WarpZone.WarpZoneTypes.TEAR_POLAR_STAR_BULLET = Isaac.GetEntityVariantByName("[Warp Zone] polar star bullet")
 
---external item descriptions
+--[[--external item descriptions
 if EID then
 	EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL, "#The player has a 50% chance of receiving a fading nickel when a room is cleared#Getting damage causes the player to lose half their money, dropping some of it on the ground as fading {{Coin}} coins.#When the player is holding money, damage is always 1 full heart {{Heart}}", "Golden Idol", "en_us")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER, "#Removes the oldest {{Collectible}}item from your inventory, including quest items like the Key Pieces#3 choice pedestals appear#The new {{Collectible}}items are from the same pools as the one you lost. It can be used 3 times.", "Gun that can Kill the Past", "en_us")
@@ -469,7 +470,7 @@ if EID then
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK, "Каждые 8 зачисток комнат, Один предмет пропадает из инвентаря.#+.75 Урона за пропавший предмет", "Кошмарный Клещ",  "ru")
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK, "+12 бомб#Все ямы в радиусе взрыва заполняются.#При взрыве бомбы, Все меченые и двойные меченые камни взорвутся не смотря на то что они вне радиуса взрыва. #Камни с бомбами сломаются и оставят бомбу на их месте.", "Рюкзак Спелеолога",  "ru")
 
-end
+end]]
 
 local ISFOCUSID = {
     [WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS] = true,
@@ -1542,6 +1543,7 @@ function WarpZone:postRender(player, offset)
     end
 
     WarpZone.Boosterv2_playerRender(nil, player, offset)
+    WarpZone.Tony_render(player, offset)
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_RENDER, WarpZone.postRender)
 
@@ -1805,6 +1807,7 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
         
         data.inIdolDamage = nil
     end
+    WarpZone.TonyTakeDmg(player, amount, damageflags, source, countdownframes)
 end
 WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.OnTakeHit, EntityType.ENTITY_PLAYER)
 
@@ -2653,7 +2656,7 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
         return false
     end
 
-    if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant == PickupVariant.PICKUP_COLLECTIBLE) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_TONY) then
+    --[[if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant == PickupVariant.PICKUP_COLLECTIBLE) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_TONY) then
         --local dmg_config = Isaac.GetItemConfig():GetCollectible(entity.SubType)
         if entity.SubType ~= 0 and data.WarpZone_data.tonyBuff > 1 and entity:GetData().collected ~= true then -- and (dmg_config.CacheFlags & CacheFlag.CACHE_DAMAGE == CacheFlag.CACHE_DAMAGE)
             entity:GetData().collected = true
@@ -2661,7 +2664,7 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
             player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
             player:EvaluateItems()
         end
-    end
+    end]]
 
     if entity.Type == EntityType.ENTITY_PICKUP and (entity.Variant == PickupVariant.PICKUP_COLLECTIBLE) and entity:ToPickup():GetData().Logged ~= true then
         entity:ToPickup():GetData().Logged = true
@@ -2775,9 +2778,9 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
             entityplayer.Damage = entityplayer.Damage + 1
         end
 
-        if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_TONY) then
+        --[[if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_TONY) then
             entityplayer.Damage = (entityplayer.Damage * data.WarpZone_data.tonyBuff) + (data.WarpZone_data.tonyBuff * 1.428)
-        end
+        end]]
         
         if data.WarpZone_data.dioDamageOn == true then
             if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) then
@@ -2828,6 +2831,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
     end
 
     WarpZone.PolarStarBoosterv2_Cache(_, entityplayer, Cache)
+    WarpZone.Tony_cache(entityplayer, Cache)
 
 end
 WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, WarpZone.EvaluateCache)
@@ -3164,6 +3168,7 @@ function WarpZone:postPlayerUpdate(player)
             end
         end
     end
+    WarpZone.TonyTake_update(player)
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpdate, 0)
 
@@ -3638,7 +3643,7 @@ function WarpZone:updateTear(entitytear)
     
     if tear:IsDead() then
         if data.NGd545 then
-            game:BombExplosionEffects(tear.Position, tear.CollisionDamage, nil, nil, player, math.min(1, 0.3*tear.Scale), 
+            game:BombExplosionEffects(tear.Position, tear.CollisionDamage*3, nil, nil, player, math.min(1, 0.3*tear.Scale), 
                 nil, player)
         end
     end
@@ -5048,7 +5053,8 @@ local extrafiles = {
     "lua.ser_junkan",
     "lua.greed_butt",
     "lua.crowdfunder",
-    "lua.polar_star"
+    "lua.polar_star",
+    "lua.tony",
 }
 for i=1,#extrafiles do
     local module = include(extrafiles[i])
