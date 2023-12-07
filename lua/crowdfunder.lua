@@ -108,8 +108,10 @@ return function (mod)
                
                 local aimspeed = player:GetAimDirection():Rotated(weakhandissue) * 16
                 local firePosition = player.Position + (player:GetAimDirection() * 18) --+ Vector(0, 13)
+
                 local cointear = player:FireTear(firePosition, aimspeed, false, false, false, player, 1)
                 cointear.CollisionDamage = cointear.CollisionDamage + 10
+
                 cointear:AddTearFlags(TearFlags.TEAR_GREED_COIN)
                 cointear:ChangeVariant(TearVariant.COIN)
                 --local sprite = cointear:GetSprite()
@@ -168,8 +170,16 @@ return function (mod)
 
     function WarpZone:init_crowdfunder(fam)
         fam.PositionOffset = Vector(0,-15)
+        fam:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
     end
     WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, WarpZone.init_crowdfunder, CrowdfunderVar)
+
+    local function loss(player, daat)
+        daat.WarpZone_unsavedata.Crowdfunder = nil
+        player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS | CacheFlag.CACHE_SPEED | CacheFlag.CACHE_RANGE)
+        --player:EvaluateItems()
+    end
+
 
     ---@param player EntityPlayer
     function WarpZone:Crowdfunder_Use(collectible, rng, player, useflags)
@@ -178,6 +188,13 @@ return function (mod)
         player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS | CacheFlag.CACHE_SPEED | CacheFlag.CACHE_RANGE)
         --player:EvaluateItems()
         SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_GUN_SWAP, Options.SFXVolume*20)
+
+        if daat.WarpZone_unsavedata.Crowdfunder then
+            WarpZone.SetWeaponType(player, player:GetData(), 
+                {type = WarpZone.WarpZoneTypes.WEAPON_CROWDFUNDER, loss = loss}, 0)
+        else
+            WarpZone.RemoveWeaponType(player, player:GetData(), {type = WarpZone.WarpZoneTypes.WEAPON_CROWDFUNDER})
+        end
 
         return {
             Discharge = false,
@@ -196,10 +213,15 @@ return function (mod)
             --end
             
             local count = data.WarpZone_unsavedata.Crowdfunder and 1 or 0
+            
+            if WarpZone.GetWeaponType(player, data) ~= WarpZone.WarpZoneTypes.WEAPON_CROWDFUNDER then
+                count = 0
+            end
             local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER)
             player:CheckFamiliar(CrowdfunderVar, count, rng)
+            
             if count == 0 and player:GetEffects():HasCollectibleEffect(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER) then
-                player:GetEffects():RemoveCollectibleEffect(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER, -1)
+                player:GetEffects():RemoveCollectibleEffect(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER, -10)
             end
         elseif cache == CacheFlag.CACHE_SPEED then
             if player:GetData().WarpZone_unsavedata.Crowdfunder then
@@ -249,6 +271,7 @@ return function (mod)
     ---@param effects TemporaryEffects
     function WarpZone.Crowdfunder_PlayerUpdate(player, effects)
         local data = player:GetData()
+        
         if effects:HasCollectibleEffect(WarpZone.WarpZoneTypes.COLLECTIBLE_CROWDFUNDER) then
             player.FireDelay = math.max(player.FireDelay, 5)
             if Isaac.GetFrameCount()%60 == 0 then

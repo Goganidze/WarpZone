@@ -1374,6 +1374,136 @@ function WarpZone.ShotArrow(pos, vec, source, tearscale, dmg, sub, sync)
     end
 end
 
+---@class WZ_WeapData
+---@field type any
+---@field prior integer?
+---@field logic fun(player:EntityPlayer, data:table)?
+---@field loss fun(player:EntityPlayer, data:table)?
+---@field retu fun(player:EntityPlayer, data:table)?
+---@field perst boolean?
+
+WarpZone.WarpZoneTypes.WEAPON_DEFAULT = 0
+WarpZone.WarpZoneTypes.WEAPON_CROWDFUNDER = 1
+WarpZone.WarpZoneTypes.WEAPON_POLARSTAR = 2
+WarpZone.WarpZoneTypes.WEAPON_TONY = 3
+
+---@param player EntityPlayer
+-- -@param weaponData WZ_WeapData
+function WarpZone.SetWeaponType(player, data, weaponData, priority)
+    priority = priority or 0
+    local unsave = data.WarpZone_unsavedata
+    if not unsave.WPD then
+        unsave.WPD = {
+            type = weaponData.type,
+            prior = priority,
+            logic = weaponData.func,
+            loss = weaponData.loss,
+            perst = weaponData.perst,
+            retu = weaponData.retu,
+        }
+        unsave.WPDL = {}
+        return true
+    else
+        if weaponData.type ~= unsave.WPD.type and priority >= unsave.WPD.prior then
+            if priority >= unsave.WPD.prior then
+                if unsave.WPD.loss and player:Exists() then
+                    unsave.WPD.loss(player, data)
+                end
+                if unsave.WPD.perst then
+                    unsave.WPDL[#unsave.WPDL+1] = unsave.WPD
+                end
+                unsave.WPD = {
+                    type = weaponData.type,
+                    prior = priority,
+                    logic = weaponData.func,
+                    loss = weaponData.loss,
+                    perst = weaponData.perst,
+                    retu = weaponData.retu,
+                }
+                return true
+            elseif weaponData.perst then
+                local can = true
+                for i=1, #unsave.WPDL do
+                    local tab = unsave.WPDL[i]
+                    if tab.type == weaponData.type then
+                        can = false
+                        break
+                    end
+                end
+                if can then
+                    unsave.WPDL[#unsave.WPDL+1] = {
+                        type = weaponData.type,
+                        prior = priority,
+                        logic = weaponData.func,
+                        loss = weaponData.loss,
+                        perst = weaponData.perst,
+                        retu = weaponData.retu,
+                    }
+                end
+            end
+        end
+    end
+    return false
+end
+
+---@param weaponData WZ_WeapData
+function WarpZone.RemoveWeaponType(player, data, weaponData)
+    local unsave = data.WarpZone_unsavedata
+    if unsave.WPD then
+        if weaponData.type == unsave.WPD.type then
+            if unsave.WPD.loss and player:Exists() then
+                unsave.WPD.loss(player, data)
+            end
+            --unsave.WPDL[#unsave.WPDL+1] = unsave.WPD
+            unsave.WPD = nil
+        end
+    end
+    if unsave.WPDL and #unsave.WPDL>0 then
+        for i= #unsave.WPDL, 1, -1 do
+            local tab = unsave.WPDL[i]
+            if tab.type == weaponData.type then
+                table.remove(unsave.WPDL,i)
+                break
+            end
+        end
+    end
+end
+
+function WarpZone.GetWeaponType(player, data)
+    local unsave = data.WarpZone_unsavedata
+    if unsave.WPD then
+        return unsave.WPD.type or WarpZone.WarpZoneTypes.WEAPON_DEFAULT
+    end
+    return WarpZone.WarpZoneTypes.WEAPON_DEFAULT
+end
+
+function WarpZone.WeaponLogic(player, data)
+    local unsave = data.WarpZone_unsavedata
+    if unsave.WPD then
+        if unsave.WPD.logic and unsave.WPD.logic(player, data) then
+            
+        end
+    elseif unsave.WPDL and #unsave.WPDL>0 then
+        local max = 1000000000
+        local sel = -1
+        for i=1, #unsave.WPDL do
+            local tab = unsave.WPDL[i]
+            if max > tab.prior then
+                sel = i*1
+                max = tab.prior
+            end
+        end
+        if sel ~= -1 then
+            unsave.WPD = unsave.WPDL[sel]
+            if unsave.WPD.retu and unsave.WPD.retu(player, data) then
+
+            end
+        end
+    end
+end
+
+
+
 ---@param player EntityPlayer
 function WarpZone:postRender(player, offset)
 	local actions = player:GetLastActionTriggers()
@@ -2843,6 +2973,9 @@ function WarpZone:postPlayerUpdate(player)
     local unsave = data.WarpZone_unsavedata
     local spr = player:GetSprite()
     local effects = player:GetEffects()
+
+    WarpZone.WeaponLogic(player, data)
+
 
     if unsave.fireGlove == true then
         WarpZone:fireGlove(player)
@@ -5083,3 +5216,10 @@ WarpZone:AddCallback(ModCallbacks.MC_EXECUTE_CMD, WarpZone.test_command)
 --local config = Isaac.GetItemConfig()
 --local it = config:GetNullItem(WarpZone.WarpZoneTypes.COSTUME_BOOSTERV2)
 --print(it.Costume.IsFlying)
+
+-- Thanks Cucco. Принято всегда её благотворить, ну и ладно
+WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, function()
+	if #Isaac.FindByType(EntityType.ENTITY_PLAYER) == 0 then
+		Isaac.ExecuteCommand("reloadshaders")
+	end
+end)
