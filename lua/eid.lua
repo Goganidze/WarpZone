@@ -44,8 +44,8 @@ if EID then
     EID:addCollectible( Isaac.GetItemIdByName("Johnny's Knives"), "{{Throwable}} Gain two homing flying knife familiars that do damage on contact#When killing enemies with the knives, spawn a pool of red creep that damages enemies. The size of the creep depends on the enemy's mass.#When enemy is killed by knives, gain {{Tears}} +0.5 Tears to the rest of the room.", "Johnny's Knives",  "en_us")
     EID:addCollectible(Isaac.GetItemIdByName("Ser Junkan"), "Spawns a familiar that pursues enemies and does contact damage.#You can blow up items with bombs. Collecting the junk that comes out upgrades your familiar.#Collecting 7 junk gives Junkan flight, and lets him fire spectral homing projectiles at the nearest enemy.", "Ser Junkan",  "en_us")
     EID:addCollectible(Isaac.GetItemIdByName("The Crowdfunder"), "Press the drop button to toggle a coin-firing minigun#Each bullet costs 1 cent to fire.#When hitting a wall, bullets have a chance to drop a fading coin.#Killing enemies with The Crowdfunder may also drop extra money.", "The Crowdfunder",  "en_us")
-    EID:addCollectible(Isaac.GetItemIdByName("Polar Star"), "TOADD" "Polar Star" "en_us")
-    EID:addCollectible(Isaac.GetItemIdByName("Booster V2.0"), "TOADD" "Booster V2.0" "en_us")
+    EID:addCollectible(Isaac.GetItemIdByName("Polar Star"), "TOADD", "Polar Star", "en_us")
+    EID:addCollectible(Isaac.GetItemIdByName("Booster V2.0"), "TOADD", "Booster V2.0", "en_us")
 	
     EID:addTrinket(Isaac.GetTrinketIdByName("Hunky Boys"), "While held, pressing the Drop Trinket button immediately drops this trinket; you don't need to hold the button#When on the ground, enemies will target the trinket for a short time.", "Hunky Boys", "en_us")
     EID:addTrinket(Isaac.GetTrinketIdByName("Bible Thump"), "{{Collectible33}} The Bible is added to several item pools.#Using {{Collectible33}} The Bible or {{Card71}} The Devil? card with this item will deal 40 damage to all enemies in the room, in addition to granting flight.#Using The Bible on {{Satan}} Satan will kill him, and you will survive#The golden version of this trinket kills {{TheLamb}} The Lamb as well.", "Bible Thump", "en_us")
