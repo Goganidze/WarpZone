@@ -28,6 +28,9 @@ return function(mod)
                 player:AddCacheFlags(CacheFlag.CACHE_SPEED)
                 player:EvaluateItems()
                 player:GetData().WarpZone_removeTonyCostume = true
+
+                WarpZone.SetWeaponType(player, player:GetData(), 
+                    {type = WarpZone.WarpZoneTypes.WEAPON_TONY}, 10)
             end
         end
     end
@@ -86,12 +89,18 @@ return function(mod)
                 if effects:GetCollectibleEffectNum(WarpZone.WarpZoneTypes.COLLECTIBLE_TONY) <= 1 then
                     --player:TryRemoveNullCostume(WarpZone.WarpZoneTypes.COSTUME_TONY_RAGE)
                     --data.WarpZone_removeTonyCostume = nil
+                    WarpZone.RemoveWeaponType(player, data, 
+                        {type = WarpZone.WarpZoneTypes.WEAPON_TONY})
+
                     player:AddCacheFlags(CacheFlag.CACHE_SPEED)
                     player:EvaluateItems()
                 end
             end
         else
             if data.WarpZone_removeTonyCostume then
+                WarpZone.RemoveWeaponType(player, data, 
+                    {type = WarpZone.WarpZoneTypes.WEAPON_TONY})
+
                 data.WarpZone_removeTonyCostume = nil
                 player:TryRemoveNullCostume(WarpZone.WarpZoneTypes.COSTUME_TONY_RAGE)
                 player:AddCacheFlags(CacheFlag.CACHE_SPEED)
@@ -106,6 +115,7 @@ return function(mod)
         local effects = player:GetEffects()
         local tonynum = effects:GetCollectibleEffectNum(WarpZone.WarpZoneTypes.COLLECTIBLE_TONY)
         if tonynum > 1 then
+            WarpZone.IsTONYYYRAGEEE = true
             if data.WarpZone_unsavedata then
                 local unsave = data.WarpZone_unsavedata
                 if not unsave.TonyHandSpr then
@@ -168,4 +178,28 @@ return function(mod)
     --print(WarpZone.WarpZoneTypes.COSTUME_TONY_RAGE,
     --config:GetNullItem(WarpZone.WarpZoneTypes.COSTUME_TONY_RAGE).Costume.Priority
     --)
+
+    WarpZone.TONYRAGEAmout = 0
+
+    function WarpZone.TonyRageShader(_,name)
+        if name == "WarpZone_TonyRage" then
+            if WarpZone.IsTONYYYRAGEEE then
+                WarpZone.TONYRAGEAmout = WarpZone.TONYRAGEAmout * 0.95 + .05
+            else
+                WarpZone.TONYRAGEAmout = WarpZone.TONYRAGEAmout * 0.95
+                if WarpZone.TONYRAGEAmout < 0.001 then
+                    WarpZone.TONYRAGEAmout = 0
+                end
+            end
+            
+            WarpZone.IsTONYYYRAGEEE = false
+            local screensize = Vector(Isaac.GetScreenWidth(),Isaac.GetScreenHeight())
+            screensize = screensize --* Isaac.GetScreenPointScale() *2
+            ---print( (math.sin( Isaac.GetFrameCount()/50 )+1) / 2 + .5 )
+            --print( (math.sin( Isaac.GetFrameCount()/50 )+1) / 2 )
+            local tab = {ActiveIn = WarpZone.TONYRAGEAmout, TonyTime = Isaac.GetFrameCount(), ScreenSize = {screensize.X, screensize.Y}}
+            return tab
+        end
+    end
+    WarpZone:AddCallback(ModCallbacks.MC_GET_SHADER_PARAMS, WarpZone.TonyRageShader)
 end

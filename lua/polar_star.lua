@@ -112,8 +112,13 @@ return function(mod)
         local IsSirenCharmed, SirenHelper = WarpZone.isSirenCharmed(fam)
         
         local firedelaay = player.MaxFireDelay
+
         if not IsSirenCharmed then
-            player.FireDelay = math.max(player.FireDelay, 5)
+            if WarpZone.GetWeaponType(player, player:GetData()) ~= WarpZone.WarpZoneTypes.WEAPON_POLARSTAR then
+                
+            else
+                player.FireDelay = math.max(player.FireDelay, 5)
+            end
         else
             firedelaay = 22
         end
@@ -238,7 +243,7 @@ return function(mod)
 
         if not wasShootb then
         
-        --if suffix then
+            --if suffix then
             local animName = prefix .. suffix
             if spr:GetAnimation() ~= animName then
                 if animName:sub(1, 8) ~= spr:GetAnimation():sub(1, 8) then
@@ -248,13 +253,6 @@ return function(mod)
                 end
             end
         end
-        --else
-         --   local animName = prefix .. suffix
-        --    if spr:GetAnimation() ~= animName then
-        --        spr:SetAnimation(animName, false)
-        --    end
-            
-        --end
         
 
         local ag = isAim and 1 or 0
@@ -283,10 +281,28 @@ return function(mod)
         player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS | CacheFlag.CACHE_FLYING | CacheFlag.CACHE_SPEED | CacheFlag.CACHE_RANGE)
 
         udata.HasPolarStar = nil
+        WarpZone.RemoveWeaponType(player, player:GetData(), {type = WarpZone.WarpZoneTypes.WEAPON_POLARSTAR})
         udata.HasBoosterV2Costume = true
         player:AddNullCostume(WarpZone.WarpZoneTypes.COSTUME_BOOSTERV2)
     end
     WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.PolarStar_Use, WarpZone.WarpZoneTypes.COLLECTIBLE_POLARSTAR)
+
+    local function loss(player, udata)
+        udata.HasPolarStar = false
+        player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS | CacheFlag.CACHE_RANGE)
+    end
+    local function set(player, udata)
+        local result = WarpZone.SetWeaponType(player, player:GetData(), 
+            {type = WarpZone.WarpZoneTypes.WEAPON_POLARSTAR, loss = loss, perst = true, 
+            retu = function (player, data)
+                udata.HasPolarStar = true
+                player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS | CacheFlag.CACHE_RANGE)
+                player:EvaluateItems()
+            end}, 0)
+        if result then
+            udata.HasPolarStar = true
+        end
+    end
 
     ---@param player EntityPlayer
     function WarpZone.Boosterv2_Use(_,collectible, rng, player, useflags, slot )
@@ -298,7 +314,11 @@ return function(mod)
             sfx:Play(WarpZone.WarpZoneTypes.SOUND_GUN_SWAP, Options.SFXVolume*3.8, nil, nil, 1.4)
             swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_POLARSTAR, slot, player, 0)
 
-            udata.HasPolarStar = true
+            --WarpZone.SetWeaponType(player, player:GetData(), 
+           --     {type = WarpZone.WarpZoneTypes.WEAPON_POLARSTAR, loss = loss, perst = true}, 0)
+            --udata.HasPolarStar = true
+            set(player, udata)
+
             udata.HasBoosterV2Costume = false
             player:TryRemoveNullCostume(WarpZone.WarpZoneTypes.COSTUME_BOOSTERV2)
             player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS | CacheFlag.CACHE_FLYING | CacheFlag.CACHE_SPEED | CacheFlag.CACHE_RANGE)
@@ -510,13 +530,21 @@ return function(mod)
                 player:EvaluateItems()
             end
         end
-
+        
         if polstr then
             --if not udata.PolarStarIsCharmed then
             --    player.FireDelay = math.max(player.FireDelay, 5)
             --end
-            if not udata.HasPolarStar then
-                udata.HasPolarStar = true
+            
+            local curt = WarpZone.GetWeaponType(player, data)
+            if (curt == WarpZone.WarpZoneTypes.WEAPON_POLARSTAR
+            or curt == WarpZone.WarpZoneTypes.WEAPON_DEFAULT)
+            and not udata.HasPolarStar then
+                --WarpZone.SetWeaponType(player, player:GetData(), 
+                --    {type = WarpZone.WarpZoneTypes.WEAPON_POLARSTAR, loss = loss, perst = true}, 0)
+                --udata.HasPolarStar = true
+                set(player, udata)
+
                 player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS | CacheFlag.CACHE_RANGE)
                 player:EvaluateItems()
             end
@@ -524,6 +552,7 @@ return function(mod)
         else
             if udata.HasPolarStar then
                 udata.HasPolarStar = false
+                WarpZone.RemoveWeaponType(player, data, {type = WarpZone.WarpZoneTypes.WEAPON_POLARSTAR})
                 player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS | CacheFlag.CACHE_RANGE)
                 player:EvaluateItems()
             end
@@ -590,6 +619,9 @@ return function(mod)
             --end
             
             local count = polstr and 1 or 0
+            if WarpZone.GetWeaponType(player, data) ~= WarpZone.WarpZoneTypes.WEAPON_POLARSTAR then
+                count = 0
+            end
             local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_POLARSTAR)
             player:CheckFamiliar(PolarStarVar, count, rng)
         elseif cache == CacheFlag.CACHE_FLYING then
