@@ -116,3 +116,9 @@ if EID then
     EID:addCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_SPELUNKERS_PACK, "+12 бомб#Все ямы в радиусе взрыва заполняются.#При взрыве бомбы, Все меченые и двойные меченые камни взорвутся не смотря на то что они вне радиуса взрыва. #Камни с бомбами сломаются и оставят бомбу на их месте.", "Рюкзак Спелеолога",  "ru")
 
 end
+
+return function ()
+    if REPENTOGON then
+        print("hi")
+    end
+end
