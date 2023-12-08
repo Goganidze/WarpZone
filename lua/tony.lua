@@ -17,7 +17,7 @@ return function(mod)
         [SkinColor.SKIN_WHITE] = "_white",
     }
 
-    WarpZone.TonyRageTime = 2160
+    WarpZone.TonyRageTime = 160
 
     ---@param player EntityPlayer
     function WarpZone.TonyTakeDmg(player, amount, damageflags, source, countdownframes)
