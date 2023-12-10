@@ -758,7 +758,8 @@ return function(mod)
                 for i=0, game:GetNumPlayers()-1 do
                     local player = Isaac.GetPlayer(i)
                     if player and (player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POLARSTAR) 
-                    or player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2))
+                    or player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2) 
+                    or Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_UNQUOTE)
                     and player.Position:Distance(pos) < 300 then
                         ent.Target = player
                         break
