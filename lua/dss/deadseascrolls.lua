@@ -134,6 +134,27 @@ local strings = {
 		en = "double tab",
 		ru = "двойное тык",
 	},
+	tony_time = {
+		en = "tony's rage",
+		ru = "длительность",
+	},
+	tony_time2 = {
+		en = "duration",
+		ru = "ярости тони",
+	},
+	tony_time_var1 = {
+		en = "2.5 sec",
+		ru = "2.5 сек.",
+	},
+	tony_time_var2 = {
+		en = "3 sec",
+		ru = "3 сек.",
+	},
+	tony_time_var3 = {
+		en = "4 sec",
+		ru = "4 сек.",
+	},
+	
 }
 local function GetStr(str)
 	return strings[str] and (strings[str][Options.Language] or strings[str].en) or str
@@ -190,6 +211,21 @@ WarpZone.DSSdirectory = {
 				store = function(var)
 					WarpZone.MenuData.JohnnysKnivesMode = var 
 					WarpZone.JohnnysKnivesEffectType = var
+				end,
+			},
+			{str = '', nosel = true, fsize = 3},
+			{str = GetStr('tony_time'), nosel = true, fsize = 3},
+			{
+				str = GetStr('tony_time2'),
+				choices = {GetStr('tony_time_var1'),GetStr('tony_time_var2'),GetStr('tony_time_var3')}, 
+				variable = 'TonyTimeMaxMode',
+				setting = 1,
+				load = function()
+					return WarpZone.MenuData.TonyTimeMaxMode or 1
+				end,
+				store = function(var)
+					WarpZone.MenuData.TonyTimeMaxMode = var
+					WarpZone.TonyRageTime = var == 1 and 160 or var == 2 and 180 and var == 3 and 240
 				end,
 			},
 		},

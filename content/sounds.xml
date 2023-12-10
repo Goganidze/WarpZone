@@ -17,4 +17,7 @@
     <sound name="GunSwap">
         <sample weight="1" path="gunreload.wav" />
     </sound>
+    <sound name="WZblankUse">
+        <sample weight="1" path="blank.wav" />
+    </sound>
 </sounds>

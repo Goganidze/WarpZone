@@ -338,6 +338,7 @@ WarpZone.WarpZoneTypes.SOUND_EMERGENCY_MEETING = Isaac.GetSoundIdByName("Emergen
 WarpZone.WarpZoneTypes.SOUND_MURDER_STING = Isaac.GetSoundIdByName("MurderSting")
 WarpZone.WarpZoneTypes.SOUND_MURDER_KILL = Isaac.GetSoundIdByName("MurderKillSnd")
 WarpZone.WarpZoneTypes.SOUND_GUN_SWAP = Isaac.GetSoundIdByName("GunSwap")
+WarpZone.WarpZoneTypes.SOUND_BLANK_USE = Isaac.GetSoundIdByName("WZblankUse")
 
 
 WarpZone.WarpZoneTypes.COSTUME_DIOGENES_ON = Isaac.GetCostumeIdByPath("gfx/characters/DiogenesPotCostume.anm2")
@@ -4792,14 +4793,14 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.useJester, WarpZone.Warp
 
 function WarpZone:useBlank(card, player, useflags)
     local center = player.Position
-    local radius = 99999
+    local radius = 1000 -- 99999
 	--Remove projectiles in radius
 	for _, projectile in ipairs(Isaac.FindByType(EntityType.ENTITY_PROJECTILE)) do
 		projectile = projectile:ToProjectile()
 
 		local realPosition = projectile.Position - Vector(0, projectile.Height)
 
-		if realPosition:DistanceSquared(center) <= (radius * 3) ^ 2 then
+		if realPosition:DistanceSquared(center) <= (radius) ^ 2 then
 			if projectile:HasProjectileFlags(ProjectileFlags.ACID_GREEN) or
 			projectile:HasProjectileFlags(ProjectileFlags.ACID_RED) or
 			projectile:HasProjectileFlags(ProjectileFlags.CREEP_BROWN) or
@@ -4814,9 +4815,11 @@ function WarpZone:useBlank(card, player, useflags)
 		end
 	end
     local blankRNG = player:GetCardRNG(card)
-    
 	--Push enemies back
-	for _, entity in ipairs(Isaac.FindInRadius(center, radius * 3, EntityPartition.ENEMY)) do
+    local list = Isaac.FindInRadius(center, 1000, EntityPartition.ENEMY)
+	--for _, entity in ipairs(list) do
+    for i=1, #list do
+        local entity = list[i]
 		if entity:IsActiveEnemy(false) and entity:IsVulnerableEnemy() then
 			local pushDirection = (entity.Position - center):Normalized()
 			entity:AddVelocity(pushDirection * 30)
@@ -4825,17 +4828,22 @@ function WarpZone:useBlank(card, player, useflags)
             end
 		end
 	end
+    
     local entity_source = Isaac.Spawn(EntityType.ENTITY_EFFECT,
-        EffectVariant.SIREN_RING,
+        EffectVariant.IMPACT,
         0,
         player.Position,
         Vector(0,0),
         nil)
 
     local entity_sprite = entity_source:GetSprite()
-    entity_sprite.PlaybackSpeed = entity_sprite.PlaybackSpeed * 2
-    entity_sprite.Color = Color(0, 0, 1, 1, 0, 0, .5)
-    SfxManager:Play(SoundEffect.SOUND_DEATH_CARD)
+    entity_sprite:Load("gfx/effects/blankeffect.anm2", true)
+    entity_sprite:Play(entity_sprite:GetDefaultAnimation())
+    --entity_sprite.PlaybackSpeed = entity_sprite.PlaybackSpeed * 2
+    --entity_sprite.Color = Color(0, 0, 1, 1, 0, 0, .5)
+    SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_BLANK_USE, Options.SFXVolume, 3, false, 1)
+
+    game:MakeShockwave(player.Position, 0.045, 0.035, 35)
 
     game:ButterBeanFart(center, radius, player, false, true)
 end
