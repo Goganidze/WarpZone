@@ -18,4 +18,5 @@
     <costume id = "34" anm2path = "boxglove.anm2" type = "passive" hasSkinAlt = "true"/>
     <costume anm2path = "Booster v2.anm2" type = "none" hasSkinAlt = "true" isFlying = "true"/>
     <costume anm2path = "DiogenesPotCostume.anm2" type = "none" />
+    <costume anm2path = "cave_story_dude.anm2" type = "none" />
 </costumes>

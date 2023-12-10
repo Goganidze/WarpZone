@@ -344,6 +344,7 @@ WarpZone.WarpZoneTypes.SOUND_BLANK_USE = Isaac.GetSoundIdByName("WZblankUse")
 WarpZone.WarpZoneTypes.COSTUME_DIOGENES_ON = Isaac.GetCostumeIdByPath("gfx/characters/DiogenesPotCostume.anm2")
 WarpZone.WarpZoneTypes.COSTUME_BOOSTERV2 = Isaac.GetCostumeIdByPath("gfx/characters/Booster v2.anm2")
 WarpZone.WarpZoneTypes.COSTUME_TONY_RAGE = Isaac.GetCostumeIdByPath("gfx/characters/TonyMaskCostume.anm2")
+WarpZone.WarpZoneTypes.COSTUME_CAVE_STORY = Isaac.GetCostumeIdByPath("gfx/characters/cave_story_dude.anm2")
 
 WarpZone.WarpZoneTypes.CHALLENGE_GETTING_UNDER_IT = Isaac.GetChallengeIdByName("Getting Under It")
 WarpZone.WarpZoneTypes.CHALLENGE_HOLE_IN_MY_POCKET = Isaac.GetChallengeIdByName("Hole In My Pocket")
@@ -2137,6 +2138,7 @@ function WarpZone:DebugText()
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
 
+---@param player EntityPlayer
 function WarpZone:multiPlayerInit(player)
     myRNG:SetSeed(Isaac.GetPlayer().DropSeed, 35)
 
@@ -2169,6 +2171,9 @@ function WarpZone:multiPlayerInit(player)
         player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS)
         player:EvaluateItems()
 
+    end
+    if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_UNQUOTE then
+        player:AddNullCostume(WarpZone.WarpZoneTypes.COSTUME_CAVE_STORY)
     end
     
 end
