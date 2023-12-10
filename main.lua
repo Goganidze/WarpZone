@@ -344,6 +344,7 @@ WarpZone.WarpZoneTypes.SOUND_BLANK_USE = Isaac.GetSoundIdByName("WZblankUse")
 WarpZone.WarpZoneTypes.COSTUME_DIOGENES_ON = Isaac.GetCostumeIdByPath("gfx/characters/DiogenesPotCostume.anm2")
 WarpZone.WarpZoneTypes.COSTUME_BOOSTERV2 = Isaac.GetCostumeIdByPath("gfx/characters/Booster v2.anm2")
 WarpZone.WarpZoneTypes.COSTUME_TONY_RAGE = Isaac.GetCostumeIdByPath("gfx/characters/TonyMaskCostume.anm2")
+WarpZone.WarpZoneTypes.COSTUME_CAVE_STORY = Isaac.GetCostumeIdByPath("gfx/characters/cave_story_dude.anm2")
 
 WarpZone.WarpZoneTypes.CHALLENGE_GETTING_UNDER_IT = Isaac.GetChallengeIdByName("Getting Under It")
 WarpZone.WarpZoneTypes.CHALLENGE_HOLE_IN_MY_POCKET = Isaac.GetChallengeIdByName("Hole In My Pocket")
@@ -2137,6 +2138,7 @@ function WarpZone:DebugText()
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_RENDER, WarpZone.DebugText)
 
+---@param player EntityPlayer
 function WarpZone:multiPlayerInit(player)
     myRNG:SetSeed(Isaac.GetPlayer().DropSeed, 35)
 
@@ -2169,6 +2171,9 @@ function WarpZone:multiPlayerInit(player)
         player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS)
         player:EvaluateItems()
 
+    end
+    if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_UNQUOTE then
+        player:AddNullCostume(WarpZone.WarpZoneTypes.COSTUME_CAVE_STORY)
     end
     
 end
@@ -2967,6 +2972,110 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
 end
 WarpZone:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, WarpZone.EvaluateCache)
 
+local MetalItems = {
+    CollectibleType.COLLECTIBLE_SPOON_BENDER,--rebirth
+    CollectibleType.COLLECTIBLE_IRON_BAR,
+    CollectibleType.COLLECTIBLE_IT_HURTS,
+    CollectibleType.COLLECTIBLE_BLOOD_OATH,
+    CollectibleType.COLLECTIBLE_STAPLER,
+    CollectibleType.COLLECTIBLE_SKELETON_KEY,
+    CollectibleType.COLLECTIBLE_WIRE_COAT_HANGER,
+    CollectibleType.COLLECTIBLE_MAGNETO,
+    CollectibleType.COLLECTIBLE_BATTERY,
+    CollectibleType.COLLECTIBLE_TECHNOLOGY,
+    CollectibleType.COLLECTIBLE_QUARTER,
+    CollectibleType.COLLECTIBLE_THE_NAIL,
+    CollectibleType.COLLECTIBLE_WE_NEED_GO_DEEPER,
+    CollectibleType.COLLECTIBLE_ROBO_BABY,
+    CollectibleType.COLLECTIBLE_PINKING_SHEARS,
+    CollectibleType.COLLECTIBLE_MOMS_KNIFE,
+    CollectibleType.COLLECTIBLE_NINE_VOLT,
+    CollectibleType.COLLECTIBLE_RAZOR_BLADE,
+    CollectibleType.COLLECTIBLE_VIRUS,
+    CollectibleType.COLLECTIBLE_ROID_RAGE,
+    CollectibleType.COLLECTIBLE_PAGEANT_BOY,
+    CollectibleType.COLLECTIBLE_SPEED_BALL,
+    CollectibleType.COLLECTIBLE_NOTCHED_AXE,
+    CollectibleType.COLLECTIBLE_TOUGH_LOVE,
+    CollectibleType.COLLECTIBLE_TECHNOLOGY_2,
+    CollectibleType.COLLECTIBLE_SACRIFICIAL_DAGGER,
+    CollectibleType.COLLECTIBLE_DADS_KEY,
+    CollectibleType.COLLECTIBLE_BLOOD_RIGHTS,
+    CollectibleType.COLLECTIBLE_HOLY_GRAIL,
+    CollectibleType.COLLECTIBLE_SMB_SUPER_FAN,
+    CollectibleType.COLLECTIBLE_MOMS_KEY,
+    CollectibleType.COLLECTIBLE_MIDAS_TOUCH,
+    CollectibleType.COLLECTIBLE_GUILLOTINE,
+    CollectibleType.COLLECTIBLE_DEATHS_TOUCH,
+    CollectibleType.COLLECTIBLE_KEY_PIECE_1,
+    CollectibleType.COLLECTIBLE_KEY_PIECE_2,
+    CollectibleType.COLLECTIBLE_EXPERIMENTAL_TREATMENT,
+    CollectibleType.COLLECTIBLE_TRINITY_SHIELD,
+    CollectibleType.COLLECTIBLE_TECH_5,
+    CollectibleType.COLLECTIBLE_SCREW,
+    CollectibleType.COLLECTIBLE_ROBO_BABY_2,
+    CollectibleType.COLLECTIBLE_STRANGE_ATTRACTOR,
+    CollectibleType.COLLECTIBLE_SAMSONS_CHAINS,
+    CollectibleType.COLLECTIBLE_SCISSORS,
+    CollectibleType.COLLECTIBLE_SAFETY_PIN,
+    CollectibleType.COLLECTIBLE_SYNTHOIL,
+    CollectibleType.COLLECTIBLE_CAR_BATTERY,--AB
+    CollectibleType.COLLECTIBLE_BOX_OF_FRIENDS,
+    CollectibleType.COLLECTIBLE_FRIEND_BALL,
+    CollectibleType.COLLECTIBLE_8_INCH_NAILS,
+    CollectibleType.COLLECTIBLE_CHARGED_BABY,
+    CollectibleType.COLLECTIBLE_PAY_TO_PLAY,
+    CollectibleType.COLLECTIBLE_CENSER,
+    CollectibleType.COLLECTIBLE_BETRAYAL,
+    CollectibleType.COLLECTIBLE_TECH_X,
+    CollectibleType.COLLECTIBLE_VENTRICLE_RAZOR,
+    CollectibleType.COLLECTIBLE_SPEAR_OF_DESTINY,
+    CollectibleType.COLLECTIBLE_SPIDER_MOD,
+    CollectibleType.COLLECTIBLE_ATHAME,
+    CollectibleType.COLLECTIBLE_METAL_PLATE,--AB+
+    CollectibleType.COLLECTIBLE_EYE_OF_GREED,
+    CollectibleType.COLLECTIBLE_DADS_LOST_COIN,
+    CollectibleType.COLLECTIBLE_SMELTER,
+    CollectibleType.COLLECTIBLE_CROOKED_PENNY,
+    CollectibleType.COLLECTIBLE_DULL_RAZOR,
+    CollectibleType.COLLECTIBLE_POTATO_PEELER,
+    CollectibleType.COLLECTIBLE_ADRENALINE,
+    CollectibleType.COLLECTIBLE_JACOBS_LADDER,
+    CollectibleType.COLLECTIBLE_EUTHANASIA,
+    CollectibleType.COLLECTIBLE_EUCHARIST,
+    CollectibleType.COLLECTIBLE_BACKSTABBER,
+    CollectibleType.COLLECTIBLE_MOMS_RAZOR,
+    CollectibleType.COLLECTIBLE_SPRINKLER,
+    CollectibleType.COLLECTIBLE_JUMPER_CABLES,
+    CollectibleType.COLLECTIBLE_TECHNOLOGY_ZERO,
+    CollectibleType.COLLECTIBLE_APPLE,
+    CollectibleType.COLLECTIBLE_BROKEN_SHOVEL,
+    CollectibleType.COLLECTIBLE_MOMS_SHOVEL,
+    CollectibleType.COLLECTIBLE_DADS_RING,
+    CollectibleType.COLLECTIBLE_POUND_OF_FLESH,
+    CollectibleType.COLLECTIBLE_4_5_VOLT,
+    CollectibleType.COLLECTIBLE_MOMS_BRACELET,
+    CollectibleType.COLLECTIBLE_GOLDEN_RAZOR,
+    CollectibleType.COLLECTIBLE_MONSTRANCE,
+    CollectibleType.COLLECTIBLE_ANIMA_SOLA,
+    CollectibleType.COLLECTIBLE_ISAACS_TOMB,
+    CollectibleType.COLLECTIBLE_LODESTONE,
+    CollectibleType.COLLECTIBLE_SUMPTORIUM,
+    CollectibleType.COLLECTIBLE_STAPLER,
+    CollectibleType.COLLECTIBLE_DARK_ARTS,
+    CollectibleType.COLLECTIBLE_MEAT_CLEAVER,
+    CollectibleType.COLLECTIBLE_BOT_FLY,
+    CollectibleType.COLLECTIBLE_SHARP_KEY,
+    CollectibleType.COLLECTIBLE_SCOOPER,
+    CollectibleType.COLLECTIBLE_SPIRIT_SWORD,
+    CollectibleType.COLLECTIBLE_DAMOCLES,
+    CollectibleType.COLLECTIBLE_SANGUINE_BOND,
+    CollectibleType.COLLECTIBLE_MEMBER_CARD,
+    CollectibleType.COLLECTIBLE_KNIFE_PIECE_2,
+    CollectibleType.COLLECTIBLE_SUPPER
+  }
+
+
 --Checking every entity here is a pretty terrible idea, since it's called for every player
 ---@param player EntityPlayer
 function WarpZone:postPlayerUpdate(player)
@@ -3303,6 +3412,17 @@ function WarpZone:postPlayerUpdate(player)
         end
     end
     WarpZone.TonyTake_update(player)
+
+    if Isaac.GetFrameCount() % 60 == 0 then
+        unsave.MetalItemCount = 0
+        for i=1, #MetalItems do
+            --local itemCount = player:GetCollectibleNum(MetalItems[i])
+            unsave.MetalItemCount = unsave.MetalItemCount + player:GetCollectibleNum(MetalItems[i])
+            --if player:HasCollectible(item) then
+            --    unsave.MetalItemCount = unsave.MetalItemCount + player:GetCollectibleNum(item)
+            --end
+        end
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpdate, 0)
 
@@ -3315,6 +3435,9 @@ function WarpZone:checkTear(entitytear)
     local tdata = tear:GetData()
     if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) then
         local chance = player.Luck * 5 + 10
+        if data.WarpZone_unsavedata then
+            chance = chance + data.WarpZone_unsavedata.MetalItemCount*5
+        end
         local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON)
         if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
             chance = chance + 20
@@ -3435,13 +3558,17 @@ function WarpZone:BrimBallInit(laser)
     if player then
         if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) then
             local chance = player.Luck * 5 + 10
+            if data.WarpZone_unsavedata then
+                chance = chance + data.WarpZone_unsavedata.MetalItemCount*5
+            end
             local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON)
-            local ghost = RNG()
-            ghost:SetSeed(rng:GetSeed(), 35) --isn't working?
+            --local ghost = RNG()
+            --ghost:SetSeed(rng:GetSeed(), 35) --isn't working?
             if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
                 chance = chance + 20
             end
-            local chance_num = ghost:RandomInt(100)
+            local chance_num = rng:RandomInt(100)
+            
             if chance_num < chance then
                 data.Laser_Rusty = true
                 player:GetData().LaserBleedIt = true
@@ -3461,6 +3588,9 @@ function WarpZone:BrimSwirmInit(laser)
     if player then
         if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) then
             local chance = player.Luck * 5 + 10
+            if data.WarpZone_unsavedata then
+                chance = chance + data.WarpZone_unsavedata.MetalItemCount*5
+            end
             local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON)
             local ghost = RNG()
             ghost:SetSeed(rng:GetSeed(), 35) --isn't working?
@@ -3500,6 +3630,9 @@ function WarpZone:checkLaser(entitylaser)
     if player and not ignoreLaserVar then
         if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) then
             local chance = player.Luck * 5 + 10
+            if pdata.WarpZone_unsavedata then
+                chance = chance + pdata.WarpZone_unsavedata.MetalItemCount*5
+            end
             local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON)
             if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
                 chance = chance + 20
@@ -3847,6 +3980,9 @@ function WarpZone:OnKnifeCollide(knife, collider, low)
     local player = getPlayerFromKnifeLaser(knife)
     if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) and collider:IsVulnerableEnemy() then
         local chance = player.Luck * 5 + 10
+        if player:GetData().WarpZone_unsavedata then
+            chance = chance + player:GetData().WarpZone_unsavedata.MetalItemCount*5
+        end
         local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON)
         if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
             chance = chance + 20
@@ -4669,10 +4805,14 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_ENTITY_SPAWN, WarpZone.DisableCreepPlan
 
 function WarpZone:BibleExtraDamage(collectible, rng, player, useflags, activeslot, customvardata)
     if player:HasTrinket(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP) then
-        player:UseActiveItem(CollectibleType.COLLECTIBLE_NECRONOMICON, false, false, true, false, -1, 0)
+        if collectible == CollectibleType.COLLECTIBLE_BIBLE or player:GetTrinketMultiplier(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP) >= 2 then
+            player:UseActiveItem(CollectibleType.COLLECTIBLE_NECRONOMICON, false, false, true, false, -1, 0)
+        else
+
+        end
     end
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.BibleExtraDamage, CollectibleType.COLLECTIBLE_BIBLE)
+WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.BibleExtraDamage) --, CollectibleType.COLLECTIBLE_BIBLE)
 
 
 function WarpZone:BibleKillSatan(collectible, rng, player, useflags, activeslot, customvardata)
