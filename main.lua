@@ -2094,6 +2094,10 @@ function WarpZone:OnGameStart(isSave)
     if WarpZone.MenuData.SpelunkerBombMode then
         WarpZone.SpelunkersPackEffectType = WarpZone.MenuData.SpelunkerBombMode
     end
+    if WarpZone.MenuData.TonyTimeMaxMode then
+        local var = WarpZone.MenuData.TonyTimeMaxMode
+        WarpZone.TonyRageTime = var == 1 and 160 or var == 2 and 180 or var == 3 and 240 or 160
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, WarpZone.OnGameStart)
 
@@ -2394,7 +2398,7 @@ function WarpZone:NewRoom()
 
     
     
-    local biblePlayer = doesAnyoneHave(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP, true)
+    --[[local biblePlayer = doesAnyoneHave(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP, true)
 
     if biblePlayer ~= nil and bibleThumpPool == false then
         bibleThumpPool = true
@@ -2413,7 +2417,7 @@ function WarpZone:NewRoom()
         AddBibleUpgrade(pool, 1, ItemPoolType.POOL_GREED_DEVIL)
         AddBibleUpgrade(pool, 1, ItemPoolType.POOL_GREED_SECRET)
         AddBibleUpgrade(pool, 1, ItemPoolType.POOL_GREED_BOSS)
-    end
+    end]]
     if bossPrepped and room:GetType() == RoomType.ROOM_BOSS and not room:IsClear() and tableContains(roomsPrepped, game:GetLevel():GetCurrentRoomIndex() ,true) ~= false then
         local entities = Isaac.GetRoomEntities()
         for i=1, #entities do
@@ -3094,6 +3098,33 @@ function WarpZone:postPlayerUpdate(player)
     if(data.breakCap==false) then
         player.MoveSpeed = math.min(player.MoveSpeed+player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_HITOPS)*0.2, 3)
         data.breakCap = nil
+    end
+    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_HITOPS) then
+        if Isaac.GetFrameCount() % 2 == 0 then
+            local ppos = player.Position
+            local list = Isaac.FindInRadius(player.Position, 200, EntityPartition.ENEMY)
+            for i=1, #list do
+                local ent = list[i]
+                if not ent:IsBoss() and ent:IsVulnerableEnemy() and not ent:HasEntityFlags(EntityFlag.FLAG_FRIENDLY)
+                and ent.Position:Distance(ppos) < 100 then -- not EntityRef(ent).IsFriendly 
+                    local ed = ent:GetData()
+                    ed.Hitops_charm = ed.Hitops_charm and (ed.Hitops_charm - 1) or 60
+                    if ed.Hitops_charm <= 0 then
+                        ed.Hitops_charm = nil
+                        ent:AddEntityFlags(EntityFlag.FLAG_FRIENDLY | EntityFlag.FLAG_CHARM)
+                        --ent:AddCharmed(EntityRef(player), -1)
+                        ent:Update()
+                        ent:ClearEntityFlags(EntityFlag.FLAG_PERSISTENT)
+                        Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, ent.Position, Vector(0,0), ent).Color = Color(1 + 345/255,1,1 + 295/255, 1)
+                    else
+                        local proc = 1 - ed.Hitops_charm/60
+                        ent:SetColor(Color(1,1,1,1,  345/255*proc, 0, 295/255*proc), 2, 0,true, true)
+                    end
+                else
+                    ent:GetData().Hitops_charm = nil
+                end
+            end
+        end
     end
     if game:GetFrameCount() - isNil(data.MurderFrame, -999) < 15 then
         player.MoveSpeed = 4
@@ -3945,7 +3976,7 @@ function WarpZone:dropArrow(entity)
 
     if data.CrowdfunderShot == 2 then
         local rng = entity:GetDropRNG()
-        if rng:RandomInt(2) == 1 then
+        if rng:RandomInt(20) < 17 then
             local coin = Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_COIN, CoinSubType.COIN_PENNY, entity.Position, entity.Velocity * 0.25, nil):ToPickup()
             coin.Timeout = 75 + math.floor(RandomFloatRange(15, rng))
             coin:GetSprite():SetFrame(1)
@@ -3970,7 +4001,10 @@ function WarpZone:hitEnemy(entitytear, collider, low)
             --collider:AddEntityFlags(EntityFlag.FLAG_MIDAS_FREEZE)
             collider:AddMidasFreeze(EntityRef(tear), 30)
         end
-
+        local rng = entitytear:GetDropRNG()
+        local coin = Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_COIN, CoinSubType.COIN_PENNY, entitytear.Position, entitytear.Velocity * 0.25, nil):ToPickup()
+        coin.Timeout = 75 + math.floor(RandomFloatRange(15, rng))
+        coin:GetSprite():SetFrame(1)
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_TEAR_COLLISION, WarpZone.hitEnemy)
@@ -4802,17 +4836,28 @@ function WarpZone:DisableCreepPlanB(Type, Variant, SubType, Position, Velocity, 
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_ENTITY_SPAWN, WarpZone.DisableCreepPlanB)
 
-
-function WarpZone:BibleExtraDamage(collectible, rng, player, useflags, activeslot, customvardata)
-    if player:HasTrinket(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP) then
-        if collectible == CollectibleType.COLLECTIBLE_BIBLE or player:GetTrinketMultiplier(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP) >= 2 then
-            player:UseActiveItem(CollectibleType.COLLECTIBLE_NECRONOMICON, false, false, true, false, -1, 0)
-        else
-
+do
+    local ignore = false
+    ---@param player EntityPlayer
+    function WarpZone:BibleExtraDamage(collectible, rng, player, useflags, activeslot, customvardata)
+        if ignore then return end
+        local config = Isaac.GetItemConfig()
+        local maxch = config:GetCollectible(collectible).MaxCharges or 1
+        
+        if player:HasTrinket(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP) then
+            if maxch > 0 
+            and (collectible == CollectibleType.COLLECTIBLE_BIBLE or player:GetTrinketMultiplier(WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP) >= 2) then
+                ignore = true
+                player:UseActiveItem(CollectibleType.COLLECTIBLE_NECRONOMICON, false, false, true, false, -1, 0)
+                ignore = false
+            end
+            if collectible ~= CollectibleType.COLLECTIBLE_BIBLE then
+                player:GetEffects():AddCollectibleEffect(CollectibleType.COLLECTIBLE_BIBLE)
+            end
         end
     end
+    WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.BibleExtraDamage) --, CollectibleType.COLLECTIBLE_BIBLE)
 end
-WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.BibleExtraDamage) --, CollectibleType.COLLECTIBLE_BIBLE)
 
 
 function WarpZone:BibleKillSatan(collectible, rng, player, useflags, activeslot, customvardata)
@@ -4938,9 +4983,9 @@ function WarpZone:useBlank(card, player, useflags)
 	for _, projectile in ipairs(Isaac.FindByType(EntityType.ENTITY_PROJECTILE)) do
 		projectile = projectile:ToProjectile()
 
-		local realPosition = projectile.Position - Vector(0, projectile.Height)
-
-		if realPosition:DistanceSquared(center) <= (radius) ^ 2 then
+		local realPosition = projectile.Position -- Vector(0, projectile.Height)
+        
+		if realPosition:Distance(center) <= (radius) then
 			if projectile:HasProjectileFlags(ProjectileFlags.ACID_GREEN) or
 			projectile:HasProjectileFlags(ProjectileFlags.ACID_RED) or
 			projectile:HasProjectileFlags(ProjectileFlags.CREEP_BROWN) or
@@ -4951,6 +4996,7 @@ function WarpZone:useBlank(card, player, useflags)
 				projectile:Remove()
 			else
 				projectile:Die()
+                projectile:Update()
 			end
 		end
 	end
