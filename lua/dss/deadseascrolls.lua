@@ -225,7 +225,7 @@ WarpZone.DSSdirectory = {
 				end,
 				store = function(var)
 					WarpZone.MenuData.TonyTimeMaxMode = var
-					WarpZone.TonyRageTime = var == 1 and 160 or var == 2 and 180 and var == 3 and 240
+					WarpZone.TonyRageTime = var == 1 and 160 or var == 2 and 180 or var == 3 and 240 or 160
 				end,
 			},
 		},

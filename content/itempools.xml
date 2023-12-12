@@ -66,7 +66,6 @@
         <Item Name="The Doorway" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="George" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Aubrey" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
-        <Item Name="Tony" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Pop Pop" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Emergency Meeting" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="The Crowdfunder" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -74,7 +73,6 @@
     <Pool Name="greedShop">
         <Item Name="George" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Aubrey" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
-        <Item Name="Tony" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Diogenes's Pot" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Spelunker's Pack" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Pop Pop" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
@@ -130,10 +128,12 @@
     </Pool>
     <Pool Name="devil">
         <Item Name="The Real Left Hand" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Tony" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Johnny's Knives" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
     <Pool Name="greedDevil">
         <Item Name="The Real Left Hand" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
+        <Item Name="Tony" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
         <Item Name="Johnny's Knives" Weight="1" DecreaseBy="0.5" RemoveOn="0.1"/>
     </Pool>
     <Pool Name="greedGoldenChest">
