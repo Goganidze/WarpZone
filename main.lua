@@ -185,7 +185,7 @@ local KEEPER_BONUS = 0.5
 
 
 --pop pop 
-local totalFrameDelay = 200
+local totalFrameDelay = 100 --200
 
 --football
 WarpZone.FOOTBALL = { 
@@ -1159,7 +1159,7 @@ function WarpZone:OnUpdate()
         local entities = Isaac.GetRoomEntities()
         local targetPos = {}
         local random = myRNG:RandomInt(20)
-        for i, entity in ipairs(entities) do
+        --[[for i, entity in ipairs(entities) do
             if entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == PickupVariant.PICKUP_TRINKET and entity.SubType == WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS then
                 if entity:GetEntityFlags() & EntityFlag.FLAG_BAITED ~= EntityFlag.FLAG_BAITED then
                     table.insert(targetPos, entity)
@@ -1182,7 +1182,7 @@ function WarpZone:OnUpdate()
                     end
                 end
             end
-        end
+        end]]
     end
     WarpZone:refreshItemsTaken()
 
@@ -1337,6 +1337,9 @@ WarpZone.DoubleTapCallback = {
                 firePopTear(player, true)
                 data.WarpZone_data.arrowTimeThreeFrames = 6
                 --return true --reset delay
+                if player:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) then
+                    data.WarpZone_unsavedata.ExtraPOPA = 18
+                end
             --end
         end
     end, totalFrameDelay}
@@ -1814,6 +1817,10 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
         return
     end
     local data = player:GetData()
+    local fakedmg = amount == 0
+    or damageflags & DamageFlag.DAMAGE_NO_PENALTIES == DamageFlag.DAMAGE_NO_PENALTIES 
+    or damageflags & DamageFlag.DAMAGE_FAKE == DamageFlag.DAMAGE_FAKE
+    or damageflags & DamageFlag.DAMAGE_RED_HEARTS == DamageFlag.DAMAGE_RED_HEARTS
     
     if game:GetFrameCount() - isNil(data.MurderFrame, -999) < 15 then
         return false
@@ -1823,7 +1830,7 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
         return false
     end
 
-    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POSSESSION) then
+    if not fakedmg and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POSSESSION) then
         local entities = Isaac.GetRoomEntities()
         numPossessed = 0
         
@@ -1918,7 +1925,9 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
         end
     end]]
 
-    if player:GetNumCoins() > 0 and data.inIdolDamage ~= true and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
+    if not fakedmg and player:GetNumCoins() > 0 and data.inIdolDamage ~= true 
+    and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL) == true 
+    and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
         data.inIdolDamage = true
         if amount == 1 then
             player:TakeDamage(amount, damageflags, source, countdownframes)
@@ -2094,6 +2103,9 @@ function WarpZone:OnGameStart(isSave)
     if WarpZone.MenuData.SpelunkerBombMode then
         WarpZone.SpelunkersPackEffectType = WarpZone.MenuData.SpelunkerBombMode
     end
+    if WarpZone.MenuData.JohnnysKnivesMode then
+		WarpZone.JohnnysKnivesEffectType = WarpZone.MenuData.JohnnysKnivesMode
+    end
     if WarpZone.MenuData.TonyTimeMaxMode then
         local var = WarpZone.MenuData.TonyTimeMaxMode
         WarpZone.TonyRageTime = var == 1 and 160 or var == 2 and 180 or var == 3 and 240 or 160
@@ -2208,10 +2220,14 @@ function WarpZone:LevelStart()
         if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BIRTHDAY_CAKE) then
             local spawnArray = {PickupVariant.PICKUP_BOMB, PickupVariant.PICKUP_COIN, PickupVariant.PICKUP_HEART, PickupVariant.PICKUP_KEY}
 
-            if RNG():RandomInt(2) == 1 then
+            local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_BIRTHDAY_CAKE)
+            local chg = rng:RandomInt(10)
+            if chg < 3 then
                 table.insert(spawnArray, PickupVariant.PICKUP_PILL)
-            else
+            elseif chg < 7 then
                 table.insert(spawnArray, PickupVariant.PICKUP_TAROTCARD)
+            else
+                table.insert(spawnArray, PickupVariant.PICKUP_TRINKET)
             end
 
             for i, spawn_type in ipairs(spawnArray) do
@@ -2225,19 +2241,24 @@ function WarpZone:LevelStart()
         end
 
         if player:HasTrinket(WarpZone.WarpZoneTypes.TRINKET_RING_SNAKE) then
+            local pool = game:GetItemPool()
+            local rng = player:GetTrinketRNG(WarpZone.WarpZoneTypes.TRINKET_RING_SNAKE)
             Isaac.Spawn(EntityType.ENTITY_PICKUP,
                             PickupVariant.PICKUP_TAROTCARD,
-                            0,
+                            pool:GetCard(rng:GetSeed(), true, false, false) or 0,
+                            game:GetRoom():FindFreePickupSpawnPosition(Vector(445, 235)),
+                            Vector(0,0),
+                            nil)
+            rng:Next()
+
+            Isaac.Spawn(EntityType.ENTITY_PICKUP,
+                            PickupVariant.PICKUP_TAROTCARD,
+                            pool:GetCard(rng:GetSeed(), true, false, false) or 0,
                             game:GetRoom():FindFreePickupSpawnPosition(Vector(445, 235)),
                             Vector(0,0),
                             nil)
 
-            Isaac.Spawn(EntityType.ENTITY_PICKUP,
-                            PickupVariant.PICKUP_TAROTCARD,
-                            0,
-                            game:GetRoom():FindFreePickupSpawnPosition(Vector(445, 235)),
-                            Vector(0,0),
-                            nil)
+            rng:Next()
         end
 
         --if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) then
@@ -2357,8 +2378,12 @@ function WarpZone:NewRoom()
             if entity_pos:GetData().InPossession == true then
                 tempnumPossessed = tempnumPossessed + 1
             end
-            if charmed < possessPlayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_POSSESSION) and numPossessed < 15 and entity_pos:IsVulnerableEnemy() and not entity_pos:IsBoss() and not entity_pos:HasEntityFlags(EntityFlag.FLAG_CHARM) then
+            if charmed < possessPlayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_POSSESSION) and numPossessed < 15 
+            and entity_pos:IsVulnerableEnemy() and not entity_pos:IsBoss() and not entity_pos:HasEntityFlags(EntityFlag.FLAG_CHARM) then
                 entity_pos:AddCharmed(EntityRef(possessPlayer), -1)
+                local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, entity_pos.Position, Vector(0,0), possessPlayer)
+                poof.Color = Color(1 + 345/255,1,1 + 295/255, 1)
+                poof.DepthOffset = 100
                 entity_pos:GetData().InPossession = true
                 charmed = charmed + 1
             end
@@ -2822,9 +2847,64 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_PICKUP_COLLISION, WarpZone.OnPickupColl
 
 ---@param pickup EntityPickup
 function WarpZone:PickupUpdate(pickup)
+    local data = pickup:GetData()
     if pickup.Variant == tokenVariant then
         pickup.Timeout = 60
         pickup.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
+    end
+
+    --Hunky bois
+    if pickup.Variant == PickupVariant.PICKUP_TRINKET then
+        if pickup.SubType == WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS then
+            data.WZ_dis_list = data.WZ_dis_list or {}
+            local wzlist = data.WZ_dis_list
+                    --entity:GetData().distracted = entity:GetData().distracted - 1
+
+            if pickup:IsFrame(10,0) then
+                local rng = pickup:GetDropRNG()
+                local list = Isaac.FindInRadius(pickup.Position, 400, EntityPartition.ENEMY)
+                for i=1, #list do
+                    local ent = list[i]
+                    local td = ent:GetData()
+                    if ent:IsActiveEnemy() and not td.WZ_hb_distract and rng:RandomInt(20) > 15 then --and not entity:IsBoss()
+                        local player = game:GetNearestPlayer(ent.Position)
+                        if player and (pickup.Position:Distance(ent.Position) < player.Position:Distance(ent.Position)) then
+                            td.WZ_hb_pretarg = ent.Target
+                            ent.Target = pickup
+                            --local td = ent:GetData()
+                            td.WZ_hb_distract = 60
+                            td.WZ_hb_icon = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.REDEMPTION, 0, ent.Position, Vector(0,0), ent):ToEffect()
+                            local spr = td.WZ_hb_icon:GetSprite()
+                            spr:Load("gfx/effects/hunly_boys_distracd.anm2", true)
+                            spr:Play("idle")
+                            td.WZ_hb_icon.Color = Color(1,1,1,0)
+                            td.WZ_hb_icon:SetColor(Color.Default, 60, 1, true, false)
+                            td.WZ_hb_icon.Target = ent
+                            td.WZ_hb_icon.Parent = ent
+                            wzlist[#wzlist+1] = ent
+                        end
+                    end
+                end
+            end
+            if #wzlist > 0 then
+                for i=#wzlist,1,-1 do
+                    local ent = wzlist[i]
+                    local td = ent:GetData()
+                    if td.WZ_hb_distract then
+                        td.WZ_hb_distract = td.WZ_hb_distract - 1
+                        ent.Target = pickup
+                        if td.WZ_hb_distract <= 0 then
+                            ent.Target = td.WZ_hb_pretarg
+                            td.WZ_hb_distract = nil
+                            td.WZ_hb_icon:Remove()
+                            table.remove(wzlist, i)
+                        end
+                    end
+                end
+            end
+
+
+        end
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PICKUP_UPDATE, WarpZone.PickupUpdate)
@@ -2851,10 +2931,37 @@ WarpZone:AddPriorityCallback(ModCallbacks.MC_PRE_PICKUP_COLLISION, CallbackPrior
     end
 end, 20)
 
+WarpZone:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, function(_, ent)
+    local data = ent:GetData()
+    if data.WZ_dis_list then
+        --if #Isaac.FindByType(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS) <= 1 then
+            local wzlist = data.WZ_dis_list
+
+            if #wzlist > 0 then
+                for i=#wzlist,1,-1 do
+                    local ent = wzlist[i]
+                    local td = ent:GetData()
+                    if td.WZ_hb_distract then
+                        ent.Target = td.WZ_hb_pretarg
+                        td.WZ_hb_distract = nil
+                        td.WZ_hb_icon:Remove()
+                        table.remove(wzlist, i)
+                    end
+                end
+            end
+        --end
+    end
+end)
+
 
 local function tearsUp(firedelay, val)
 	local currentTears = 30 / (firedelay + 1)
-	local newTears = currentTears + val
+	local newTears = math.max(.001, currentTears + val)
+	return math.max((30 / newTears) - 1, -0.99)
+end
+local function tearsMult(firedelay, val)
+	local currentTears = 30 / (firedelay + 1)
+	local newTears = currentTears * val
 	return math.max((30 / newTears) - 1, -0.99)
 end
 
@@ -2883,7 +2990,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         teartoadd = teartoadd + (cakeBingeBonus * 2)
         teartoadd = teartoadd + isNil(data.WarpZone_data.bonusFireDelay, 0)
 
-        if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) and data.WarpZone_data.arrowTimeDelay > 0 then
+        --[[if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) and data.WarpZone_data.arrowTimeDelay > 0 then
             if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) then
                 --entityplayer.MaxFireDelay = entityplayer.MaxFireDelay + 40
                 teartoadd = teartoadd - 2.3
@@ -2892,7 +2999,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
                 teartoadd = teartoadd - 2
             end
             
-        end
+        end]]
 
         --if entityplayer:GetData().JohnnyCreepTearBonus == true then
         --    entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - 2
@@ -2903,6 +3010,17 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
             teartoadd = teartoadd + data.WarpZone_unsavedata.johnnytearbonus/4*power
         end
         entityplayer.MaxFireDelay = tearsUp(entityplayer.MaxFireDelay , teartoadd)
+        if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) and data.WarpZone_data.arrowTimeDelay > 0 then
+            if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) then
+                --teartoadd = teartoadd - 2.3
+                entityplayer.MaxFireDelay = tearsMult(entityplayer.MaxFireDelay, 0.34)
+            else
+                --teartoadd = teartoadd - 2
+                entityplayer.MaxFireDelay = tearsMult(entityplayer.MaxFireDelay, 0.5)
+            end
+            
+        end
+
     end
         
     
@@ -3234,6 +3352,17 @@ function WarpZone:postPlayerUpdate(player)
             firePopTear(player, false)
         end
         data.WarpZone_data.arrowTimeThreeFrames = data.WarpZone_data.arrowTimeThreeFrames-1
+        if unsave.ExtraPOPA then
+            unsave.ExtraPOPA = unsave.ExtraPOPA - 1
+            if unsave.ExtraPOPA == 6 then
+                firePopTear(player, false)
+            elseif unsave.ExtraPOPA == 1 then
+                firePopTear(player, false)
+            end
+            if unsave.ExtraPOPA < 0 then
+                unsave.ExtraPOPA = nil
+            end
+        end
     end
 
     data.WarpZone_data = data.WarpZone_data or {}
@@ -3453,6 +3582,7 @@ function WarpZone:postPlayerUpdate(player)
             --    unsave.MetalItemCount = unsave.MetalItemCount + player:GetCollectibleNum(item)
             --end
         end
+
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpdate, 0)
@@ -4634,6 +4764,10 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_PLAYER_COLLISION, WarpZone.donation)
 
 local function killBeggar(ent)
 	if ent.Type == EntityType.ENTITY_SLOT and ent.Variant == BegVariant then
+        local eng = ent:GetDropRNG()
+        local vel = Vector((eng:RandomFloat()-.5) * 5, (eng:RandomFloat()-.5) * 5)
+        Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, 0, ent.Position, vel, ent)
+
 		ent:Kill()
 		ent:Remove()
 		game:GetLevel():SetStateFlag(LevelStateFlag.STATE_BUM_KILLED, true)
@@ -5114,15 +5248,22 @@ function WarpZone:UseEmergencyMeeting(collectible, rng, player, useflags, active
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseEmergencyMeeting, WarpZone.WarpZoneTypes.COLLECTIBLE_EMERGENCY_MEETING)
 
-
+---@param collider Entity
 function WarpZone:OnPlayerCollide(player, collider)
     if game:GetFrameCount() - isNil(player:GetData().InGravityState, -999) < 150 then
         return true
     end
-    if collider:IsActiveEnemy() and game:GetFrameCount() - isNil(player:GetData().MurderFrame, -999) < 15 then
-        collider:Die()
-        SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_MURDER_KILL, 2)
-        return true
+    if collider:IsActiveEnemy() then
+        if game:GetFrameCount() - isNil(player:GetData().MurderFrame, -999) < 15 then
+            collider:Die()
+            SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_MURDER_KILL, 2)
+            return true
+        end
+        if not collider:IsInvincible() then
+            if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) then
+                collider:AddEntityFlags(EntityFlag.FLAG_BLEED_OUT)
+            end
+        end
     end
     --local result = WarpZone.GreedButt_PlayerCollide(player, collider)
     --if result ~= nil then

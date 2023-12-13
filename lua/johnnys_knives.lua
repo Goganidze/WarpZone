@@ -86,7 +86,7 @@ return function(mod)
     WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.UpdateJohnnysKnife, WarpZone.JOHNNYS_KNIVES.ENT.SAD)
 
     function WarpZone:OnJohnnyTouch(knife, collider, low)
-        if collider and collider:IsVulnerableEnemy() then
+        if collider and collider:IsVulnerableEnemy() and not collider:HasEntityFlags(EntityFlag.FLAG_FRIENDLY) then
             --local damage = 6
             local damage
 			if knife.Player and knife.Player:HasCollectible(CollectibleType.COLLECTIBLE_BFFS) then
