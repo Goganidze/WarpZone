@@ -4326,10 +4326,10 @@ local function pre_orbital_collision(_, orbital, collider, low)
         --if enemy_obj.HitPoints < enemy_obj.MaxHitPoints then
         --    collider:AddHealth(1)
         --end
-        local rng = orbital.Player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_LOLLIPOP)
-        if rng:RandomInt(Lollipop.CHARM_CHANCE) == 1 then
+        --local rng = orbital.Player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_LOLLIPOP)
+        --if rng:RandomInt(Lollipop.CHARM_CHANCE) == 1 then
             collider:AddCharmed(EntityRef(orbital), Lollipop.CHARM_DURATION, true)
-        end
+        --end
 	elseif collider:ToProjectile() ~= nil then
         if daat.PopHP == nil then
             daat.PopHP = 6
@@ -4347,9 +4347,9 @@ local function pre_orbital_collision(_, orbital, collider, low)
             end
             orbital:Remove()
             SfxManager:Play(SoundEffect.SOUND_ROCK_CRUMBLE)
-            player:GetData().WarpZone_data.roomsSinceBreak = 12
+            player:GetData().WarpZone_data.roomsSinceBreak = 1 --6 --12
             if player:HasCollectible(CollectibleType.COLLECTIBLE_BFFS) then
-                player:GetData().WarpZone_data.roomsSinceBreak = 4
+                player:GetData().WarpZone_data.roomsSinceBreak = 1 --2 --4
             end
         elseif daat.PopHP < 2 then
             local sprite = orbital:GetSprite()
