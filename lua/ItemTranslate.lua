@@ -306,12 +306,18 @@ local ITver = Modver or 1.08
 	function ITrsl.RenderPocketItemName()
 		local hud = game:GetHUD()
 		local shakeOffset = game.ScreenShakeOffset
+		if game:GetFrameCount() < 10 then
+			PocketItemStrings = {}
+		end
 		if game:GetFrameCount()>10 and hud:IsVisible() and IT.MenuData.pickup_renderTranslate ~= true then
 			local fontSize, SizeOffset = 0.5, 0
 			if IT.MenuData.FontSize == true then
 				fontSize, SizeOffset = 1, -3
 			end
 			for i, k in pairs(PocketItemStrings) do
+				if k.player and not k.player:Exists() then
+					k.player = nil
+				end
 				local id = i - 1
 				if k.Name and k.player and k.player:ToPlayer() then
 					local str = k.Name
