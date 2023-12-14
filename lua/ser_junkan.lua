@@ -53,7 +53,7 @@ return function (mod)
 
     ---@return PathFinder
     function WarpZone.GetPathFinder(ent)
-        if Renderer then
+        if Renderer and ent["GetPathFinder"] then
             return ent["GetPathFinder"](ent)
         end
         local proxyNPC = WarpZone.SpawnNPCProxy(ent)
@@ -91,6 +91,7 @@ return function (mod)
                 return ent.Pathfinder.HasDirectPath(ent.Pathfinder, ...)
             end,
             HasPathToPos = function(self, ...)
+                ent.Position = ent.Target.Position
                 return ent.Pathfinder.HasPathToPos(ent.Pathfinder, ...)
             end,
             MoveRandomly = function(self, ...)
@@ -126,7 +127,7 @@ return function (mod)
             ent:AddEntityFlags(EntityFlag.FLAG_FRIENDLY)
         end
         ent.Visible = false
-        if ent.Target then
+        if ent.Target and ent.Target:Exists() then
             ent.Position = ent.Target.Position
             if ent.I1 == 1 then
                 ent.Target.Velocity = ent.Velocity/1

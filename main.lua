@@ -157,18 +157,18 @@ roomKey[6] = 0
 roomKey[7] = 1
 
 local george_room_type = {
-    RoomType.ROOM_PLANETARIUM,
-    RoomType.ROOM_SUPERSECRET,
-    RoomType.ROOM_ARCADE,
-    RoomType.ROOM_CHEST,
-    RoomType.ROOM_CURSE,
-    RoomType.ROOM_DICE,
-    RoomType.ROOM_TREASURE,
-    RoomType.ROOM_SACRIFICE,
-    RoomType.ROOM_SHOP,
-    RoomType.ROOM_ISAACS,
-    RoomType.ROOM_BARREN,
-    RoomType.ROOM_LIBRARY
+    [RoomType.ROOM_PLANETARIUM]=true,
+    [RoomType.ROOM_SUPERSECRET]=true,
+    [RoomType.ROOM_ARCADE]=true,
+    [RoomType.ROOM_CHEST]=true,
+    [RoomType.ROOM_CURSE]=true,
+    [RoomType.ROOM_DICE]=true,
+    [RoomType.ROOM_TREASURE]=true,
+    [RoomType.ROOM_SACRIFICE]=true,
+    [RoomType.ROOM_SHOP]=true,
+    [RoomType.ROOM_ISAACS]=true,
+    [RoomType.ROOM_BARREN]=true,
+    [RoomType.ROOM_LIBRARY]=true
 }
 
 --possession
@@ -303,9 +303,9 @@ WarpZone.WarpZoneTypes.COLLECTIBLE_GEORGE = Isaac.GetItemIdByName("George")
 WarpZone.WarpZoneTypes.COLLECTIBLE_POSSESSION = Isaac.GetItemIdByName("Possession")
 WarpZone.WarpZoneTypes.COLLECTIBLE_LOLLIPOP = Isaac.GetItemIdByName("Lollipop")
 WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_FULL = Isaac.GetItemIdByName("Water Bottle")
-WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_MID = Isaac.GetItemIdByName(" Water Bottle ")
-WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_LOW = Isaac.GetItemIdByName("  Water Bottle  ")
-WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_EMPTY = Isaac.GetItemIdByName("   Water Bottle   ")
+--WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_MID = Isaac.GetItemIdByName(" Water Bottle ")
+--WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_LOW = Isaac.GetItemIdByName("  Water Bottle  ")
+--WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_EMPTY = Isaac.GetItemIdByName("   Water Bottle   ")
 WarpZone.WarpZoneTypes.COLLECTIBLE_AUBREY = Isaac.GetItemIdByName("Aubrey")
 WarpZone.WarpZoneTypes.COLLECTIBLE_TONY = Isaac.GetItemIdByName("Tony")
 WarpZone.WarpZoneTypes.COLLECTIBLE_REAL_LEFT = Isaac.GetItemIdByName("The Real Left Hand")
@@ -363,6 +363,7 @@ WarpZone.WarpZoneTypes.CHALLENGE_BLIND_JOHNNY = Isaac.GetChallengeIdByName("Blin
 WarpZone.WarpZoneTypes.CHALLENGE_UNQUOTE = Isaac.GetChallengeIdByName("Unquote")
 
 WarpZone.WarpZoneTypes.TEAR_POLAR_STAR_BULLET = Isaac.GetEntityVariantByName("[Warp Zone] polar star bullet")
+WarpZone.WarpZoneTypes.PICKUP_WATERBOTTLE = Isaac.GetEntityVariantByName("[Warp Zone] bottle")
 
 --[[--external item descriptions
 if EID then
@@ -1292,6 +1293,8 @@ function WarpZone:OnUpdate()
         end
     end
     WarpZone.EnemyDamageBuffer = 0
+
+    WarpZone.Bottle_RoomUpdate()
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.OnUpdate)
 
@@ -2399,8 +2402,9 @@ function WarpZone:NewRoom()
     if georgePlayer ~= nil and room:IsFirstVisit() then
         local roomtype = room:GetType()
         local desc = game:GetLevel():GetCurrentRoomDesc().Flags
-        local index = game:GetLevel():GetCurrentRoomIndex()
-        if tableContains(george_room_type, roomtype) and (desc & RoomDescriptor.FLAG_RED_ROOM ~= RoomDescriptor.FLAG_RED_ROOM) then
+        local index = game:GetLevel():GetCurrentRoomIndex() 
+        ---????
+        --[[if tableContains(george_room_type, roomtype) and (desc & RoomDescriptor.FLAG_RED_ROOM ~= RoomDescriptor.FLAG_RED_ROOM) then
             for i = 0, 7 do
                 local door = room:GetDoor(i)
                 if door then
@@ -2417,6 +2421,17 @@ function WarpZone:NewRoom()
                         end
                     end
                     break
+                end
+            end
+        end]]
+        if george_room_type[roomtype] and (desc & RoomDescriptor.FLAG_RED_ROOM ~= RoomDescriptor.FLAG_RED_ROOM) then
+            for i = 0, DoorSlot.NUM_DOOR_SLOTS-1 do
+                local door = room:GetDoor(i)
+                if not door and room:IsDoorSlotAllowed(i) then
+                    local made = game:GetLevel():MakeRedRoomDoor(index, i)
+                    if made then
+                        break
+                    end
                 end
             end
         end
@@ -3021,6 +3036,7 @@ end
 
 function WarpZone:EvaluateCache(entityplayer, Cache)
     local data = entityplayer:GetData()
+    local unsave = data.WarpZone_unsavedata
     local cakeBingeBonus = 0
     data.WarpZone_data = data.WarpZone_data or {}
 
@@ -3032,7 +3048,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
 
     if Cache == CacheFlag.CACHE_FIREDELAY then
         local teartoadd = 0
-        local waterAmount = (entityplayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_FULL) * 2) + (entityplayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_MID) * 1.5) + (entityplayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_LOW) * .75)
+        local waterAmount = (entityplayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_FULL) * .75) --+ (entityplayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_MID) * 1.5) + (entityplayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_LOW) * .75)
         --if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NEWGROUNDS_TANK) then
             --entityplayer.MaxFireDelay = tearsUp(entityplayer.MaxFireDelay , tank_qty)
             teartoadd = teartoadd + tank_qty
@@ -3058,11 +3074,17 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         --if entityplayer:GetData().JohnnyCreepTearBonus == true then
         --    entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - 2
         --end
-        if data.WarpZone_unsavedata.johnnytearbonus then
+        if unsave.johnnytearbonus then
             local power = entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BFFS) and 2 or 1
             --entityplayer.MaxFireDelay = tearsUp(entityplayer.MaxFireDelay, data.WarpZone_unsavedata.johnnytearbonus/4*power)
-            teartoadd = teartoadd + data.WarpZone_unsavedata.johnnytearbonus/4*power
+            teartoadd = teartoadd + unsave.johnnytearbonus/4*power
         end
+
+        if unsave.BottleBonus and unsave.BottleBonus>0 then
+            --local val = unsave.BottleBonus/2 + 0.05 / unsave.BottleBonus
+            teartoadd = teartoadd + unsave.BottleBonus --val--math.sqrt(unsave.BottleBonus)
+        end
+
         entityplayer.MaxFireDelay = tearsUp(entityplayer.MaxFireDelay , teartoadd)
         if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) and data.WarpZone_data.arrowTimeDelay > 0 then
             if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) then
@@ -3626,6 +3648,7 @@ function WarpZone:postPlayerUpdate(player)
         end
     end
     WarpZone.TonyTake_update(player)
+    WarpZone.Bottle_PlayerUpdate(player)
 
     if Isaac.GetFrameCount() % 60 == 0 then
         unsave.MetalItemCount = 0
@@ -4109,7 +4132,7 @@ function WarpZone:updateTear(entitytear)
     end
     local waterAmount = 1.0
     if player then
-        waterAmount = waterAmount + 0.3 * ((player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_FULL) * 3) + (player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_MID) * 2) + (player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_LOW) * 1))
+        waterAmount = waterAmount + 0.3 * (player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_FULL) * 1.2) --+ (player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_MID) * 2) + (player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_WATER_LOW) * 1))
     
         if not focusshot then
             if data.resized == nil then
@@ -5586,6 +5609,7 @@ local extrafiles = {
     "lua.polar_star",
     "lua.tony",
     "lua.eid",
+    "lua.bottle",
 }
 for i=1,#extrafiles do
     local module = include(extrafiles[i])

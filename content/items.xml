@@ -26,10 +26,13 @@
     <passive id="18" gfx="Collectibles_18_George.png" name="George" description="Look further" quality="3" cache="range" tags="summonable"/>
     <passive id="19" gfx="Collectibles_19_Possession.png" name="Possession" description="Follow me!" quality="3" tags="summonable"/>
     <familiar id="20" gfx="Collectibles_20_Lollipop.png" name="Lollipop" description="Don't forget to share!" quality="2" tags="summonable"/>
+    
     <passive id="21" gfx="Collectibles_21_Water_Bottle_frame1.png" name="Water Bottle" cache = "firedelay" description="Stay hydrated!" quality="2" tags="tearsup"/>
+    <!--
     <passive id="22" gfx="Collectibles_21_Water_Bottle_frame2.png" name=" Water Bottle " cache = "firedelay" description="Tears + tear size up" quality="2" tags="tearsup"/>
     <passive id="23" gfx="Collectibles_21_Water_Bottle_frame3.png" name="  Water Bottle  " cache = "firedelay" description="It's half empty..." quality="1" tags="tearsup"/>
     <passive id="24" gfx="Collectibles_21_Water_Bottle_frame4.png" name="   Water Bottle   " cache = "firedelay" description="You're tearing me apart..." quality="0" />
+    -->
     <passive id="25" gfx="Collectibles_22_Aubrey.png" name="Aubrey" description="More weapons" quality="3" tags="summonable"/>
     <passive id="26" gfx="Collectibles_23_Tony.png" name="Tony" description="Fists of fury" quality="3" cache = "damage"/>
     <active id="27" gfx="Collectibles_24_The_Real_Left_Hand.png" name="The Real Left Hand" description="This needs a nerf..." quality="3" maxcharges = "6"/>
