@@ -80,6 +80,15 @@ local function TabDeepCopy(tbl)
     return t
 end
 
+local getAngleDiv = function(a,b)
+    local r1,r2
+    if a > b then
+        r1,r2 = a-b, b-a+360
+    else
+        r1,r2 = b-a, a-b+360
+    end
+    return r1>r2 and r2 or r1
+end
 
 local numPlayersG = game:GetNumPlayers()
 for i=0, numPlayersG-1, 1 do
@@ -499,7 +508,7 @@ local function isNil(value, replacement)
 end
 
 local function getDirectionFromVector(vector)
-    if vector.X == 0 and vector.Y == 1 then
+    --[[if vector.X == 0 and vector.Y == 1 then
         return Direction.DOWN
     elseif vector.X == 0 and vector.Y == -1 then
         return Direction.UP
@@ -507,7 +516,9 @@ local function getDirectionFromVector(vector)
         return Direction.RIGHT
     elseif vector.X == -1 and vector.Y == 0 then
         return Direction.LEFT
-    end
+    end]]
+    
+    return math.floor(((vector:GetAngleDegrees()-135)%360)/90)
 end
 
 local function getVectorFromDirection(dir)
@@ -1530,19 +1541,56 @@ function WarpZone:postRender(player, offset)
             data.WarpZone_data.timeSinceTheSpacebarWasLastPressed = data.WarpZone_data.timeSinceTheSpacebarWasLastPressed + 1
         end
         
+        local aim = player:GetAimDirection()
+        local isAim = aim:Length() > 0.01
+
         if player.ControlsEnabled then
-            data.WarpZone_unsavedata.DoubleTapDelays = data.WarpZone_unsavedata.DoubleTapDelays or {}
+            local unsave = data.WarpZone_unsavedata
+            unsave.DoubleTapDelays = unsave.DoubleTapDelays or {}
             for i=1, #WarpZone.DoubleTapCallback do
                 local callback = WarpZone.DoubleTapCallback[i]
-                if not data.WarpZone_unsavedata.DoubleTapDelays[i] then
-                    data.WarpZone_unsavedata.DoubleTapDelays[i] = callback[2]
+                if not unsave.DoubleTapDelays[i] then
+                    unsave.DoubleTapDelays[i] = callback[2]
                 else
-                    data.WarpZone_unsavedata.DoubleTapDelays[i] = data.WarpZone_unsavedata.DoubleTapDelays[i] - 1
+                    unsave.DoubleTapDelays[i] = unsave.DoubleTapDelays[i] - 1
                 end
             end
 
+            local angle = aim:GetAngleDegrees() % 360
+            if not player:HasCollectible(CollectibleType.COLLECTIBLE_ANALOG_STICK) then
+                angle = math.ceil( (angle - 45) / 90 ) * 90
+            end
+            
+            if isAim then
+                if unsave.DTArrowTime > 0 then
+                    if getAngleDiv(unsave.DTLastAngle, angle) < 45 then
+                        for i=1, #WarpZone.DoubleTapCallback do
+                            local callback = WarpZone.DoubleTapCallback[i]
+                            if data.WarpZone_unsavedata.DoubleTapDelays[i] <= 0 then
+                                callback[1](player, angle)
+                                data.WarpZone_unsavedata.DoubleTapDelays[i] = callback[2]
+                            end
+                        end
+                        unsave.DTArrowTime = 0
+                    else
+                        unsave.DTArrowTime = 0
+                    end
+                else
+                    --if unsave.DTArrowTime <= 0 then
+                        --unsave.DTArrowTime = 30
+                    --end
+                end
+                unsave.DTLastAngle = angle/1
+                unsave.DTpreisAim = isAim
+            elseif unsave.DTpreisAim then
+                unsave.DTArrowTime = 20
+                unsave.DTpreisAim = false
+            end
+            unsave.DTLastAngle = unsave.DTLastAngle or 0
+            unsave.DTArrowTime = unsave.DTArrowTime and (unsave.DTArrowTime - 1) or 0
+
         --if data.WarpZone_data.arrowTimeDelay <= 0 then
-            if Input.IsActionTriggered(ButtonAction.ACTION_SHOOTUP, controllerid) then --and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP)
+            --[[if Input.IsActionTriggered(ButtonAction.ACTION_SHOOTUP, controllerid) then --and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP)
                 if data.WarpZone_unsavedata.arrowTimeUp > 0 then
                     --data.WarpZone_data.arrowTimeDelay = totalFrameDelay
                     --firePopTear(player, true)
@@ -1607,7 +1655,8 @@ function WarpZone:postRender(player, offset)
         data.WarpZone_unsavedata.arrowTimeUp = data.WarpZone_unsavedata.arrowTimeUp - 1
         data.WarpZone_unsavedata.arrowTimeDown = data.WarpZone_unsavedata.arrowTimeDown - 1
         data.WarpZone_unsavedata.arrowTimeLeft = data.WarpZone_unsavedata.arrowTimeLeft - 1
-        data.WarpZone_unsavedata.arrowTimeRight = data.WarpZone_unsavedata.arrowTimeRight - 1
+        data.WarpZone_unsavedata.arrowTimeRight = data.WarpZone_unsavedata.arrowTimeRight - 1]]
+        end
         data.WarpZone_data.arrowTimeDelay = data.WarpZone_data.arrowTimeDelay - 1
         if data.WarpZone_data.arrowTimeDelay == 0 or data.WarpZone_data.arrowTimeDelay == totalFrameDelay-1 then
             player:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
@@ -1615,10 +1664,7 @@ function WarpZone:postRender(player, offset)
         end
         if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOXING_GLOVE) and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN_B then
             local maxThreshold = data.WarpZone_data.arrowHoldBox
-            if Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, controllerid) or
-            Input.IsActionPressed(ButtonAction.ACTION_SHOOTDOWN, controllerid) or
-            Input.IsActionPressed(ButtonAction.ACTION_SHOOTLEFT, controllerid) or
-            Input.IsActionPressed(ButtonAction.ACTION_SHOOTRIGHT, controllerid) then
+            if isAim then
                 data.WarpZone_data.arrowHoldBox = data.WarpZone_data.arrowHoldBox + 1
             else
                 data.WarpZone_data.arrowHoldBox = 0
@@ -1679,6 +1725,12 @@ function WarpZone:postRender(player, offset)
 
     WarpZone.Boosterv2_playerRender(nil, player, offset)
     WarpZone.Tony_render(player, offset)
+
+    do
+        --local unsave = data.WarpZone_unsavedata
+        --local pos = Isaac.WorldToScreen(player.Position)
+        --Isaac.RenderScaledText(unsave.DTArrowTime .. " | " .. unsave.DTLastAngle, pos.X, pos.Y, .5, .5, 1,1,1,1)
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_RENDER, WarpZone.postRender)
 
@@ -2159,7 +2211,9 @@ function WarpZone:multiPlayerInit(player)
     myRNG:SetSeed(Isaac.GetPlayer().DropSeed, 35)
 
     local data = player:GetData()
-    local numPlayers = game:GetNumPlayers()
+    data.WarpZone_unsavedata = data.WarpZone_unsavedata or {}
+
+    --local numPlayers = game:GetNumPlayers()
     --if game:GetRoom():GetFrameCount() > 0 and numPlayers > 0 then
         for k,v in pairs(defaultData) do
             if type(v) == "table" then
@@ -2735,22 +2789,22 @@ function WarpZone:UseIsYou(collectible, rng, entityplayer, useflags, activeslot,
             }
         end
     end
-
-    if entityplayer:GetData().baba_active == nil and entityplayer:GetData().reticle == nil then
-        entityplayer:GetData().reticle = Isaac.Spawn(1000, 30, 0, entityplayer.Position, Vector(0, 0), entityplayer)
-        entityplayer:GetData().WarpZone_data.blinkTime = 10
+    local data = entityplayer:GetData()
+    if data.baba_active == nil and data.reticle == nil then
+        data.reticle = Isaac.Spawn(1000, 30, 0, entityplayer.Position, Vector(0, 0), entityplayer)
+        data.WarpZone_data.blinkTime = 10
         entityplayer:AnimateCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_IS_YOU, "LiftItem", "PlayerPickupSparkle")
         return {
             Discharge = false,
             Remove = false,
             ShowAnim = false
         }
-    elseif entityplayer:GetData().baba_active ~= nil then
-        entityplayer:UseActiveItem(entityplayer:GetData().baba_active)
+    elseif data.baba_active ~= nil then
+        entityplayer:UseActiveItem(data.baba_active)
         if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) then
-            entityplayer:UseActiveItem(entityplayer:GetData().baba_active, UseFlag.USE_CARBATTERY)
+            entityplayer:UseActiveItem(data.baba_active, UseFlag.USE_CARBATTERY)
         end
-        entityplayer:GetData().baba_active = nil
+        data.baba_active = nil
         return {
             Discharge = true,
             Remove = false,
@@ -4171,6 +4225,7 @@ function WarpZone:LaserEnemyHit(entity, amount, damageflags, source, countdownfr
 end
 WarpZone:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, WarpZone.LaserEnemyHit)
 
+---@param player EntityPlayer
 function WarpZone:OnFrame(player)
     local data = player:GetData()
         local room = game:GetRoom()
@@ -4193,6 +4248,13 @@ function WarpZone:OnFrame(player)
         if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_IS_YOU) and data.reticle ~= nil then
             local aimDir = player:GetAimDirection()
             data.reticle.Velocity = aimDir * 20
+            if player.ControllerIndex == 0 then
+                if Input.IsMouseBtnPressed(0) then
+                    local mousePos = Input.GetMousePosition(true)
+                    local dist = mousePos:Distance(data.reticle.Position)
+                    data.reticle.Velocity = (mousePos-data.reticle.Position):Resized(math.min(20,dist))
+                end
+            end
 
             if data.reticle.FrameCount % data.WarpZone_data.blinkTime < data.WarpZone_data.blinkTime/2 then
                 data.reticle.Color = Color(0, 0, 0, 0.5, -230/255, 100/255, 215/255)
@@ -5457,7 +5519,7 @@ WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseAmberChunk, WarpZone.
 
 function WarpZone:fireGlove(player)
     --print(player:GetLastDirection().X .. " " .. player:GetLastDirection().Y .. " aiming")
-    local punchDestination = player.Position + (player:GetLastDirection() * 20)
+    --local punchDestination = player.Position + (player:GetLastDirection() * 20)
     
     WarpZone:FireClub(player, getDirectionFromVector(player:GetLastDirection()), true)
 end
