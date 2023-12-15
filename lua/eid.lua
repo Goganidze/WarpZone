@@ -150,7 +150,7 @@ if EID then
     EID:addTrinket(Isaac.GetTrinketIdByName("Bible Thump"), "{{Collectible33}} The Bible is added to several item pools.#{{Collectible33}} Using The Bible or The Devil? card with this item will deal 40 damage to all enemies in the room, in addition to granting flight.#{{Satan}}Using The Bible on  Satan will kill him, and you will survive#{{TheLamb}}The golden version of this trinket kills The Lamb as well.", "Библейский Удар", "ru")
     EID:addTrinket(Isaac.GetTrinketIdByName("Cheep Cheep"), "{{Fear}} On entering a room, a random enemy is targeted by other enemies and has a fear effect for 3 seconds.#If the effect is golden, the target also bleeds.", "Цып Цып", "ru")
 
-    EID:addCard(Isaac.GetCardIdByName("CowOnTrash"), "{{LordoftheFlies}} Rerolls all items into fly themed items#Rerolls pickups into blue flies#{{Coin}} Does not actually become back your money", "Скотина Помойная, "ru")
+    EID:addCard(Isaac.GetCardIdByName("CowOnTrash"), "{{LordoftheFlies}} Rerolls all items into fly themed items#Rerolls pickups into blue flies#{{Coin}} Does not actually become back your money", "Скотина Помойная", "ru")
     EID:addCard(Isaac.GetCardIdByName("LootCard"), "{{Collectible}} Randomly spawns a random item or trinket from any pool", "Карта добычи", "ru")
     EID:addCard(Isaac.GetCardIdByName("Blank"), "Clears all enemy projectiles in the room.#Pushes nearby enemies away#There is one use left", "Пустышка", "ru")
     EID:addCard(Isaac.GetCardIdByName("Blank2"), "Clears all enemy projectiles in the room.#Pushes nearby enemies away#There are two uses left", "Пустышки", "ru")
