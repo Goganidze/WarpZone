@@ -19,7 +19,7 @@ WarpZone.JohnnysKnivesEffectType = 1
 
 ----------------------------------
 --save data
-local saveData = {}
+local saveData = WarpZone.SaveFile --{}
 local lastIndex = 5
 
 local defaultData = {}
@@ -2099,8 +2099,10 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, WarpZone.spawnCleanA
 
 
 function WarpZone:OnGameStart(isSave)
+    WarpZone.SaveFile.IsLoaded = true
+
     local numPlayers = game:GetNumPlayers()
-    if WarpZone:HasData()  and isSave then
+    if WarpZone:HasData() and isSave then
         saveData = json.decode(WarpZone:LoadData())
         DoorwayFloor = saveData.DoorwayFloor --[1]
         DoorwayFloorType = saveData.DoorwayFloorType
@@ -2140,6 +2142,7 @@ function WarpZone:OnGameStart(isSave)
         isBossEmergency = false
         bossPrepped = false
         roomsPrepped = {}
+        WarpZone.SaveFile.PillReplased ={}
 
         for i=0, numPlayers-1, 1 do
             local player = Isaac.GetPlayer(i)
@@ -2194,9 +2197,11 @@ function WarpZone:preGameExit()
     saveData.MenuData = WarpZone.MenuData
     local jsonString = json.encode(saveData)
     WarpZone:SaveData(jsonString)
-  end
 
-  WarpZone:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, WarpZone.preGameExit)
+    WarpZone.SaveFile.IsLoaded = false
+end
+
+WarpZone:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, WarpZone.preGameExit)
 
 
 function WarpZone:DebugText()
@@ -2254,10 +2259,13 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, WarpZone.multiPlayerInit)
 
 function WarpZone:LevelStart()
     floorBeggar = -1
+    WarpZone.SaveFile.PillReplased = {}
+
     local numPlayers = game:GetNumPlayers()
     for i=0, numPlayers-1, 1 do
         local player = Isaac.GetPlayer(i)
         local pdata = player:GetData()
+        local wdata = pdata.WarpZone_data
         --if pdata.WarpZone_data.totalFocusDamage and pdata.WarpZone_data.totalFocusDamage > 0 then
         --    for slot=0,2 do
         --        if ISFOCUSID[player:GetActiveItem(slot)] then
@@ -2321,6 +2329,12 @@ function WarpZone:LevelStart()
         --if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) then
         --    pdata.WarpZone_data.numArrows = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) * 3
         --end
+        
+        if wdata.LevelBottleBonus then
+            wdata.LevelBottleBonus = nil
+            player:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
+            player:EvaluateItems()
+        end
     end
     bossPrepped = false
     while next (roomsPrepped) do
@@ -3039,6 +3053,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
     local unsave = data.WarpZone_unsavedata
     local cakeBingeBonus = 0
     data.WarpZone_data = data.WarpZone_data or {}
+    local wdata = data.WarpZone_data
 
     local tank_qty =  entityplayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_NEWGROUNDS_TANK)
     
@@ -3058,7 +3073,7 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         --entityplayer.MaxFireDelay = entityplayer.MaxFireDelay - isNil(data.WarpZone_data.bonusFireDelay, 0)
         teartoadd = teartoadd + waterAmount
         teartoadd = teartoadd + (cakeBingeBonus * 2)
-        teartoadd = teartoadd + isNil(data.WarpZone_data.bonusFireDelay, 0)
+        teartoadd = teartoadd + isNil(wdata.bonusFireDelay, 0)
 
         --[[if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) and data.WarpZone_data.arrowTimeDelay > 0 then
             if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) then
@@ -3083,6 +3098,9 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         if unsave.BottleBonus and unsave.BottleBonus>0 then
             --local val = unsave.BottleBonus/2 + 0.05 / unsave.BottleBonus
             teartoadd = teartoadd + unsave.BottleBonus --val--math.sqrt(unsave.BottleBonus)
+        end
+        if wdata.LevelBottleBonus and wdata.LevelBottleBonus>0 then
+            teartoadd = teartoadd + wdata.LevelBottleBonus
         end
 
         entityplayer.MaxFireDelay = tearsUp(entityplayer.MaxFireDelay , teartoadd)
