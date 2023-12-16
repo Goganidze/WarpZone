@@ -3050,6 +3050,7 @@ end
 
 function WarpZone:EvaluateCache(entityplayer, Cache)
     local data = entityplayer:GetData()
+    data.WarpZone_unsavedata = data.WarpZone_unsavedata or {}
     local unsave = data.WarpZone_unsavedata
     local cakeBingeBonus = 0
     data.WarpZone_data = data.WarpZone_data or {}
