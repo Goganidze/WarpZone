@@ -98,4 +98,7 @@
     <entity anm2path="items/pickups/wz bottle.anm2" name="[Warp Zone] bottle" id="5" variant="8550" subtype="0" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="12" friction="1" numGridCollisionPoints="24" shadowSize="0" stageHP="0">
         <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
     </entity>
+    <entity anm2path="items/pickups/wz bottle.anm2" name="[Warp Zone] water" id="1000" variant="8550" subtype="200" reroll="false" baseHP="0" boss="0" champion="0" collisionDamage="0" collisionMass="3" collisionRadius="12" friction="1" numGridCollisionPoints="24" shadowSize="0" stageHP="0">
+        <gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
+    </entity>
 </entities>

@@ -6,9 +6,10 @@ return function(mod)
 
     WarpZone.BottleSpawnChance = .15
 
-    local bottleEntType = EntityType.ENTITY_PICKUP
+    local bottleEntType = 1000 -- EntityType.ENTITY_PICKUP
+    local bottleEntSubType = 200
 
-    local spawndelay = 70
+    local spawndelay = 100
     WarpZone.SomeoneHasWaterBottle = nil
     WarpZone.BottleSpawnDelay = spawndelay
 
@@ -16,7 +17,7 @@ return function(mod)
     function WarpZone.AddWaterTempBonus(player)
         local unsave = player:GetData().WarpZone_unsavedata
         unsave.BottleBonus = unsave.BottleBonus or 0
-        local val = 3.0/(unsave.BottleBonus+1.5)
+        local val = 5.0/(unsave.BottleBonus+4.2)
         unsave.BottleBonus = unsave.BottleBonus and math.min(unsave.BottleBonus + val, 5) or 2
         sfx:Play(SoundEffect.SOUND_VAMP_GULP, Options.SFXVolume*2, 10, false, 2.0 - unsave.BottleBonus/5)
     end
@@ -71,7 +72,7 @@ return function(mod)
     ---@param ent EntityPickup
     ---@param collider Entity
     function WarpZone.BottleColl(_,ent, collider)
-        if ent.SubType == 1 then
+        if ent.SubType == 200 then
             local player = collider:ToPlayer()
             if player then
                 local unsave = player:GetData().WarpZone_unsavedata
@@ -151,6 +152,65 @@ return function(mod)
     end
     WarpZone:AddCallback(ModCallbacks.MC_PRE_PICKUP_COLLISION, WarpZone.BottleColl, WarpZone.WarpZoneTypes.PICKUP_WATERBOTTLE)
 
+    local col0 = Color(0.8, 1., 1., .6)
+    local col1 = Color(0.8, 0.8, 1.1, .82)
+
+    local PolarStarEXTent = Isaac.GetEntityVariantByName("[Warp Zone] water")
+    WarpZone:AddCallback(ModCallbacks.MC_POST_EFFECT_UPDATE, function(_, ent)
+        if ent.SubType == 200 then
+            local spr = ent:GetSprite()
+            ent.Velocity = Vector(0,0)
+            if ent.TargetPosition.X > 0 then
+                ent.Position = ent.TargetPosition
+            end
+            if spr:IsFinished("Collect_shit") then
+                ent:Remove()
+                sfx:Stop(SoundEffect.SOUND_WATER_FLOW_LOOP)
+            elseif spr:IsFinished("Appear_shit") then
+               spr:Play("Idle_shit")
+            end
+
+            local rng = ent:GetDropRNG()
+
+            
+
+            if ent.EntityCollisionClass > 0 then
+                if ent:IsFrame(3,0) then
+                    local vel = Renderer and rng:RandomVector()*4*rng:RandomFloat() or Vector.FromAngle(rng:RandomInt(360)):Resized(4*rng:RandomFloat())
+                    local wa = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.WATER_SPLASH, 2, ent.Position, vel, ent):ToEffect()
+                    --game:SpawnParticles(ent.Position+Vector(1,0), 104, 1,  4, Color.Default, -20*ent:GetDropRNG():RandomFloat(), 4)
+                    wa.m_Height = -30 * rng:RandomFloat()
+                    wa.FallingSpeed = -6 * rng:RandomFloat()
+                    wa.Color = rng:RandomInt(2) == 0 and col0 or col1 
+                    --wa.SpriteScale = Vector(1,1) * 10.5 * rng:RandomFloat()
+                end
+
+                if ent:IsFrame(5,0) then
+                    local vel = Renderer and rng:RandomVector()*30*rng:RandomFloat() or Vector.FromAngle(rng:RandomInt(360)):Resized(30*rng:RandomFloat())
+                    local fa = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.FIREWORKS, 4, ent.Position+vel, Vector(0,0), ent):ToEffect()
+                    fa.Timeout = 10
+                    fa.LifeSpan = 10
+                    --fa.PositionOffset = Vector(0,  -30 * rng:RandomFloat())
+                    fa.SpriteScale = Vector(.5, .5)
+                    fa.FallingSpeed = -6 * rng:RandomFloat()
+                    fa.Color = col0
+                end
+                
+
+                sfx:Play(SoundEffect.SOUND_WATER_DROP, Options.SFXVolume*5, 10)
+
+                for i=0,game:GetNumPlayers()-1 do
+                    local player = Isaac.GetPlayer(i)
+                    if player.Position:Distance(ent.Position) < (player.Size+ent.Size) then
+                        WarpZone.BottleColl(_, ent, player)
+                    end
+                end
+            end
+
+        end
+    end, PolarStarEXTent)
+
+
     function WarpZone.Bottle_RoomUpdate()
         if WarpZone.SomeoneHasWaterBottle and not game:GetRoom():IsClear() then
             if WarpZone.BottleSpawnDelay <= 0 and #Isaac.FindByType(bottleEntType, WarpZone.WarpZoneTypes.PICKUP_WATERBOTTLE) < 5 then
@@ -159,8 +219,9 @@ return function(mod)
                 local rindex = room:GetRandomTileIndex(prng:GetSeed())
                 prng:Next()
                 local SpawnPos = room:GetGridPosition(rindex)
-                local bottle = Isaac.Spawn(bottleEntType, WarpZone.WarpZoneTypes.PICKUP_WATERBOTTLE, 1,
-                    SpawnPos, Vector(0,0), WarpZone.SomeoneHasWaterBottle):ToPickup()
+                sfx:Play(SoundEffect.SOUND_BOSS2_DIVE, Options.SFXVolume, 10, false, 2.1)
+                local bottle = Isaac.Spawn(bottleEntType, PolarStarEXTent, bottleEntSubType,
+                    SpawnPos, Vector(0,0), WarpZone.SomeoneHasWaterBottle) --:ToPickup()
 
                 bottle.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
                 bottle:GetSprite():Play("Appear_shit")
