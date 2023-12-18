@@ -144,17 +144,17 @@ if EID then
     EID:addTrinket(Isaac.GetTrinketIdByName("Bible Thump"), "{{Collectible33}} Использование любого предмет активирует библию#{{Collectible33}} Если вы используете библию с этим предметом, вы вдобавок активируете эффект некрономикона.#{{Satan}} Использование библии на сатане убивает его вместо убийства вас#{{TheLamb}} Золотая версия также убивает агнца", "Библейский Удар", "ru")
     EID:addTrinket(Isaac.GetTrinketIdByName("Cheep Cheep"), "{{Fear}} 1 случайный монстр в комнате всегда имеет эффект страха и его атакуют другие монстры.#Золотая версия брелка так же накладывает кровотечение.", "Цып Цып", "ru")
 
-    EID:addCard(Isaac.GetCardIdByName("CowOnTrash"), "{{LordoftheFlies}} Rerolls all items into fly themed items#Rerolls pickups into blue flies#{{Coin}} Does not actually become back your money", "Скотина Помойная", "ru")
-    EID:addCard(Isaac.GetCardIdByName("LootCard"), "{{Collectible}} Randomly spawns a random item or trinket from any pool", "Карта добычи", "ru")
-    EID:addCard(Isaac.GetCardIdByName("Blank"), "Clears all enemy projectiles in the room.#Pushes nearby enemies away#There is one use left", "Пустышка", "ru")
-    EID:addCard(Isaac.GetCardIdByName("Blank2"), "Clears all enemy projectiles in the room.#Pushes nearby enemies away#There are two uses left", "Пустышки", "ru")
-    EID:addCard(Isaac.GetCardIdByName("Blank3"), "Clears all enemy projectiles in the room.#Pushes nearby enemies away#You can use this 3 times before it disappears", "Пустышки", "ru")
-    EID:addCard(Isaac.GetCardIdByName("JesterCube"), "{{Collectible}} On use, all items in the room will cycle between 6 additional choices, similar to Glitched Crown", "Шут", "ru")
-    EID:addCard(Isaac.GetCardIdByName("WitchCube"), "50% chance to deal 40 damage to all enemies in the room and apply burn.#50% chance to spawn another Witch and fire off a poison fart", "Ведьма", "ru")
-    EID:addCard(Isaac.GetCardIdByName("MurderCard"), "For a quarter second, increase speed to 4 and kill everything you touch.#{{Stompy}} Gain a Stompy effect for the room", "Убийство!", "ru")
-    EID:addCard(Isaac.GetCardIdByName("AmberChunk"), "{{Collectible}} All pickups in the room, including items and the final chest at the end of the game, will be removed and saved.#The previous items you consumed in this way will respawn, even across games#You will also receive a {{Coin}} lucky penny", "Кусочек Янтаря", "ru")
-    EID:addCard(Isaac.GetCardIdByName("FiendFire"), "All pickups in the room are consumed#For each pickup consumed, gain a small, permanent boost to Damage, Tears, Luck, Range, or Speed#{{Burning}} Pickups turn into fires, which can damage enemies.", "Адское Пламя", "ru")
-    EID:addCard(Isaac.GetCardIdByName("DemonForm"), "{{Player7}} For the current room, Isaac becomes Azazel with a wide Brimstone#{{Damage}} +1 Damage", "Облик Демона", "ru")
+    EID:addCard(Isaac.GetCardIdByName("CowOnTrash"), "{{LordoftheFlies}} Рероллит предметы в мушиные#Превращает монеты в синих мух#{{Coin}} Не возвращает ваши деньги", "Скотина Помойная", "ru")
+    EID:addCard(Isaac.GetCardIdByName("LootCard"), "{{Collectible}} Создает предмет из любого пула или брелок", "Карта добычи", "ru")
+    EID:addCard(Isaac.GetCardIdByName("Blank"), "Удаляет пули в комнате.#Отталкивает врагов в радиусе#Осталось 1 использование", "Пустышка", "ru")
+    EID:addCard(Isaac.GetCardIdByName("Blank2"), "Удаляет пули в комнате.#Отталкивает врагов в радиусе#Осталось 2 использования", "Пустышки", "ru")
+    EID:addCard(Isaac.GetCardIdByName("Blank3"), "Удаляет пули в комнате.#Отталкивает врагов в радиусе#Осталось 3 использования", "Пустышки", "ru")
+    EID:addCard(Isaac.GetCardIdByName("JesterCube"), "{{Collectible}} При использовании все предметы в комнате получают эффект глитчнутой короны", "Шут", "ru")
+    EID:addCard(Isaac.GetCardIdByName("WitchCube"), "50% шанс нанести 40 урона всем в комнате и наложить горение#50% шанс сделать пук и создать другую ведьму", "Ведьма", "ru")
+    EID:addCard(Isaac.GetCardIdByName("MurderCard"), "На четверть секунды делает вашу скорость равной 4.0, во время этого все чего вы коснетесь умирает#{{Stompy}} Вы рушите камни во время эффекта", "Убийство!", "ru")
+    EID:addCard(Isaac.GetCardIdByName("AmberChunk"), "{{Collectible}} Убирает все предметы и пикапы в комнате и взамен создает удачливую монету#Предыдущие предметы, убранные таким образом восстанавливаются при использовании и сохраняются между забегами.", "Кусочек Янтаря", "ru")
+    EID:addCard(Isaac.GetCardIdByName("FiendFire"), "Пожирает все пикапы в комнате#Дает небольшую прибавку к одному стату за каждый пикап#{{Burning}} Пикапы превращаются в огонь, наносящий врагам урон.", "Адское Пламя", "ru")
+    EID:addCard(Isaac.GetCardIdByName("DemonForm"), "{{Player7}} До конца комнаты превращает игрока в азазеля с широким бримстоуном#{{Damage}} +1 Урон", "Облик Демона", "ru")
 
 end
 
