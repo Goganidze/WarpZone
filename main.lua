@@ -4603,13 +4603,18 @@ end
 
 WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, pre_orbital_collision, Lollipop.VARIANT)
 
+local function GetFamiliarItemCount(player, effects, item)
+    return player:GetCollectibleNum(item) + effects:GetCollectibleEffectNum(item)
+end
+
 ---@param player EntityPlayer
 ---@param cache_flag integer
 local function update_cache(_, player, cache_flag)
 	if cache_flag == CacheFlag.CACHE_FAMILIARS then
         local daat = player:GetData()
+        local effects = player:GetEffects()
 
-		local pop_pickups = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_LOLLIPOP)
+		local pop_pickups = GetFamiliarItemCount(player, effects, WarpZone.WarpZoneTypes.COLLECTIBLE_LOLLIPOP) --player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_LOLLIPOP)
 		local pop_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_LOLLIPOP)
 		player:CheckFamiliar(Lollipop.VARIANT, pop_pickups, pop_rng)
         
@@ -4643,11 +4648,11 @@ local function update_cache(_, player, cache_flag)
             player:CheckFamiliar(SmallTumor.VARIANT, smalltumors, tumorRNG)
         end
 
-        local ball_pickups = player:GetCollectibleNum(WarpZone.FOOTBALL.ITEM) --CollectibleType.COLLECTIBLE_FOOTBALL
+        local ball_pickups = GetFamiliarItemCount(player, effects, WarpZone.FOOTBALL.ITEM) -- player:GetCollectibleNum(WarpZone.FOOTBALL.ITEM)
         player:CheckFamiliar(WarpZone.FOOTBALL.FAM.VAR, ball_pickups, player:GetCollectibleRNG(WarpZone.FOOTBALL.ITEM))
         --respawnBalls(ball_pickups, player)
 
-        local john_pickups = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES)
+        local john_pickups =  GetFamiliarItemCount(player, effects, WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES) --player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES)
         local john_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES)
         
         local myRNG4 = RNG()
@@ -4657,7 +4662,7 @@ local function update_cache(_, player, cache_flag)
 		player:CheckFamiliar(KnifeVariantHappy, john_pickups, john_rng)
         player:CheckFamiliar(KnifeVariantSad, john_pickups, john_rng)
 
-        local junkan_pickups = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN)
+        local junkan_pickups = GetFamiliarItemCount(player, effects, WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN) -- player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN)
         local junkan_fly_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN)  --RNG()
         --junkan_fly_rng:SetSeed(Random(), 1)
         local junkan_walk_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN)  --RNG()
