@@ -4603,13 +4603,18 @@ end
 
 WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, pre_orbital_collision, Lollipop.VARIANT)
 
+local function GetFamiliarItemCount(player, effects, item)
+    return player:GetCollectibleNum(item) + effects:GetCollectibleEffectNum(item)
+end
+
 ---@param player EntityPlayer
 ---@param cache_flag integer
 local function update_cache(_, player, cache_flag)
 	if cache_flag == CacheFlag.CACHE_FAMILIARS then
         local daat = player:GetData()
+        local effects = player:GetEffects()
 
-		local pop_pickups = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_LOLLIPOP)
+		local pop_pickups = GetFamiliarItemCount(player, effects, WarpZone.WarpZoneTypes.COLLECTIBLE_LOLLIPOP) --player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_LOLLIPOP)
 		local pop_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_LOLLIPOP)
 		player:CheckFamiliar(Lollipop.VARIANT, pop_pickups, pop_rng)
         
@@ -4643,11 +4648,11 @@ local function update_cache(_, player, cache_flag)
             player:CheckFamiliar(SmallTumor.VARIANT, smalltumors, tumorRNG)
         end
 
-        local ball_pickups = player:GetCollectibleNum(WarpZone.FOOTBALL.ITEM) --CollectibleType.COLLECTIBLE_FOOTBALL
+        local ball_pickups = GetFamiliarItemCount(player, effects, WarpZone.FOOTBALL.ITEM) -- player:GetCollectibleNum(WarpZone.FOOTBALL.ITEM)
         player:CheckFamiliar(WarpZone.FOOTBALL.FAM.VAR, ball_pickups, player:GetCollectibleRNG(WarpZone.FOOTBALL.ITEM))
         --respawnBalls(ball_pickups, player)
 
-        local john_pickups = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES)
+        local john_pickups =  GetFamiliarItemCount(player, effects, WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES) --player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES)
         local john_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES)
         
         local myRNG4 = RNG()
@@ -4657,7 +4662,7 @@ local function update_cache(_, player, cache_flag)
 		player:CheckFamiliar(KnifeVariantHappy, john_pickups, john_rng)
         player:CheckFamiliar(KnifeVariantSad, john_pickups, john_rng)
 
-        local junkan_pickups = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN)
+        local junkan_pickups = GetFamiliarItemCount(player, effects, WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN) -- player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN)
         local junkan_fly_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN)  --RNG()
         --junkan_fly_rng:SetSeed(Random(), 1)
         local junkan_walk_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_SER_JUNKAN)  --RNG()
@@ -4978,6 +4983,18 @@ function WarpZone:BeggarUpdate()
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_UPDATE, WarpZone.BeggarUpdate)
 
+local RLChestToChest = {
+    [PickupVariant.PICKUP_MIMICCHEST] = PickupVariant.PICKUP_HAUNTEDCHEST,
+    [PickupVariant.PICKUP_HAUNTEDCHEST] = PickupVariant.PICKUP_CHEST,
+    [PickupVariant.PICKUP_CHEST] = PickupVariant.PICKUP_REDCHEST,
+    [PickupVariant.PICKUP_REDCHEST] = function(r) if r then return PickupVariant.PICKUP_LOCKEDCHEST else return PickupVariant.PICKUP_BOMBCHEST end end,
+    [PickupVariant.PICKUP_BOMBCHEST] = function(r) if r then return PickupVariant.PICKUP_WOODENCHEST else return PickupVariant.PICKUP_OLDCHEST end end,
+    [PickupVariant.PICKUP_LOCKEDCHEST] = function(r) if r then return PickupVariant.PICKUP_WOODENCHEST else return PickupVariant.PICKUP_OLDCHEST end end,
+    [PickupVariant.PICKUP_OLDCHEST] = PickupVariant.PICKUP_ETERNALCHEST,
+    [PickupVariant.PICKUP_WOODENCHEST] = PickupVariant.PICKUP_ETERNALCHEST,
+    [PickupVariant.PICKUP_ETERNALCHEST] = PickupVariant.PICKUP_MEGACHEST,
+}
+
 
 function WarpZone:UseRLHand(collectible, rng, entityplayer, useflags, activeslot, customvardata)
     local entities = Isaac.FindByType(EntityType.ENTITY_PICKUP)
@@ -4986,7 +5003,7 @@ function WarpZone:UseRLHand(collectible, rng, entityplayer, useflags, activeslot
 
     for i, entity_pos in ipairs(entities) do
         local rand_num = left_rng:RandomInt(100) 
-        if entity_pos.Variant == PickupVariant.PICKUP_MIMICCHEST then
+        --[[if entity_pos.Variant == PickupVariant.PICKUP_MIMICCHEST then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_HAUNTEDCHEST, 0)
             ischest = true
         elseif entity_pos.Variant == PickupVariant.PICKUP_HAUNTEDCHEST then
@@ -5013,6 +5030,16 @@ function WarpZone:UseRLHand(collectible, rng, entityplayer, useflags, activeslot
         elseif entity_pos.Variant == PickupVariant.PICKUP_ETERNALCHEST then
             entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_MEGACHEST, 0)
             ischest = true
+        end]]
+        if entity_pos.SubType > 0 then
+            local var = RLChestToChest[entity_pos.Variant]
+            if type(var) == "function" then
+                ischest = true
+                entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, var(rand_num>50), 0)
+            elseif var then
+                ischest = true
+                entity_pos:ToPickup():Morph(EntityType.ENTITY_PICKUP, var, 0)
+            end
         end
     end
 
@@ -5153,18 +5180,19 @@ function WarpZone:UseLootCard(card, player, useflags)
         local ranPool = lootRNG:RandomInt(ItemPoolType.NUM_ITEMPOOLS)
         Isaac.Spawn(EntityType.ENTITY_PICKUP,
             PickupVariant.PICKUP_COLLECTIBLE,
-            itemPool:GetCollectible(ranPool),
+            itemPool:GetCollectible(ranPool, true, lootRNG:RandomInt(100000)+1),
             game:GetRoom():FindFreePickupSpawnPosition(player.Position),
             Vector(0,0),
-            nil)
+            player)
     else
         Isaac.Spawn(EntityType.ENTITY_PICKUP,
             PickupVariant.PICKUP_TRINKET,
             0,
             game:GetRoom():FindFreePickupSpawnPosition(player.Position),
             Vector(0,0),
-            nil)
+            player)
     end
+    player:AnimateHappy()
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseLootCard, WarpZone.WarpZoneTypes.CARD_LOOT_CARD)
 
@@ -5173,9 +5201,9 @@ function WarpZone:useCow(card, player, useflags)
     local itemID = nil
     local cowRNG = player:GetCardRNG(card)
     
-    SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_COW_TRASH, 2)
+    SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_COW_TRASH, 1, 60)
     for i, entity in ipairs(entities) do
-        if entity.Variant == PickupVariant.PICKUP_COLLECTIBLE then
+        if entity.Variant == PickupVariant.PICKUP_COLLECTIBLE and entity.SubType > 0 then
             local price = entity:ToPickup().Price
             for j=1, 10000, 1 do
                 local ranPool = cowRNG:RandomInt(ItemPoolType.NUM_ITEMPOOLS)
@@ -5186,8 +5214,9 @@ function WarpZone:useCow(card, player, useflags)
                 end
             end
             if itemID ~= nil then
-                entity:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_COLLECTIBLE, itemID)
-                entity:ToPickup().Price = price
+                entity:ToPickup():Morph(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_COLLECTIBLE, itemID, true, true)
+                --entity:ToPickup().Price = price
+                game:Fart(entity.Position)
                 Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, -1, entity.Position, entity.Velocity, player)
             end
         elseif entity.Variant <= 90 or entity.Variant == PickupVariant.PICKUP_TAROTCARD 
@@ -5527,8 +5556,8 @@ function WarpZone:UseAmberChunk(card, player, useflags)
         or entity.Variant == PickupVariant.PICKUP_TRINKET
         or entity.Variant == PickupVariant.PICKUP_TAROTCARD
         or entity.Variant == PickupVariant.PICKUP_COLLECTIBLE
-        or entity.Variant == PickupVariant.PICKUP_BIGCHEST
-        or entity.Variant == PickupVariant.PICKUP_TROPHY
+        --or entity.Variant == PickupVariant.PICKUP_BIGCHEST --why?
+        --or entity.Variant == PickupVariant.PICKUP_TROPHY
         then
             
            preservedItems[i] = {}
