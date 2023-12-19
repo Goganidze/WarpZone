@@ -5556,7 +5556,7 @@ function WarpZone:UseAmberChunk(card, player, useflags)
         or entity.Variant == PickupVariant.PICKUP_TRINKET
         or entity.Variant == PickupVariant.PICKUP_TAROTCARD
         or entity.Variant == PickupVariant.PICKUP_COLLECTIBLE
-        --or entity.Variant == PickupVariant.PICKUP_BIGCHEST
+        --or entity.Variant == PickupVariant.PICKUP_BIGCHEST --why?
         --or entity.Variant == PickupVariant.PICKUP_TROPHY
         then
             
