@@ -259,9 +259,13 @@ return function(mod)
                     hads.left:LoadGraphics()
                 else
                     local hads = unsave.TonyHandSpr
-                    if player:GetBodyColor() ~= unsave.TonyHandSpr.bod then
-                        unsave.TonyHandSpr.bod = player:GetBodyColor()
-                        local suff = bodycolor[player:GetBodyColor()] or ""
+                    local bodyColor = player:GetBodyColor() 
+                    if player:GetPlayerType() == PlayerType.PLAYER_JUDAS_B or player:GetPlayerType() == PlayerType.PLAYER_BLACKJUDAS then
+                        bodyColor = SkinColor.SKIN_SHADOW
+                    end
+                    if bodyColor ~= unsave.TonyHandSpr.bod then
+                        unsave.TonyHandSpr.bod = bodyColor
+                        local suff = bodycolor[bodyColor] or ""
                         for i=0,1 do
                             hads.spr:ReplaceSpritesheet(i, "gfx/characters/tonypunch_hand"..suff..".png")
                         end
