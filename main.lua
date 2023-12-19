@@ -5551,14 +5551,15 @@ function WarpZone:UseAmberChunk(card, player, useflags)
     --end
     preservedItems = {}
     for i, entity in ipairs(entities) do --somehow it isn't working anymore. time to pay the piper
-        if entity.Variant <= 90 or
+        if not entity:ToPickup():IsShopItem() and
+        (entity.Variant <= 90 or
         entity.Variant == PickupVariant.PICKUP_REDCHEST
         or entity.Variant == PickupVariant.PICKUP_TRINKET
         or entity.Variant == PickupVariant.PICKUP_TAROTCARD
         or entity.Variant == PickupVariant.PICKUP_COLLECTIBLE
         --or entity.Variant == PickupVariant.PICKUP_BIGCHEST --why?
         --or entity.Variant == PickupVariant.PICKUP_TROPHY
-        then
+        )then
             
            preservedItems[i] = {}
            preservedItems[i].Variant = entity.Variant
