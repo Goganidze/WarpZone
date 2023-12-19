@@ -1,20 +1,20 @@
 <items gfxroot="gfx/items/" deathanm2="gfx/death items.anm2" version="1">
-    <passive id="1"	gfx="Collectibles_1_GoldenIdol.png" name="Golden Idol" description="Cursed wealth" quality="1" rags="lazarusshared summonable"/>
+    <passive id="1"	gfx="Collectibles_1_GoldenIdol.png" name="Golden Idol" description="Cursed wealth" quality="1" tags="lazarusshared summonable"/>
     <active	id="2" gfx="Collectibles_2_Past_Killer_3x.png" name="Gun that can kill the Past" description="Leave your past behind" maxcharges = "0" quality="2"/>
-    <passive id="3"	gfx="Collectibles_3_Birthday_Cake.png" name="Birthday Cake" description="Happy me!" maxhearts="2" hearts="4" tags="food nolostbr nocantrip lazarusshared summonable" quality = "2"/>
+    <passive id="3"	gfx="Collectibles_3_Birthday_Cake.png" name="Birthday Cake" description="Happy me!" maxhearts="2" hearts="4" tags="nolostbr nocantrip lazarusshared summonable" quality = "2"/>
     <passive id="4"	gfx="Collectibles_4_Rusty_Spoon.png" name="Rusty Spoon" description="You like touching them..." cache="tearcolor color" tags="offensive summonable" quality="3"/>
     <passive id="5"	gfx="Collectibles_5_Newgrounds_Tank.png" name="Newgrounds Tank" description="Become a tank!" maxhearts="2" hearts="4" cache="firedelay damage speed range shotspeed luck" tags="offensive summonable" quality="3"/>
-    <passive id="6"	gfx="Collectibles_6_GreedButt.png" name="Greed Butt" description="Don't touch it" quality="1" tags = "nolostbr crap summonable"/>
+    <passive id="6"	gfx="Collectibles_6_GreedButt.png" name="Greed Butt" description="Don't touch it" quality="3" tags = "nolostbr crap summonable"/>
     <!--
     <active	id="7" gfx="Collectibles_7_Focus_frame4.png" name="   Focus   " description="Take their SOUL" maxcharges = "20" chargetype = "special" quality="2"/>
     <active	id="8" gfx="Collectibles_7_Focus_frame3.png" name="  Focus  " description="Take their SOUL" maxcharges = "20" chargetype = "special" quality="2"/>
     <active	id="9" gfx="Collectibles_7_Focus_frame2.png" name=" Focus " description="Take their SOUL" maxcharges = "20" chargetype = "special" quality="2"/>
     <active	id="10" gfx="Collectibles_7_Focus_frame1.png" name="Focus" description="Take their SOUL" maxcharges = "20" chargetype = "special" quality="2"/>
     -->
-    <active	id="7" gfx="Collectibles_7_Focus_frame4.png" name="   Focus   " description="Take their SOUL" maxcharges = "250" chargetype = "special" quality="2"/>
-    <active	id="8" gfx="Collectibles_7_Focus_frame3.png" name="  Focus  " description="Take their SOUL" maxcharges = "250" chargetype = "special" quality="2"/>
-    <active	id="9" gfx="Collectibles_7_Focus_frame2.png" name=" Focus " description="Take their SOUL" maxcharges = "250" chargetype = "special" quality="2"/>
-    <active	id="10" gfx="Collectibles_7_Focus_frame1.png" name="Focus" description="Take their SOUL" maxcharges = "250" chargetype = "special" quality="2"/>
+    <active	id="7" gfx="Collectibles_7_Focus_frame4.png" name="   Focus   " description="Take their SOUL" maxcharges = "250" chargetype = "special" quality="3"/>
+    <active	id="8" gfx="Collectibles_7_Focus_frame3.png" name="  Focus  " description="Take their SOUL" maxcharges = "250" chargetype = "special" quality="3"/>
+    <active	id="9" gfx="Collectibles_7_Focus_frame2.png" name=" Focus " description="Take their SOUL" maxcharges = "250" chargetype = "special" quality="3"/>
+    <active	id="10" gfx="Collectibles_7_Focus_frame1.png" name="Focus" description="Take their SOUL" maxcharges = "250" chargetype = "special" quality="3"/>
 
     <active	id="11" gfx="Collectibles_11_The_Doorway.png" name="The Doorway" description="Opens ALL doors" maxcharges = "0" quality="3" tags ="nogreed"/>
     <passive id="12" gfx="Collectibles_12_Strange_Marble.png" name="Strange Marble" description="Pretty colors..." quality="2"/>
@@ -24,10 +24,10 @@
     <active id="16" gfx="Collectibles_16_Diogenes_Pot_frame1.png" name="Diogenes's Pot" description="Tear it down, start again" quality="2" maxcharges = "0" cache = "damage"/>
     <active id="17" gfx="Collectibles_16_Diogenes_Pot_frame2.png" name=" Diogenes's Pot " description="Tear it down, start again" quality="2"  maxcharges = "0" cache = "damage"/>
     <passive id="18" gfx="Collectibles_18_George.png" name="George" description="Look further" quality="3" cache="range" tags="summonable"/>
-    <passive id="19" gfx="Collectibles_19_Possession.png" name="Possession" description="Follow me!" quality="3" tags="summonable"/>
+    <passive id="19" gfx="Collectibles_19_Possession.png" name="Possession" description="Follow me!" quality="2" tags="summonable"/>
     <familiar id="20" gfx="Collectibles_20_Lollipop.png" name="Lollipop" description="Don't forget to share!" quality="2" tags="summonable"/>
     
-    <passive id="21" gfx="Collectibles_21_Water_Bottle_frame1.png" name="Water Bottle" cache = "firedelay" description="Stay hydrated!" quality="2" tags="tearsup"/>
+    <passive id="21" gfx="Collectibles_21_Water_Bottle_frame1.png" name="Water Bottle" cache = "firedelay" description="Stay hydrated!" quality="3" tags="tearsup"/>
     <!--
     <passive id="22" gfx="Collectibles_21_Water_Bottle_frame2.png" name=" Water Bottle " cache = "firedelay" description="Tears + tear size up" quality="2" tags="tearsup"/>
     <passive id="23" gfx="Collectibles_21_Water_Bottle_frame3.png" name="  Water Bottle  " cache = "firedelay" description="It's half empty..." quality="1" tags="tearsup"/>
@@ -44,7 +44,7 @@
     <active id="33" gfx="Collectibles_30_Emergency_Meeting.png" name="Emergency Meeting" description="Everyone back to base!" quality="0" maxcharges = "3"/>
     <passive id="34" gfx="Collectibles_31_Boxing_Glove.png" name="Boxing Glove" description="Risk of pain" quality="2" tags="summonable"/>
     <active id="35" gfx="Collectibles_32_Gravity.png" name="Gravity" description="Reusable flip" quality="2" chargetype = "timed" maxcharges = "600"/>
-    <familiar id="36" gfx="Collectibles_33_Johnnys_Knives.png" name="Johnny's Knives" description="I need you to keep bleeding..." quality="3" devilprice="2" tags="summonable monstermanual"/>
+    <familiar id="36" gfx="Collectibles_33_Johnnys_Knives.png" name="Johnny's Knives" description="I need you to keep bleeding..." quality="4" devilprice="2" tags="summonable monstermanual"/>
     <familiar id="37" gfx="Collectibles_34_Ser_Junkan.png" name="Ser Junkan" description="He's a scrappy little fella!" quality="3" tags="summonable monstermanual"/>
     <active id="38" gfx="Collectibles_35_Crowdfunder.png" name="The Crowdfunder" description="Pump 'em full of gold!" quality="2" coins = "10" maxcharges = "0" persistent="true" cleareffectsonremove = "true"/>
     <active	id="39" gfx="Collectibles_2_Past_Killer_2x.png" name=" Gun that can kill the Past " description="Leave your past behind" maxcharges = "0" quality="2"/>
