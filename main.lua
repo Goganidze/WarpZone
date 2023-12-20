@@ -5657,8 +5657,8 @@ local extrafiles = {
     "lua.crowdfunder",
     "lua.polar_star",
     "lua.tony",
-    "lua.eid",
     "lua.bottle",
+    "lua.eid",
 }
 for i=1,#extrafiles do
     local module = include(extrafiles[i])
