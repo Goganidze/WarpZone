@@ -1674,7 +1674,8 @@ function WarpZone:postRender(player, offset)
             end
             
             if maxThreshold > framesToCharge and data.WarpZone_data.arrowHoldBox == 0 then
-                data.WarpZone_unsavedata.fireGlove = true
+                --data.WarpZone_unsavedata.fireGlove = true
+                WarpZone:fireGlove(player)
             end
         end
 
@@ -3304,10 +3305,10 @@ function WarpZone:postPlayerUpdate(player)
     WarpZone.WeaponLogic(player, data)
 
 
-    if unsave.fireGlove == true then
-        WarpZone:fireGlove(player)
-        unsave.fireGlove = nil
-    end
+    --if unsave.fireGlove == true then
+        --WarpZone:fireGlove(player)
+    --    unsave.fireGlove = nil
+    --end
     if(data.breakCap==false) then
         player.MoveSpeed = math.min(player.MoveSpeed+player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_HITOPS)*0.2, 3)
         data.breakCap = nil
@@ -5589,11 +5590,91 @@ function WarpZone:UseAmberChunk(card, player, useflags)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseAmberChunk, WarpZone.WarpZoneTypes.CARD_AMBER_CHUNK)
 
+---@param player EntityPlayer
 function WarpZone:fireGlove(player)
     --print(player:GetLastDirection().X .. " " .. player:GetLastDirection().Y .. " aiming")
-    --local punchDestination = player.Position + (player:GetLastDirection() * 20)
+    SfxManager:Play(SoundEffect.SOUND_FETUS_JUMP, Options.SFXVolume*2, 10, false, 0.9)
+
+    local aim = player:GetLastDirection()
+    local punchDestination = player.Position + (aim * 20)
     
-    WarpZone:FireClub(player, getDirectionFromVector(player:GetLastDirection()), true)
+    --WarpZone:FireClub(player, getDirectionFromVector(player:GetLastDirection()), true)
+
+    local eff = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.IMPACT, 0,
+        punchDestination, Vector(0,0), player):ToEffect()
+    eff:Update()
+    local spr = eff:GetSprite()
+    spr:Load("gfx/008.001_Bone Club.anm2", true)
+    spr:ReplaceSpritesheet(1, "gfx/glove_shot.png")
+    spr:ReplaceSpritesheet(0, "gfx/glove_shot.png")
+    spr.Scale = spr.Scale * 1.5
+    spr:LoadGraphics()
+    spr:Play("Swing", true)
+    eff:FollowParent(player)
+
+    eff.Rotation =  - (aim:GetAngleDegrees() - 90)
+
+    local attackpos = punchDestination
+    local list = Isaac.FindInRadius(attackpos, 60, EntityPartition.ENEMY)
+    local ref = EntityRef(player)
+    local playsound = false
+
+    for i=1 , #list do
+        local ent = list[i]
+        if ent:IsActiveEnemy() then
+            ent:AddVelocity(aim:Resized(16*1.54))
+            ent:TakeDamage(player.Damage*1.5, DamageFlag.DAMAGE_CRUSH, ref, 5)
+            local tear = Isaac.Spawn(EntityType.ENTITY_TEAR, TearVariant.FIST,  0, ent.Position, aim, player):ToTear()
+            tear:AddTearFlags(TearFlags.TEAR_PUNCH)
+            --tear.TearFlags
+            tear.CollisionDamage = 0.0001
+            tear.Visible = false
+            tear:Update()
+                
+            playsound = true
+        end
+    end
+    if playsound then
+        SfxManager:Play(SoundEffect.SOUND_PUNCH, nil, 3)
+    end
+
+    local list = Isaac.FindByType(33,-1,-1)
+    for i=1 , #list do
+        local ent = list[i]
+        if ent.Position:Distance(attackpos) < 50 then
+            ent:TakeDamage(5, 0, ref, 0)
+            ent:Update()
+            ent:TakeDamage(5, 0, ref, 0)
+            ent:Update()
+            ent:TakeDamage(5, 0, ref, 0)
+        end
+    end
+
+    local list = Isaac.FindByType(4)
+    for i=1 , #list do
+        local ent = list[i]
+        if ent.Position:Distance(attackpos) < 50 then
+            ent:AddVelocity(aim:Resized(15))
+        end
+    end
+
+    --local list = Isaac.FindInRadius(attackpos, 50, EntityPartition.BULLET)
+    --for i=1 , #list do
+    --    local ent = list[i]
+    --    ent.Velocity = aim:Resized(ent.Velocity:Length()+7)
+    --    ent:ToProjectile():AddProjectileFlags(ProjectileFlags.HIT_ENEMIES)
+    --end
+
+    local gridattackpos = player.Position + (aim * 40)
+    local room = game:GetRoom()
+    for i=0, 360-45, 45 do
+        local pos = gridattackpos + Vector.FromAngle(i):Resized(30)
+        local grid = room:GetGridEntityFromPos(pos)
+
+        if grid and grid:Hurt(3) then
+                
+        end
+    end
 end
 
 function WarpZone:useGravity(collectible, rng, player, useflags, activeslot, customvardata)
