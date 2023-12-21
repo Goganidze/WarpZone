@@ -5493,13 +5493,13 @@ function WarpZone:UseFiendFire(card, player, useflags)
             if chosenStat == 0 then
                 data.WarpZone_data.bonusRange = data.WarpZone_data.bonusRange + 20
             elseif chosenStat == 1 then
-                data.WarpZone_data.bonusDamage = data.WarpZone_data.bonusDamage + .2
+                data.WarpZone_data.bonusDamage = data.WarpZone_data.bonusDamage + .1
             elseif chosenStat == 2 then
-                data.WarpZone_data.bonusLuck = data.WarpZone_data.bonusLuck + .2
+                data.WarpZone_data.bonusLuck = data.WarpZone_data.bonusLuck + .1
             elseif chosenStat == 3 then
-                data.WarpZone_data.bonusSpeed = data.WarpZone_data.bonusSpeed + .04
+                data.WarpZone_data.bonusSpeed = data.WarpZone_data.bonusSpeed + .02
             elseif chosenStat == 4 then
-                data.WarpZone_data.bonusFireDelay = data.WarpZone_data.bonusFireDelay + .2
+                data.WarpZone_data.bonusFireDelay = data.WarpZone_data.bonusFireDelay + .1
             end
         end
     end
