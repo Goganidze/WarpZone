@@ -1,3 +1,19 @@
+-- embeddablecallbackhack hack
+
+local oldRemoveCallback = Isaac.RemoveCallback
+function Isaac.RemoveCallback(ref, callbackId, callbackFn, ...)
+    local callList = Isaac.GetCallbacks(callbackId)
+    if callList then
+        for i,k in pairs(callList) do
+            if k.Function == callbackFn then
+                oldRemoveCallback(ref, callbackId, callbackFn, ...)
+                break
+            end
+        end
+    end 
+end
+
+
 --basic data
 local Vector = Vector
 local game = Game()
@@ -9,6 +25,7 @@ myRNG:SetSeed(Random(), 1)
 local hud = game:GetHUD()
 local SfxManager = SFXManager()
 local debug_str = "untested"
+
 ----------------------------------
 
 WarpZone.SaveFile = {}
@@ -1527,6 +1544,7 @@ end
 function WarpZone:postRender(player, offset)
 	local actions = player:GetLastActionTriggers()
     local data = player:GetData()
+    local unsave = data.WarpZone_unsavedata
     local controllerid = player.ControllerIndex
     if not game:IsPaused() then
         if player:HasTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS) and Input.IsActionTriggered(ButtonAction.ACTION_DROP, controllerid) then
@@ -1548,7 +1566,6 @@ function WarpZone:postRender(player, offset)
         local isAim = aim:Length() > 0.01
 
         if player.ControlsEnabled then
-            local unsave = data.WarpZone_unsavedata
             unsave.DoubleTapDelays = unsave.DoubleTapDelays or {}
             for i=1, #WarpZone.DoubleTapCallback do
                 local callback = WarpZone.DoubleTapCallback[i]
@@ -1674,8 +1691,19 @@ function WarpZone:postRender(player, offset)
             end
             
             if maxThreshold > framesToCharge and data.WarpZone_data.arrowHoldBox == 0 then
-                --data.WarpZone_unsavedata.fireGlove = true
-                WarpZone:fireGlove(player)
+                unsave.fireGlove = 20
+                unsave.GloveHitList = {}
+                WarpZone:fireGlove(player, true, unsave.GloveHitList)
+            end
+        end
+        if unsave.fireGlove then
+            if unsave.fireGlove % 2 == 0 then
+                WarpZone:fireGlove(player, false, unsave.GloveHitList)
+            end
+            unsave.fireGlove = unsave.fireGlove - 1
+            if unsave.fireGlove <= 0 then
+                unsave.fireGlove = nil
+                unsave.GloveHitList = nil
             end
         end
 
@@ -1741,6 +1769,10 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_RENDER, WarpZone.postRender)
 ---@param player EntityPlayer
 ---@param renderoffset any
 function WarpZone:UIOnRender(player, renderoffset)
+    local room = game:GetRoom()
+    if room:GetRenderMode() == RenderMode.RENDER_WATER_REFLECT then
+        return
+    end
     local data = player:GetData()
     if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) then
         local numCollectibles = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW)
@@ -2600,7 +2632,7 @@ function WarpZone:usePastkiller3x(collectible, rng, entityplayer, useflags, acti
     end
     SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT, 2)
     WarpZone:usePastkiller(player)
-    swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_2x, ActiveSlot.SLOT_PRIMARY, player, 0)
+    swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_2x, activeslot, player, 0)
     return {
         Discharge = false,
         Remove = false,
@@ -2632,7 +2664,7 @@ function WarpZone:usePastkiller2x(collectible, rng, entityplayer, useflags, acti
     end
     SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT_SPREAD, 2)
     WarpZone:usePastkiller(player)
-    swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_1x, ActiveSlot.SLOT_PRIMARY, player, 0)
+    swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_1x, activeslot, player, 0)
     return {
         Discharge = false,
         Remove = false,
@@ -2724,6 +2756,7 @@ function WarpZone:UseFocus(collectible, rng, player, useflags, activeslot, custo
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseFocus)
 
+---@param entityplayer EntityPlayer
 function WarpZone:UseDoorway(collectible, rng, entityplayer, useflags, activeslot, customvardata)
     local room = game:GetRoom()
     local currentLevel = game:GetLevel()
@@ -2801,6 +2834,9 @@ function WarpZone:UseDoorway(collectible, rng, entityplayer, useflags, activeslo
     currentLevel:RemoveCurses(LevelCurse.CURSE_OF_MAZE)
     currentLevel:ApplyCompassEffect(true)
     currentLevel:ApplyMapEffect()
+    if useflags & UseFlag.USE_ALLOWWISPSPAWN ~= 0 then
+        entityplayer:AddWisp(WarpZone.WarpZoneTypes.COLLECTIBLE_DOORWAY, entityplayer.Position)
+    end
     return {
         Discharge = false,
         Remove = true,
@@ -5591,28 +5627,30 @@ end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseAmberChunk, WarpZone.WarpZoneTypes.CARD_AMBER_CHUNK)
 
 ---@param player EntityPlayer
-function WarpZone:fireGlove(player)
+function WarpZone:fireGlove(player, showeff, hitlist)
     --print(player:GetLastDirection().X .. " " .. player:GetLastDirection().Y .. " aiming")
     SfxManager:Play(SoundEffect.SOUND_FETUS_JUMP, Options.SFXVolume*2, 10, false, 0.9)
 
     local aim = player:GetLastDirection()
-    local punchDestination = player.Position + (aim * 20)
+    local punchDestination = player.Position + player.Velocity + (aim * 20)
     
     --WarpZone:FireClub(player, getDirectionFromVector(player:GetLastDirection()), true)
 
-    local eff = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.IMPACT, 0,
-        punchDestination, Vector(0,0), player):ToEffect()
-    eff:Update()
-    local spr = eff:GetSprite()
-    spr:Load("gfx/008.001_Bone Club.anm2", true)
-    spr:ReplaceSpritesheet(1, "gfx/glove_shot.png")
-    spr:ReplaceSpritesheet(0, "gfx/glove_shot.png")
-    spr.Scale = spr.Scale * 1.5
-    spr:LoadGraphics()
-    spr:Play("Swing", true)
-    eff:FollowParent(player)
+    if showeff then
+        local eff = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.IMPACT, 0,
+            punchDestination, Vector(0,0), player):ToEffect()
+        eff:Update()
+        local spr = eff:GetSprite()
+        spr:Load("gfx/gloveshot.anm2", true)
+        spr:ReplaceSpritesheet(1, "gfx/glove_shot.png")
+        spr:ReplaceSpritesheet(0, "gfx/glove_shot.png")
+        spr.Scale = spr.Scale * 1.5
+        spr:LoadGraphics()
+        spr:Play("Swing", true)
+        eff:FollowParent(player)
 
-    eff.Rotation =  - (aim:GetAngleDegrees() - 90)
+        eff.Rotation =  - (aim:GetAngleDegrees() - 90)
+    end
 
     local attackpos = punchDestination
     local list = Isaac.FindInRadius(attackpos, 60, EntityPartition.ENEMY)
@@ -5621,9 +5659,10 @@ function WarpZone:fireGlove(player)
 
     for i=1 , #list do
         local ent = list[i]
-        if ent:IsActiveEnemy() then
+        if not hitlist[ent.Index] and ent:IsActiveEnemy() then
+            hitlist[ent.Index] = true
             ent:AddVelocity(aim:Resized(16*1.54))
-            ent:TakeDamage(player.Damage*1.5, DamageFlag.DAMAGE_CRUSH, ref, 5)
+            ent:TakeDamage(player.Damage+10, DamageFlag.DAMAGE_CRUSH, ref, 5)
             local tear = Isaac.Spawn(EntityType.ENTITY_TEAR, TearVariant.FIST,  0, ent.Position, aim, player):ToTear()
             tear:AddTearFlags(TearFlags.TEAR_PUNCH)
             --tear.TearFlags
