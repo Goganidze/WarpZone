@@ -106,7 +106,7 @@ return function (mod)
     function WarpZone.GreedButt_PlayerCollide(ent, player)
         local pdata = player:GetData()
         if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) 
-        and pdata.WarpZone_data.GreedButtCoints >= 5 then
+        and pdata.WarpZone_data.GreedButtCoints >= 5 and not ent:HasEntityFlags(EntityFlag.FLAG_FRIENDLY) then
             if ent.Type == EntityType.ENTITY_PROJECTILE or ent:IsActiveEnemy() then
                 effect(player, ent)
                 pdata.WarpZone_data.GreedButtCoints = 0
