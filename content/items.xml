@@ -11,9 +11,9 @@
     <active	id="9" gfx="Collectibles_7_Focus_frame2.png" name=" Focus " description="Take their SOUL" maxcharges = "20" chargetype = "special" quality="2"/>
     <active	id="10" gfx="Collectibles_7_Focus_frame1.png" name="Focus" description="Take their SOUL" maxcharges = "20" chargetype = "special" quality="2"/>
     -->
-    <active	id="7" gfx="Collectibles_7_Focus_frame4.png" name="   Focus   " description="Take their SOUL" maxcharges = "250" chargetype = "special" quality="3" tags="hidden"/>
-    <active	id="8" gfx="Collectibles_7_Focus_frame3.png" name="  Focus  " description="Take their SOUL" maxcharges = "250" chargetype = "special" quality="3" tags="hidden"/>
-    <active	id="9" gfx="Collectibles_7_Focus_frame2.png" name=" Focus " description="Take their SOUL" maxcharges = "250" chargetype = "special" quality="3" tags="hidden"/>
+    <active	id="7" gfx="Collectibles_7_Focus_frame4.png" name="   Focus   " description="Take their SOUL" maxcharges = "250" chargetype = "special" quality="3" hidden="true"/>
+    <active	id="8" gfx="Collectibles_7_Focus_frame3.png" name="  Focus  " description="Take their SOUL" maxcharges = "250" chargetype = "special" quality="3" hidden="true"/>
+    <active	id="9" gfx="Collectibles_7_Focus_frame2.png" name=" Focus " description="Take their SOUL" maxcharges = "250" chargetype = "special" quality="3" hidden="true"/>
     <active	id="10" gfx="Collectibles_7_Focus_frame1.png" name="Focus" description="Take their SOUL" maxcharges = "250" chargetype = "special" quality="3"/>
 
     <active	id="11" gfx="Collectibles_11_The_Doorway.png" name="The Doorway" description="Opens ALL doors" maxcharges = "0" quality="3" tags ="nogreed"/>
@@ -47,8 +47,8 @@
     <familiar id="36" gfx="Collectibles_33_Johnnys_Knives.png" name="Johnny's Knives" description="I need you to keep bleeding..." quality="4" devilprice="2" tags="summonable monstermanual"/>
     <familiar id="37" gfx="Collectibles_34_Ser_Junkan.png" name="Ser Junkan" description="He's a scrappy little fella!" quality="3" tags="summonable monstermanual"/>
     <active id="38" gfx="Collectibles_35_Crowdfunder.png" name="The Crowdfunder" description="Pump 'em full of gold!" quality="2" coins = "10" maxcharges = "0" persistent="true" cleareffectsonremove = "true"/>
-    <active	id="39" gfx="Collectibles_2_Past_Killer_2x.png" name=" Gun that can kill the Past " description="Leave your past behind" maxcharges = "0" quality="2" tags="hidden"/>
-    <active	id="40" gfx="Collectibles_2_Past_Killer_1x.png" name="  Gun that can kill the Past  " description="Leave your past behind" maxcharges = "0" quality="2" tags="hidden"/>
+    <active	id="39" gfx="Collectibles_2_Past_Killer_2x.png" name=" Gun that can kill the Past " description="Leave your past behind" maxcharges = "0" quality="2" hidden="true"/>
+    <active	id="40" gfx="Collectibles_2_Past_Killer_1x.png" name="  Gun that can kill the Past  " description="Leave your past behind" maxcharges = "0" quality="2" hidden="true"/>
     <active	id="41" gfx="Collectibles_36_polar_star.png" name="Polar Star" description="Fight and flight response" maxcharges = "0" quality="2" cache="speed flying damage familiars"/>
     <active	id="42" gfx="Collectibles_36_boosterv2.png" name="Booster V2.0" description="Fight and flight response" maxcharges = "0" quality="2" />
     
