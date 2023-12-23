@@ -86,15 +86,15 @@
 	<color name="flame_green_light" r="190" g="320" b="70"/>
 
 	<!-- Gun that can kill the Past -->
-	<wisp id="3" hp="3" layer="1" damage="3.5" flameColor="flame_grey" coreColor="core_grey" tearColor="tear_grey" count="1" />
+	<wisp id="2" hp="3" layer="1" damage="3.5" flameColor="flame_grey" coreColor="core_grey" tearColor="tear_grey" count="1" />
 	<wisp id="39" hp="3" layer="1" damage="3.5" flameColor="flame_grey" coreColor="core_grey" tearColor="tear_grey" count="1" />
 	<wisp id="40" hp="3" layer="1" damage="3.5" flameColor="flame_grey" coreColor="core_grey" tearColor="tear_grey" count="1" />
 
 	<!-- Focus -->
-	<wisp id="7" hp="1" layer="2" damage="1" flameColor="flame_bright_blue" coreColor="core_dark_blue" tearColor="tear_bright_blue" count="0" priority="-1" />
-	<wisp id="8" hp="1" layer="2" damage="1" flameColor="flame_bright_blue" coreColor="core_dark_blue" tearColor="tear_bright_blue" count="0" priority="-1" />
-	<wisp id="9" hp="1" layer="2" damage="1" flameColor="flame_bright_blue" coreColor="core_dark_blue" tearColor="tear_bright_blue" count="0" priority="-1" />
-	<wisp id="10" hp="1" layer="2" damage="1" flameColor="flame_bright_blue" coreColor="core_dark_blue" tearColor="tear_bright_blue" count="0" priority="-1" />
+	<wisp id="7" hp="1" layer="2" damage="1.5" tearScale="0.6"  flameColor="flame_bright_blue" coreColor="core_dark_blue" tearColor="tear_bright_blue" count="0" priority="-1" />
+	<wisp id="8" hp="1" layer="2" damage="1.5" tearScale="0.6"  flameColor="flame_bright_blue" coreColor="core_dark_blue" tearColor="tear_bright_blue" count="0" priority="-1" />
+	<wisp id="9" hp="1" layer="2" damage="1.5" tearScale="0.6"  flameColor="flame_bright_blue" coreColor="core_dark_blue" tearColor="tear_bright_blue" count="0" priority="-1" />
+	<wisp id="10" hp="1" layer="2" damage="1.5" tearScale="0.6"  flameColor="flame_bright_blue" coreColor="core_dark_blue" tearColor="tear_bright_blue" count="0" priority="-1" />
 
 	<!-- The Doorway -->
 	<wisp id="11" hp="3" damage="3.5" flameColor="flame_beige" coreColor="core_purple" tearColor="tear_purple" coreGfx="card.png" count="1" />
@@ -114,7 +114,7 @@
 	<wisp id="33" hp="1" damage="3" procChance="0.2" tearFlags2="67" flameColor="flame_black" coreColor="core_red" tearColor="tear_red" />
 
 	<!-- Gravity  -->
-	<wisp id="35" hp="2" damage="3" flameColor="flame_green_light" coreColor="core_green" tearColor="tear_green" coreGfx="warpzone/rev_baby.png" />
+	<wisp id="35" hp="1" damage="3" procChance="0.1" tearFlags2="14 81" flameColor="flame_green_light" coreColor="core_green" tearColor="tear_green" coreGfx="warpzone/rev_baby.png" />
 
 	<!-- The Crowdfunder -->
 	<wisp id="38" count="0" />
