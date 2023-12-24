@@ -5695,6 +5695,7 @@ function WarpZone:fireGlove(player, showeff, hitlist)
             --tear.TearFlags
             tear.CollisionDamage = 0.0001
             tear.Visible = false
+            tear.Color = Color(0,0,0,0)
             tear:Update()
                 
             playsound = true
