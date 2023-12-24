@@ -5791,8 +5791,6 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_PROJECTILE_COLLISION, WarpZone.PrePlaye
 
 
 --extra files and translation
-local ItemTranslate = include("lua.ItemTranslate")
-ItemTranslate("WarpZone")
 
 local extrafiles = {
     "lua.ru",
@@ -5841,3 +5839,6 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, function()
 		Isaac.ExecuteCommand("reloadshaders")
 	end
 end)
+
+local ItemTranslate = include("lua.ItemTranslate")
+ItemTranslate("WarpZone")
