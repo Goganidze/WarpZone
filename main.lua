@@ -13,6 +13,28 @@ function Isaac.RemoveCallback(ref, callbackId, callbackFn, ...)
     end 
 end
 
+if CBEncapsulationFx then
+    function CBEncapsulationFx.GetEncapsulatedFunc(i, modname, fn)
+        if fn and (not CBEncapsulationFx.EncapsulatedFunc[fn]) then
+            local fucked = function(...) return CBEncapsulationFx.DummyCBFunc(i, modname, fn, ...) end
+            CBEncapsulationFx.EncapsulatedFunc[fn] = fucked
+            CBEncapsulationFx.EncapsulatedFunc[fucked] = fucked
+        end
+        return CBEncapsulationFx.EncapsulatedFunc[fn]
+    end
+end
+
+--фикс itemtranslate в андромеды. Интересно, когда причиной ошибок буду не я?
+do
+    for i,k in pairs(Isaac.GetCallbacks(ModCallbacks.MC_USE_PILL)) do
+        if k.Mod and string.find(tostring(k.Mod.Name), "ItemTranslate") then
+            if ItemTranslate and ItemTranslate.Ver <= 1.08 then
+                k.Mod.RemoveCallback = Isaac.RemoveCallback
+            end
+        end
+    end
+end
+
 
 --basic data
 local Vector = Vector
