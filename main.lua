@@ -14,13 +14,19 @@ function Isaac.RemoveCallback(ref, callbackId, callbackFn, ...)
 end
 
 if CBEncapsulationFx then
-    function CBEncapsulationFx.GetEncapsulatedFunc(i, modname, fn)
+    --[[function CBEncapsulationFx.GetEncapsulatedFunc(i, modname, fn)
         if fn and (not CBEncapsulationFx.EncapsulatedFunc[fn]) then
             local fucked = function(...) return CBEncapsulationFx.DummyCBFunc(i, modname, fn, ...) end
             CBEncapsulationFx.EncapsulatedFunc[fn] = fucked
             CBEncapsulationFx.EncapsulatedFunc[fucked] = fucked
         end
         return CBEncapsulationFx.EncapsulatedFunc[fn]
+    end]]
+    local oldGetEncapsulatedFunc = CBEncapsulationFx.GetEncapsulatedFunc
+    function CBEncapsulationFx.GetEncapsulatedFunc(i, modname, fn, ...)
+        if fn then
+            return oldGetEncapsulatedFunc(i, modname, fn, ...)
+        end
     end
 end
 
@@ -2075,8 +2081,12 @@ function WarpZone:OnGameStart(isSave)
     end
 
     if not isSave then
-        saveData = json.decode(WarpZone:LoadData())
-        preservedItems = saveData.preservedItems--this persists across games
+        if WarpZone:HasData() then
+            saveData = json.decode(WarpZone:LoadData())
+            preservedItems = saveData.preservedItems--this persists across games
+        else
+            preservedItems = {}
+        end
 
         saveData = {}
         DoorwayFloor = -1
@@ -5794,7 +5804,6 @@ WarpZone:AddCallback(ModCallbacks.MC_PRE_PROJECTILE_COLLISION, WarpZone.PrePlaye
 --extra files and translation
 
 local extrafiles = {
-    "lua.ru",
     "lua.football",
     "lua.bombs",
     "lua.johnnys_knives",
@@ -5828,18 +5837,27 @@ function WarpZone:test_command(cmd, args)
         print(WarpZone.WarpZoneTypes.COSTUME_DIOGENES_ON)
     end
 end
-WarpZone:AddCallback(ModCallbacks.MC_EXECUTE_CMD, WarpZone.test_command)
+--WarpZone:AddCallback(ModCallbacks.MC_EXECUTE_CMD, WarpZone.test_command)
 
 --local config = Isaac.GetItemConfig()
 --local it = config:GetNullItem(WarpZone.WarpZoneTypes.COSTUME_BOOSTERV2)
 --print(it.Costume.IsFlying)
 
--- Thanks Cucco. Принято всегда её благотворить, ну и ладно
+-- Thanks Cucco
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, function()
 	if #Isaac.FindByType(EntityType.ENTITY_PLAYER) == 0 then
 		Isaac.ExecuteCommand("reloadshaders")
 	end
 end)
 
-local ItemTranslate = include("lua.ItemTranslate")
+local ItemTranslate = include("lua.translation.ItemTranslate")
 ItemTranslate("WarpZone")
+
+local translations = {
+    "ru",
+}
+for i=1,#translations do
+    local module = include("lua.translation." .. translations[i])
+    module(WarpZone)
+end
+
