@@ -106,9 +106,10 @@ local ITver = Modver or 1.08
 
 	function ITrsl.TranslateBirthright(playerID)
 		if IT.MenuData.CollTranslate ~= true then
-			local BirthName = BirthrightDefaultName[GetLang()]
+			local BirthName = BirthrightDefaultName[GetLang()] or 'Birthright'
 
-			if IT.CollTabl[CollectibleType.COLLECTIBLE_BIRTHRIGHT] then
+			if IT.CollTabl[CollectibleType.COLLECTIBLE_BIRTHRIGHT] 
+			and IT.CollTabl[CollectibleType.COLLECTIBLE_BIRTHRIGHT][GetLang()] then
 				BirthName = IT.CollTabl[CollectibleType.COLLECTIBLE_BIRTHRIGHT][GetLang()][1]
 			end
 			
