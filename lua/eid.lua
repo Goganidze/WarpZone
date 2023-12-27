@@ -11,7 +11,7 @@ if EID then
     EID:addCollectible(Isaac.GetItemIdByName("Focus"), "#{{Heart}} When used, hold to get red hearts, when at full red health to get soul hearts.#{{HolyMantleSmall}} When at 12 full hearts hold longer to get mantle", "Focus", "en_us")
     EID:addCollectible(Isaac.GetItemIdByName(" Focus "), "#{{Heart}} When used, hold to get red hearts, when at full red health to get soul hearts.#{{HolyMantleSmall}} When at 12 full hearts hold longer to get mantle", "Focus", "en_us")
     EID:addCollectible(Isaac.GetItemIdByName("  Focus  "), "#{{Heart}} When used, hold to get red hearts, when at full red health to get soul hearts.#{{HolyMantleSmall}} When at 12 full hearts hold longer to get mantle", "Focus", "en_us")
-    EID:addCollectible(Isaac.GetItemIdByName("   Focus   "), "#{{Heart}} When used, hold to get red hearts, when at full red health to get soul hearts.#{{HolyMantleSmall} When at 12 full hearts hold longer to get mantle", "Focus", "en_us")
+    EID:addCollectible(Isaac.GetItemIdByName("   Focus   "), "#{{Heart}} When used, hold to get red hearts, when at full red health to get soul hearts.#{{HolyMantleSmall}} When at 12 full hearts hold longer to get mantle", "Focus", "en_us")
     EID:addCollectible(Isaac.GetItemIdByName("The Doorway"), "#{{Room}} All doors are opened, and stay open for the rest of the floor#Secret rooms, Angel/Devil rooms, The Mega Satan door, Boss Rush and Hush are included#{{ChallengeRoom}} Challenge Rooms are open to enter, however the door closes when activating the challenge#{{UltraSecretRoom}} The Ultra Secret Room is unlocked, and red rooms are now open to the edge of the map, revealing the error room", "The Doorway", "en_us")
     EID:addCollectible(Isaac.GetItemIdByName("Strange Marble"), "#{{MiniBoss}} All enemies have a 1 in 8 chance to become champions#{{ArrowUp}} Champions always drop loot, and often have a chance to drop extra", "Strange Marble", "en_us")
     EID:addCollectible(Isaac.GetItemIdByName("Is You"), "#Point the reticle at an obstacle to use an active item effect that corresponds to it#{{Warning}} {{ColorYellow}}Full list of items can be viewed on wiki page of this mod", "Is You",  "en_us")
@@ -60,6 +60,8 @@ if EID then
     EID:addCard(Isaac.GetCardIdByName("FiendFire"), "All pickups in the room are consumed#For each pickup consumed, gain a small, permanent boost to Damage, Tears, Luck, Range, or Speed#{{Burning}} Pickups turn into fires, which can damage enemies.", "Fiend Fire", "en_us")
     EID:addCard(Isaac.GetCardIdByName("DemonForm"), "{{Player7}} For the current room, Isaac becomes Azazel with a wide Brimstone#{{Damage}} +1 Damage", "Demon Form", "en_us")
     
+    --EID:addEntity(EntityType.ENTITY_PICKUP, WarpZone.WarpZoneTypes.PICKUP_WATERBOTTLE, 0, "Имя бутылки", "Описание", "язык") --убери --
+
     local CardHuds = {}
     CardHuds.CowHud = Sprite()
     CardHuds.CowHud:Load("gfx/cards_1_cow_on_trash.anm2", true)
