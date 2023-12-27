@@ -162,6 +162,6 @@ end
 
 return function ()
     if REPENTOGON then
-        print("hi")
+        --print("hi")
     end
 end
