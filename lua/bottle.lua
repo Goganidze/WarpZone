@@ -283,7 +283,7 @@ return function(mod)
                 local reprng = RNG()
                 reprng:SetSeed(ent.InitSeed, 35)
                 if reprng:RandomFloat() < WarpZone.BottleSpawnChance then
-                    ent:Morph(bottleEntType, WarpZone.WarpZoneTypes.PICKUP_WATERBOTTLE, 0, true, true, false)
+                    ent:Morph(EntityType.ENTITY_PICKUP, WarpZone.WarpZoneTypes.PICKUP_WATERBOTTLE, 0, true, true, false)
                 end
             end
             save.PillReplased[seed] = 1
@@ -293,6 +293,6 @@ return function(mod)
 
     if Epiphany then
         --извини, но залежи нефти уже принадлежат местной нефтедобывающей компании
-        Epiphany.Character.KEEPER.DisallowedPickUpVariants[WarpZone.WarpZoneTypes.PICKUP_WATERBOTTLE] = 0
+        ---Epiphany.Character.KEEPER.DisallowedPickUpVariants[WarpZone.WarpZoneTypes.PICKUP_WATERBOTTLE] = 0
     end
 end

@@ -60,6 +60,8 @@ if EID then
     EID:addCard(Isaac.GetCardIdByName("FiendFire"), "All pickups in the room are consumed#For each pickup consumed, gain a small, permanent boost to Damage, Tears, Luck, Range, or Speed#{{Burning}} Pickups turn into fires, which can damage enemies.", "Fiend Fire", "en_us")
     EID:addCard(Isaac.GetCardIdByName("DemonForm"), "{{Player7}} For the current room, Isaac becomes Azazel with a wide Brimstone#{{Damage}} +1 Damage", "Demon Form", "en_us")
     
+    --EID:addEntity(EntityType.ENTITY_PICKUP, WarpZone.WarpZoneTypes.PICKUP_WATERBOTTLE, 0, "Имя бутылки", "Описание", "язык") --убери --
+
     local CardHuds = {}
     CardHuds.CowHud = Sprite()
     CardHuds.CowHud:Load("gfx/cards_1_cow_on_trash.anm2", true)
@@ -160,6 +162,6 @@ end
 
 return function ()
     if REPENTOGON then
-        print("hi")
+        --print("hi")
     end
 end

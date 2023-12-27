@@ -18,11 +18,11 @@
             attribute vec2 ScreenSize;
             attribute vec2 PlayerPos;
             
-            varying lowp vec4 Color0;
-            varying mediump vec2 TexCoord0;
-            varying lowp vec4 RenderDataOut;
+            varying vec4 Color0;
+            varying vec2 TexCoord0;
+            varying vec4 RenderDataOut;
             varying vec2 TextureSize0;
-            varying lowp float ScaleOut;
+            varying float ScaleOut;
             varying float ActiveInOut;
             varying float TonyTimeOut;
             varying float TonyTimeProc;
@@ -50,11 +50,11 @@
             }
         ]]></vertex>
         <fragment><![CDATA[
-            varying lowp vec4 Color0;
-            varying mediump vec2 TexCoord0;
-            varying lowp vec4 RenderDataOut;
+            varying vec4 Color0;
+            varying vec2 TexCoord0;
+            varying vec4 RenderDataOut;
             varying vec2 TextureSize0;
-            varying lowp float ScaleOut;
+            varying float ScaleOut;
             varying float ActiveInOut;
             varying float TonyTimeOut;
             varying float TonyTimeProc;
