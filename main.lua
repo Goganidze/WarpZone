@@ -2064,7 +2064,7 @@ function WarpZone:OnGameStart(isSave)
         bossPrepped = saveData.bossPrepped --[6]
         roomsPrepped = saveData.roomsPrepped --[7]
         preservedItems = saveData.preservedItems --[8]
-
+        WarpZone.SaveFile.PillReplased = saveData.PillReplased or {}
 
         for i=0, numPlayers-1, 1 do
             local player = Isaac.GetPlayer(i)
@@ -2097,7 +2097,7 @@ function WarpZone:OnGameStart(isSave)
         isBossEmergency = false
         bossPrepped = false
         roomsPrepped = {}
-        WarpZone.SaveFile.PillReplased ={}
+        WarpZone.SaveFile.PillReplased = {}
 
         for i=0, numPlayers-1, 1 do
             local player = Isaac.GetPlayer(i)
