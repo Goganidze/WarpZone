@@ -291,7 +291,7 @@ return function(mod)
     local save = WarpZone.SaveFile
     ---@param ent EntityPickup
     function WarpZone.PickupReplase(_, ent)
-        print(WarpZone.CanBeRestocked, save.IsLoaded, save.PillReplased)
+        
         if save.IsLoaded and save.PillReplased 
         and (game:GetRoom():GetFrameCount() < 2 or WarpZone.CanBeRestocked == 1) then
             local seed = tostring(ent.InitSeed)
