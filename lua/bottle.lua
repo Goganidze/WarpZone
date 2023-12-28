@@ -25,7 +25,7 @@ return function(mod)
     function WarpZone.AddWaterLevelBonus(player)
         local unsave = player:GetData().WarpZone_data
         unsave.LevelBottleBonus = unsave.LevelBottleBonus or 0
-        local val = 3.0/(unsave.LevelBottleBonus+2.5)
+        local val = 3.0/(unsave.LevelBottleBonus+3.0)
         unsave.LevelBottleBonus = unsave.LevelBottleBonus and math.min(unsave.LevelBottleBonus + val, 5) or 2
         sfx:Play(SoundEffect.SOUND_VAMP_GULP, Options.SFXVolume*2, 2, false, 1.3 )
 
@@ -272,12 +272,28 @@ return function(mod)
         end
 
         WarpZone.SomeoneHasWaterBottle = nil
+        if WarpZone.CanBeRestocked then
+            WarpZone.CanBeRestocked = WarpZone.CanBeRestocked - 1
+            if WarpZone.CanBeRestocked < 0 then
+                WarpZone.CanBeRestocked = nil
+            end
+        end
+
+        for i, ent in pairs(Isaac.FindByType(EntityType.ENTITY_SLOT, 10)) do
+            local spr = ent:GetSprite()
+            
+            if spr:GetOverlayFrame() <= 1 then
+                WarpZone.CanBeRestocked = 6
+            end
+        end
     end
 
     local save = WarpZone.SaveFile
     ---@param ent EntityPickup
     function WarpZone.PickupReplase(_, ent)
-        if save.IsLoaded and save.PillReplased then
+        print(WarpZone.CanBeRestocked, save.IsLoaded, save.PillReplased)
+        if save.IsLoaded and save.PillReplased 
+        and (game:GetRoom():GetFrameCount() < 2 or WarpZone.CanBeRestocked == 1) then
             local seed = tostring(ent.InitSeed)
             if not save.PillReplased[seed] then
                 local reprng = RNG()
