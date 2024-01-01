@@ -53,6 +53,7 @@ myRNG:SetSeed(Random(), 1)
 local hud = game:GetHUD()
 local SfxManager = SFXManager()
 local debug_str = "untested"
+local REPENTOGON = REPENTOGON
 
 ----------------------------------
 
@@ -409,6 +410,7 @@ WarpZone.WarpZoneTypes.CHALLENGE_UNQUOTE = Isaac.GetChallengeIdByName("Unquote")
 
 WarpZone.WarpZoneTypes.TEAR_POLAR_STAR_BULLET = Isaac.GetEntityVariantByName("[Warp Zone] polar star bullet")
 WarpZone.WarpZoneTypes.PICKUP_WATERBOTTLE = Isaac.GetEntityVariantByName("[Warp Zone] bottle")
+WarpZone.WarpZoneTypes.FAKE_BONE_R = Isaac.GetEntityVariantByName("[Warp Zone] bone swing")
 
 
 local ISFOCUSID = {
@@ -1860,7 +1862,9 @@ function WarpZone:OnTakeHit(entity, amount, damageflags, source, countdownframes
     end
 
     if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE) and damageflags & DamageFlag.DAMAGE_NO_PENALTIES ~= DamageFlag.DAMAGE_NO_PENALTIES then
-        player:UseCard(Card.CARD_FOOL, 257)
+        --player:UseCard(Card.CARD_FOOL, 257)
+        local lvel = game:GetLevel()
+        game:StartRoomTransition(lvel:GetStartingRoomIndex(), Direction.NO_DIRECTION, RoomTransitionAnim.TELEPORT)
     end
 
     --[[if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) and source ~= nil then
@@ -3006,9 +3010,9 @@ WarpZone:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, function(_, ent)
 end)
 
 
-local function tearsUp(firedelay, val)
+local function tearsUp(firedelay, val, multi)
 	local currentTears = 30 / (firedelay + 1)
-	local newTears = math.max(.001, currentTears + val)
+	local newTears = math.max(.001, currentTears + val*multi)
 	return math.max((30 / newTears) - 1, -0.99)
 end
 local function tearsMult(firedelay, val)
@@ -3072,8 +3076,12 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
         if wdata.LevelBottleBonus and wdata.LevelBottleBonus>0 then
             teartoadd = teartoadd + wdata.LevelBottleBonus
         end
-
-        entityplayer.MaxFireDelay = tearsUp(entityplayer.MaxFireDelay , teartoadd)
+        local D8Edenmulti = 1
+        if REPENTOGON then
+            D8Edenmulti = 1 * entityplayer:GetD8FireDelayModifier() + entityplayer:GetEdenFireDelay()
+        end
+        
+        entityplayer.MaxFireDelay = tearsUp(entityplayer.MaxFireDelay , teartoadd, D8Edenmulti)
         if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POPPOP) and data.WarpZone_data.arrowTimeDelay > 0 then
             if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) then
                 --teartoadd = teartoadd - 2.3
@@ -3082,7 +3090,9 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
                 --teartoadd = teartoadd - 2
                 entityplayer.MaxFireDelay = tearsMult(entityplayer.MaxFireDelay, 0.5)
             end
-            
+        end
+        if REPENTOGON and entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE) then
+            entityplayer.MaxFireDelay = tearsMult(entityplayer.MaxFireDelay, 0.66)
         end
 
     end
@@ -3090,20 +3100,29 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
     
 
     if Cache == CacheFlag.CACHE_DAMAGE then
-        entityplayer.Damage = entityplayer.Damage + (0.5 * tank_qty)
+        local D8Edenmulti = 1
+        if REPENTOGON then
+            D8Edenmulti = 1 + entityplayer:GetD8DamageModifier() + entityplayer:GetEdenDamage()
+        end
+
+        local damageToAdd = 0
+        damageToAdd = damageToAdd + (0.5 * tank_qty)
 
         if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) then
-            entityplayer.Damage = entityplayer.Damage + (data.WarpZone_data.itemsSucked * 0.75)
+            damageToAdd = damageToAdd + (data.WarpZone_data.itemsSucked * 0.75)
         end
         
         if data.WarpZone_data.InDemonForm then
-            entityplayer.Damage = entityplayer.Damage + 1
+            damageToAdd = damageToAdd + 1
         end
 
         --[[if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_TONY) then
             entityplayer.Damage = (entityplayer.Damage * data.WarpZone_data.tonyBuff) + (data.WarpZone_data.tonyBuff * 1.428)
         end]]
         
+        damageToAdd = damageToAdd + isNil(data.WarpZone_data.bonusDamage, 0)
+        entityplayer.Damage = entityplayer.Damage + damageToAdd * D8Edenmulti
+
         if data.WarpZone_data.dioDamageOn == true then
             if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) then
                 entityplayer.Damage = entityplayer.Damage * 2
@@ -3111,7 +3130,6 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
                 entityplayer.Damage = entityplayer.Damage * 1.5
             end
         end
-        entityplayer.Damage = entityplayer.Damage + isNil(data.WarpZone_data.bonusDamage, 0)
     end
 
     if Cache == CacheFlag.CACHE_RANGE then
@@ -3673,6 +3691,10 @@ function WarpZone:postPlayerUpdate(player)
             --end
         end
 
+    end
+
+    if unsave.DiogenesFireDelay then
+        unsave.DiogenesFireDelay = unsave.DiogenesFireDelay - .5
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpdate, 0)
@@ -4416,6 +4438,8 @@ function WarpZone:UseDiogenes(collectible, rng, entityplayer, useflags, activesl
     if useflags & UseFlag.USE_VOID == 0 and useflags & UseFlag.USE_CARBATTERY == 0 then
         swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE, activeslot, entityplayer, 0)
         SfxManager:Play(SoundEffect.SOUND_URN_OPEN)
+        entityplayer:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
+        entityplayer:EvaluateItems()
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.UseDiogenes, WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT)
@@ -4427,6 +4451,8 @@ function WarpZone:SheathDiogenes(collectible, rng, entityplayer, useflags, activ
         else
             swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT, activeslot, entityplayer, 0)
             SfxManager:Play(SoundEffect.SOUND_URN_CLOSE)
+            entityplayer:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
+            entityplayer:EvaluateItems()
         end
     end
 end
@@ -4457,20 +4483,75 @@ function WarpZone:scheduleForUpdate(foo, delay, callback)
     table.insert(WarpZone.delayedFuncs[callback], { Func = foo, Delay = delay })
 end
 
+if REPENTOGON then
+    local isShot = false
+    function WarpZone:PostFireWeapon(weapon, FireDirection, IsShooting, IsInterpolated)
+        if IsShooting then
+            local owner = weapon:GetOwner()
+            local player = owner:ToPlayer() 
+            if owner and player 
+            and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE) then
+                --print(weapon)
+                --weapon:SetFireDelay(10)
+                player.FireDelay = 10
+                weapon:SetCharge(-1)
+                
+                local data = owner:GetData().WarpZone_unsavedata
+                --data.DiogenesFireDelay = data.DiogenesFireDelay and (data.DiogenesFireDelay - 1) or player.MaxFireDelay
+                data.DiogenesFireDelay = data.DiogenesFireDelay or player.MaxFireDelay
+                if data.DiogenesFireDelay <= 0 then
+                    local club = WarpZone.FireClubRRR(player, FireDirection)
+                    local clubspr = club:GetSprite()
+                    clubspr:ReplaceSpritesheet(1, "gfx/hammer_shot.png")
+                    --clubspr:ReplaceSpritesheet(0, "gfx/hammer_shot.png")
+                    clubspr:GetLayer(0):SetVisible (false)
+                    clubspr.Scale = clubspr.Scale * 1.2
+                    clubspr:LoadGraphics()
+
+                    data.DiogenesFireDelay = nil
+                end
+            end
+        end
+    end
+    WarpZone:AddCallback(ModCallbacks.MC_POST_WEAPON_FIRE, WarpZone.PostFireWeapon)
+
+    --[[local change = 1
+    ---@param player EntityPlayer
+    WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, function(_, player)
+        if change ~= player:GetPlayerType() and player:GetPlayerType() == PlayerType.PLAYER_THEFORGOTTEN then
+            change = player:GetPlayerType()
+            player:EnableWeaponType(WeaponType.WEAPON_BONE, false)
+            local weap = Isaac.CreateWeapon(WeaponType.WEAPON_TEARS, player) 
+            player:SetWeapon(weap, 1)
+        elseif change ~= player:GetPlayerType() and player:GetPlayerType() == PlayerType.PLAYER_THESOUL then
+            change = player:GetPlayerType()
+            player:EnableWeaponType(WeaponType.WEAPON_BONE, true)
+            local weap = Isaac.CreateWeapon(WeaponType.WEAPON_BONE, player) 
+            player:SetWeapon(weap, 1)
+        end
+    end)]]
+end
+
 function WarpZone:FireClub(player, direction, usingGlove)
-	if not player:GetEffects():HasCollectibleEffect(CollectibleType.COLLECTIBLE_BERSERK) and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN_B then
-		player:UseActiveItem(CollectibleType.COLLECTIBLE_NOTCHED_AXE)
-		WarpZone:scheduleForUpdate(function()
-			player:UseActiveItem(CollectibleType.COLLECTIBLE_NOTCHED_AXE)
-		end, 0)
-	end
-	if direction then
-		player:GetData().InputHook = WarpZone.directiontoshootdirection[direction]
-	else
-		player:GetData().InputHook = -1
-	end
-	player:SetShootingCooldown(0)
-	WarpZone.scanforclub = true
+    if REPENTOGON then
+        local origWeap = player:GetWeapon(1)
+        --print(origWeap:SetFireDelay(10))
+        
+    else
+        if not player:GetEffects():HasCollectibleEffect(CollectibleType.COLLECTIBLE_BERSERK) and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN and player:GetPlayerType() ~= PlayerType.PLAYER_THEFORGOTTEN_B then
+            player:UseActiveItem(CollectibleType.COLLECTIBLE_NOTCHED_AXE)
+            WarpZone:scheduleForUpdate(function()
+                player:UseActiveItem(CollectibleType.COLLECTIBLE_NOTCHED_AXE)
+            end, 0)
+        end
+        if direction then
+            player:GetData().InputHook = WarpZone.directiontoshootdirection[direction]
+        else
+            player:GetData().InputHook = -1
+        end
+        player:SetShootingCooldown(0)
+        WarpZone.scanforclub = true
+    end
     WarpZone.isGlove = usingGlove
 end
 
@@ -5815,6 +5896,7 @@ local extrafiles = {
     "lua.bottle",
     "lua.eid",
     "lua.wisps",
+    "lua.rgon"
 }
 for i=1,#extrafiles do
     local module = include(extrafiles[i])
