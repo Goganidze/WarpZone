@@ -118,6 +118,13 @@ return function(mod)
                 
             else
                 player.FireDelay = math.max(player.FireDelay, 5)
+                if REPENTOGON then
+                    player:GetWeapon(1):SetCharge(0)
+                end
+                local firedel = player:GetData().WarpZone_unsavedata.PolarStarFireDelay
+                if firedel then
+                    firedelaay = firedel
+                end
             end
         else
             firedelaay = 22
@@ -179,49 +186,57 @@ return function(mod)
                 --fam.OrbitSpeed = fam.OrbitSpeed + (player.MaxFireDelay * 1.2 + 1) -- math.floor((player.MaxFireDelay * 1.2 + 1)*2)
                
                 local udata = player:GetData().WarpZone_unsavedata
-
-                local num = udata and udata.PolarStarNumTears or 1
-
-                local tearspeed = player.ShotSpeed*15+5
-                local mainvec = aim:Resized(tearspeed) 
-
-                local angle = udata and udata.PolarStarTearAngleBetween or 2
-                local start = mainvec:Rotated(-(num-1)*angle/2)
-                --local shootPos = player.Position + aim:Resized(distfromplay/2)
-
-                local lifeTime = math.floor ((player.TearRange-distfromplay) / tearspeed) - 1
-                
-                local source = SirenHelper or player
-
-                local prevec = start:Resized(tearspeed)
-                local Inher = player:GetTearMovementInheritance(prevec)
-                
-                for h=1, 10 do
-                    local shootPos = player.Position + aim:Resized(distfromplay/2) - aim:Resized(tearspeed/2 * -fam.OrbitSpeed ) 
+                --[[if REPENTOGON then
+                    local multishot = player:GetMultiShotParams(WeaponType.WEAPON_TEARS)
                     
-                    if udata.PolarStarLVL ~= 2 then
-                        local dmgmulti = udata.PolarStarLVL == 3 and 2.5
-                        for i = 0, num-1 do
-                            local vec = prevec:Rotated(i*angle)
-                            vec = vec + Inher
-                            --local pos = fam.Position --+ aim:Resized(12)
-                            WarpZone.FirePolarStar(shootPos, vec, 0, source, dmgmulti, lifeTime)
-                        end
-                    elseif udata.PolarStarLVL == 2 then
-                        for i = 0, num-1 do
-                            local vec = prevec:Rotated(i*angle)
-                            vec = vec + Inher
-                            local off = aim:Rotated(90):Resized(10)
+                    local tearspeed = player.ShotSpeed*15+5
+                    for h=1, multishot:GetNumTears() do
+                        local posvel = player:GetMultiShotPositionVelocity(h, WeaponType.WEAPON_TEARS, Vector(1,0), tearspeed, multishot)
+                    end
+                else]]
+                    local num = udata and udata.PolarStarNumTears or 1
 
-                            WarpZone.FirePolarStar(shootPos+off, vec, 0, source, 0.8, lifeTime)       
-                            WarpZone.FirePolarStar(shootPos-off, vec, 0, source, 0.8, lifeTime)
+                    local tearspeed = player.ShotSpeed*15+5
+                    local mainvec = aim:Resized(tearspeed) 
+
+                    local angle = udata and udata.PolarStarTearAngleBetween or 2
+                    local start = mainvec:Rotated(-(num-1)*angle/2)
+                    --local shootPos = player.Position + aim:Resized(distfromplay/2)
+
+                    local lifeTime = math.floor ((player.TearRange-distfromplay) / tearspeed) - 1
+                    
+                    local source = SirenHelper or player
+
+                    local prevec = start:Resized(tearspeed)
+                    local Inher = player:GetTearMovementInheritance(prevec)
+                    
+                    for h=1, 10 do
+                        local shootPos = player.Position + aim:Resized(distfromplay/2) - aim:Resized(tearspeed/2 * -fam.OrbitSpeed ) 
+                        
+                        if udata.PolarStarLVL ~= 2 then
+                            local dmgmulti = udata.PolarStarLVL == 3 and 2.5
+                            for i = 0, num-1 do
+                                local vec = prevec:Rotated(i*angle)
+                                vec = vec + Inher
+                                --local pos = fam.Position --+ aim:Resized(12)
+                                WarpZone.FirePolarStar(shootPos, vec, 0, source, dmgmulti, lifeTime)
+                            end
+                        elseif udata.PolarStarLVL == 2 then
+                            for i = 0, num-1 do
+                                local vec = prevec:Rotated(i*angle)
+                                vec = vec + Inher
+                                local off = aim:Rotated(90):Resized(10)
+
+                                WarpZone.FirePolarStar(shootPos+off, vec, 0, source, 0.8, lifeTime)       
+                                WarpZone.FirePolarStar(shootPos-off, vec, 0, source, 0.8, lifeTime)
+                            end
+                        end
+                        fam.OrbitSpeed = fam.OrbitSpeed + (firedelaay * 1.2 + 1)*2
+                        if fam.OrbitSpeed > 0 then
+                            break
                         end
                     end
-                    fam.OrbitSpeed = fam.OrbitSpeed + (firedelaay * 1.2 + 1)*2
-                    if fam.OrbitSpeed > 0 then
-                        break
-                    end
-                end
+                --end
 
                 sfx:Stop(SoundEffect.SOUND_TEARS_FIRE)
             end
@@ -332,6 +347,7 @@ return function(mod)
     function WarpZone.PolarStarBoosterv2_Update(_, player)
         local polstr = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_POLARSTAR) or Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_UNQUOTE
         local boos = player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOOSTERV2) or Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_UNQUOTE
+        local effects = player:GetEffects()
         
         local data = player:GetData()
         local udata = data.WarpZone_unsavedata
@@ -548,7 +564,17 @@ return function(mod)
                 player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS | CacheFlag.CACHE_RANGE)
                 player:EvaluateItems()
             end
-
+            
+            if REPENTOGON then
+                --if not player:HasWeaponType(WeaponType.WEAPON_TEARS) then
+                    --for 
+                    --data.WarpZone_data = 
+                --end
+                --[[for i=0, 4 do
+                    local weap = player:GetWeapon(i)
+                    print(weap and weap:GetWeaponType())
+                end]]
+            end
         else
             if udata.HasPolarStar then
                 udata.HasPolarStar = false
@@ -602,6 +628,10 @@ return function(mod)
             udata.PolarStarTearAngleBetween = angle
             udata.PolarStarConjoin = player:HasPlayerForm(PlayerForm.PLAYERFORM_BABY)
 
+            udata.PolarStarFireDelay = player.MaxFireDelay
+            if player:HasCollectible(CollectibleType.COLLECTIBLE_BRIMSTONE) or effects:HasCollectibleEffect(CollectibleType.COLLECTIBLE_BRIMSTONE) then
+                udata.PolarStarFireDelay = player.MaxFireDelay * (1/3)
+            end
         end
 
 
