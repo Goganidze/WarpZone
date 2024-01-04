@@ -53,7 +53,7 @@ return function(mod)
                 [GI('Bible Thump')]={ru={"Библейский Удар!","Бог Беспощаден!"},},	
                 [GI('Cheep Cheep')]={ru={"Цып-Цып","Ты Маленький Петушок!"},},	
                 [GI('Celest Strawberry')]={en={"Strawberry","!"}, 
-                                           ru={"Strawberry","!"},
+                [GI('Celest Strawberry')]={ru={"Клубничка","!"},
                 },	
 	}
 	local Cards={
