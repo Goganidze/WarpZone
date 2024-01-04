@@ -47,6 +47,7 @@ if EID then
     EID:addTrinket(Isaac.GetTrinketIdByName("Hunky Boys"), "While held, pressing the Drop Trinket button immediately drops this trinket; you don't need to hold the button#When on the ground, enemies will target the trinket for a short time.", "Hunky Boys", "en_us")
     EID:addTrinket(Isaac.GetTrinketIdByName("Bible Thump"), "{{Collectible33}} The Bible is added to several item pools.#{{Collectible33}} Using The Bible or The Devil? card with this item will deal 40 damage to all enemies in the room, in addition to granting flight.#{{Satan}}Using The Bible on  Satan will kill him, and you will survive#{{TheLamb}}The golden version of this trinket kills The Lamb as well.", "Bible Thump", "en_us")
     EID:addTrinket(Isaac.GetTrinketIdByName("Cheep Cheep"), "{{Fear}} On entering a room, a random enemy is targeted by other enemies and has a fear effect for 3 seconds.#If the effect is golden, the target also bleeds.", "Cheep Cheep", "en_us")
+    EID:addTrinket(Isaac.GetTrinketIdByName("Celest Strawberry"), "Beating boss without damage spawns a berry. Taking it adds a new treasure room to the floor", "Strawberry", "en_us")
 
     EID:addCard(Isaac.GetCardIdByName("CowOnTrash"), "{{LordoftheFlies}} Rerolls all items into fly themed items#Rerolls pickups into blue flies#{{Coin}} Does not actually become back your money", "Cow on a Trash Farm", "en_us")
     EID:addCard(Isaac.GetCardIdByName("LootCard"), "{{Collectible}} Randomly spawns a random item or trinket from any pool", "Loot Card", "en_us")
@@ -150,6 +151,7 @@ if EID then
     EID:addTrinket(Isaac.GetTrinketIdByName("Hunky Boys"), "Нажав на кнопку сбрасывания моментально бросает брелок; не нужно держать кнопку#Когда на земле, периодически привлекает к себе врагов.", "Горячие Парни", "ru")
     EID:addTrinket(Isaac.GetTrinketIdByName("Bible Thump"), "{{Collectible33}} Использование любого предмет активирует библию#{{Collectible33}} Если вы используете библию с этим предметом, вы вдобавок активируете эффект некрономикона.#{{Satan}} Использование библии на сатане убивает его вместо убийства вас#{{TheLamb}} Золотая версия также убивает агнца", "Библейский Удар", "ru")
     EID:addTrinket(Isaac.GetTrinketIdByName("Cheep Cheep"), "{{Fear}} 1 случайный монстр в комнате всегда имеет эффект страха и его атакуют другие монстры.#Золотая версия брелка так же накладывает кровотечение.", "Цып Цып", "ru")
+    EID:addTrinket(Isaac.GetTrinketIdByName("Celest Strawberry"), "Убийство босса без урона создает клубничку. Если к ней прикоснуться, то на этаже появится новая золотая комната", "Клубничка", "ru")
 
     EID:addCard(Isaac.GetCardIdByName("CowOnTrash"), "{{LordoftheFlies}} Рероллит предметы в мушиные#Превращает монеты в синих мух#{{Coin}} Не возвращает ваши деньги", "Скотина Помойная", "ru")
     EID:addCard(Isaac.GetCardIdByName("LootCard"), "{{Collectible}} Создает предмет из любого пула или брелок", "Карта добычи", "ru")
