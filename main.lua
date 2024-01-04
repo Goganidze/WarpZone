@@ -373,6 +373,7 @@ WarpZone.WarpZoneTypes.TRINKET_RING_SNAKE = Isaac.GetTrinketIdByName("Ring of th
 WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS = Isaac.GetTrinketIdByName("Hunky Boys")
 WarpZone.WarpZoneTypes.TRINKET_BIBLE_THUMP = Isaac.GetTrinketIdByName("Bible Thump")
 WarpZone.WarpZoneTypes.TRINKET_CHEEP_CHEEP = Isaac.GetTrinketIdByName("Cheep Cheep")
+WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY = Isaac.GetTrinketIdByName("Celest Strawberry")
 
 WarpZone.WarpZoneTypes.CARD_COW_TRASH_FARM = Isaac.GetCardIdByName("CowOnTrash")
 WarpZone.WarpZoneTypes.CARD_LOOT_CARD = Isaac.GetCardIdByName("LootCard")
@@ -736,6 +737,13 @@ local function findGridEntityResponse(position, player)
                     blurb = "LOCK IS YOU",
                     position = ge.Position,
                     active = CollectibleType.COLLECTIBLE_DADS_KEY,
+                    typevar = tostring(geType) .. "~~" .. tostring(ge.Desc.Variant)
+                }
+            elseif geType == GridEntityType.GRID_PIT then
+                t = {
+                    blurb = "PIT IS YOU",
+                    position = ge.Position,
+                    active = CollectibleType.COLLECTIBLE_BIBLE,
                     typevar = tostring(geType) .. "~~" .. tostring(ge.Desc.Variant)
                 }
             elseif geType == GridEntityType.GRID_ROCKB or geType == GridEntityType.GRID_PILLAR then
@@ -2342,6 +2350,10 @@ function WarpZone:LevelStart()
     while next (roomsPrepped) do
         roomsPrepped[next(roomsPrepped)]=nil
     end
+
+    if REPENTOGON then
+        WarpZone.RGON_newLevel()
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, WarpZone.LevelStart)
 
@@ -2850,6 +2862,7 @@ function WarpZone:UseIsYou(collectible, rng, entityplayer, useflags, activeslot,
             entityplayer:UseActiveItem(data.baba_active, UseFlag.USE_CARBATTERY)
         end
         data.baba_active = nil
+        data.WarpZone_unsavedata.babaIemSpr = nil
         return {
             Discharge = true,
             Remove = false,
@@ -3408,6 +3421,10 @@ function WarpZone:postPlayerUpdate(player)
         if data.gravReticle then
             data.gravReticle:Remove()
             data.gravReticle = nil
+        end
+        if REPENTOGON and data.WarpZone_data.GravPreWeapon then
+            player:SetWeapon(data.WarpZone_data.GravPreWeapon, 1)
+            data.WarpZone_data.GravPreWeapon = nil
         end
     end
 
@@ -5899,6 +5916,19 @@ function WarpZone:fireGlove(player, showeff, hitlist)
     end
 end
 
+local GravityWeaponWhiteList = {
+    [WeaponType.WEAPON_BRIMSTONE]=true,
+    [WeaponType.WEAPON_FETUS]=true,
+    [WeaponType.WEAPON_LASER]=true,
+    [WeaponType.WEAPON_LUDOVICO_TECHNIQUE]=true,
+    [WeaponType.WEAPON_MONSTROS_LUNGS]=true,
+    [WeaponType.WEAPON_TEARS]=true,
+    [WeaponType.WEAPON_TECH_X]=true,
+    [WeaponType.WEAPON_ROCKETS]=true,
+    [WeaponType.WEAPON_UMBILICAL_WHIP]=true,
+}
+
+---@param player EntityPlayer
 function WarpZone:useGravity(collectible, rng, player, useflags, activeslot, customvardata)
     --player:AnimateLightTravel()
     if player:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) then
@@ -5920,11 +5950,21 @@ function WarpZone:useGravity(collectible, rng, player, useflags, activeslot, cus
     player:AddCacheFlags(CacheFlag.CACHE_FLYING)
     player:EvaluateItems()
     SfxManager:Play(SoundEffect.SOUND_THUMBSUP, 2)
-    if  not data.gravReticle then
+    if not data.gravReticle then
         data.gravReticle = Isaac.Spawn(1000, 30, 0, player.Position, Vector(0, 0), player)
         data.gravReticle:GetSprite():ReplaceSpritesheet(0, "gfx/gravity_lander.png")
         data.gravReticle:GetSprite():LoadGraphics()
         data.gravReticle.Color = Color(0.392, 0.917, 0.509, .5, 0, 0, 0)
+    end
+    if REPENTOGON and not data.WarpZone_data.GravPreWeapon then
+        local mainweapon = player:GetWeapon(1)
+        if not GravityWeaponWhiteList[mainweapon:GetWeaponType()] then
+            local weaponEnt = player:GetActiveWeaponEntity()
+            data.WarpZone_data.GravPreWeapon = mainweapon
+            local tearWeapon = Isaac.CreateWeapon(WeaponType.WEAPON_TEARS, player)
+            player:SetWeapon(tearWeapon, 1)
+            weaponEnt:Remove()
+        end
     end
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_ITEM, WarpZone.useGravity, WarpZone.WarpZoneTypes.COLLECTIBLE_GRAVITY)
