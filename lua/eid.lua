@@ -60,6 +60,11 @@ if EID then
     EID:addCard(Isaac.GetCardIdByName("FiendFire"), "All pickups in the room are consumed#For each pickup consumed, gain a small, permanent boost to Damage, Tears, Luck, Range, or Speed#{{Burning}} Pickups turn into fires, which can damage enemies.", "Fiend Fire", "en_us")
     EID:addCard(Isaac.GetCardIdByName("DemonForm"), "{{Player7}} For the current room, Isaac becomes Azazel with a wide Brimstone#{{Damage}} +1 Damage", "Demon Form", "en_us")
     
+    if REPENTOGON then
+        EID:addTrinket(Isaac.GetTrinketIdByName("Celest Strawberry"), "С ГОНОМ", "Celest Strawberry", "en_us")
+    else
+        EID:addTrinket(Isaac.GetTrinketIdByName("Celest Strawberry"), "БЕЗ ГОНА", "Celest Strawberry", "en_us")
+    end
     --EID:addEntity(EntityType.ENTITY_PICKUP, WarpZone.WarpZoneTypes.PICKUP_WATERBOTTLE, 0, "Имя бутылки", "Описание", "язык") --убери --
 
     local CardHuds = {}
@@ -157,6 +162,12 @@ if EID then
     EID:addCard(Isaac.GetCardIdByName("AmberChunk"), "{{Collectible}} Убирает все предметы и пикапы в комнате и взамен создает удачливую монету#Предыдущие предметы, убранные таким образом восстанавливаются при использовании и сохраняются между забегами.", "Кусочек Янтаря", "ru")
     EID:addCard(Isaac.GetCardIdByName("FiendFire"), "Пожирает все пикапы в комнате#Дает небольшую прибавку к одному стату за каждый пикап#{{Burning}} Пикапы превращаются в огонь, наносящий врагам урон.", "Адское Пламя", "ru")
     EID:addCard(Isaac.GetCardIdByName("DemonForm"), "{{Player7}} До конца комнаты превращает игрока в азазеля с широким бримстоуном#{{Damage}} +1 Урон", "Облик Демона", "ru")
+
+    if REPENTOGON then
+        EID:addTrinket(Isaac.GetTrinketIdByName("Celest Strawberry"), "С ГОНОМ", "Celest Strawberry", "en_us")
+    else
+        EID:addTrinket(Isaac.GetTrinketIdByName("Celest Strawberry"), "БЕЗ ГОНА", "Celest Strawberry", "en_us")
+    end
 
 end
 
