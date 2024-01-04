@@ -51,7 +51,7 @@ return function(mod)
         function WarpZone.RGON_clubUpdate(_, ent)
             local spr = ent:GetSprite()
 
-            if spr:GetFrame() < 4 then
+            if spr:GetFrame() < 6 then
                 local data = ent:GetData()
                 data.WZ_HitList = data.WZ_HitList or {}
                 local hitlist = data.WZ_HitList
@@ -62,11 +62,13 @@ return function(mod)
                 --WarpZone:FireClub(player, getDirectionFromVector(player:GetLastDirection()), true)
             
                 local attackpos = ent.Position + ent:GetNullOffset("tip") --* Wtr   --spr:GetNullFrame("tip"):GetPos() * Wtr
+                local splashAttackpos = ent.Position+aim:Resized(40)
                 
                 --Isaac.Spawn(1000, EffectVariant.FLY_EXPLOSION, 0, attackpos, Vector(0,0), nil)
                 --local capsulee = ent:GetNullCapsule("tip")
                 --local list = Isaac.FindInCapsule (capsulee, EntityPartition.ENEMY)
-                local list = Isaac.FindInRadius(attackpos, 30, EntityPartition.ENEMY)
+                local list = Isaac.FindInRadius(splashAttackpos, 40, EntityPartition.ENEMY)
+                
                 local ref = EntityRef(ent.SpawnerEntity)
                 local playsound = false
             
@@ -83,7 +85,7 @@ return function(mod)
                 local list = Isaac.FindByType(33,-1,-1)
                 for i=1 , #list do
                     local entT = list[i]
-                    if not hitlist[entT.Index] and entT.Position:Distance(attackpos) < 30 then
+                    if not hitlist[entT.Index] and entT.Position:Distance(splashAttackpos) < 40 then
                         hitlist[entT.Index] = true
                         entT:TakeDamage(5, 0, ref, 0)
                         entT:Update()
@@ -98,28 +100,31 @@ return function(mod)
                     local entT = list[i]
                     if not hitlist[entT.Index] and entT.Position:Distance(attackpos) < 30 then
                         hitlist[entT.Index] = true
-                        entT:ToProjectile():Deflect(aim:Resized(10))
+                        --entT:ToProjectile():Deflect(aim:Resized(20))
+                        entT:AddVelocity(aim:Resized(10))
                     end
                 end
 
                 local list = Isaac.FindByType(9)
                 for i=1 , #list do
                     local entT = list[i]
-                    if not hitlist[entT.Index] and entT.Position:Distance(attackpos) < 30 then
+                    if not hitlist[entT.Index] and entT.Position:Distance(splashAttackpos) < 40 then
                         hitlist[entT.Index] = true
-                        entT:AddVelocity(aim:Resized(10))
+                        --entT:AddVelocity(aim:Resized(10))
+                        entT:ToProjectile():Deflect(aim:Resized(10))
                     end
                 end
 
                 if ent.SpawnerEntity then
                     --local list = Isaac.FindByType(5)
-                    local list = Isaac.FindInRadius(attackpos, 30, EntityPartition.PICKUP)
+                    local list = Isaac.FindInRadius(attackpos, 40, EntityPartition.PICKUP)
                     for i=1 , #list do
                         local entT = list[i]
                         if entT.Type == 5 and not hitlist[entT.Index] and not badPickups[entT.Variant] then
                             hitlist[entT.Index] = true
-                            ent.SpawnerEntity:ForceCollide(entT, true)
-                            entT:AddVelocity(aim:Resized(damage / entT.Mass * 10))
+                            if not ent.SpawnerEntity:ForceCollide(entT, true) then
+                                entT:AddVelocity(aim:Resized(damage / entT.Mass * 10))
+                            end
                         end
                     end
                 end

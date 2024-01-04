@@ -2551,6 +2551,10 @@ function WarpZone:NewRoom()
         bossPrepped = false
     end
     isBossEmergency = false
+
+    if not REPENTOGON then
+        game:GetItemPool():RemoveTrinket(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY)
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, WarpZone.NewRoom)
 
@@ -3015,7 +3019,10 @@ function WarpZone:PickupUpdate(pickup)
                 end
             end
 
-
+        elseif not REPENTOGON and pickup.SubType == WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY then
+            local pool = game:GetItemPool()
+            local trinkID = pool:GetTrinket(false)
+            pickup:Morph(pickup.Type, pickup.Variant, trinkID, true, true, true)
         end
     end
 end
@@ -5983,6 +5990,7 @@ function WarpZone.PrePlayerDamageCollide(_, ent, player)
 end
 WarpZone:AddCallback(ModCallbacks.MC_PRE_NPC_COLLISION, WarpZone.PrePlayerDamageCollide)
 WarpZone:AddCallback(ModCallbacks.MC_PRE_PROJECTILE_COLLISION, WarpZone.PrePlayerDamageCollide)
+
 
 
 
