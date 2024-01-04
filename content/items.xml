@@ -58,4 +58,7 @@
     <trinket name="Hunky Boys" description="You don't care for them...but do they?" gfx="Trinket_02_HunkyBoys.png" />
     <trinket name="Bible Thump" description="God has no mercy" gfx="Trinket_03_BibleThump.png" />
     <trinket name="Cheep Cheep" description="You're just a little chicken!" gfx="Trinket_04_CheepCheep.png" />
+
+    <!-- REPENTOGON -->
+    <trinket name="Celest Strawberry" description="!" gfx="Trinket_05_Celest Strawberry.png" />
 </items>

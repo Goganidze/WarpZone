@@ -1,0 +1,3 @@
+<giantbook anm2root="gfx/ui/giantbook/">
+	<entry anm2="treasure_add.anm2" name="WZ_TreasureRoomAdd" anim="Appear" gfx="treasure_add.png" />
+</giantbook>
