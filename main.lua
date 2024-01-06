@@ -5933,7 +5933,7 @@ end
 
 local GravityWeaponWhiteList = {
     [WeaponType.WEAPON_BRIMSTONE]=true,
-    [WeaponType.WEAPON_FETUS]=true,
+    --[WeaponType.WEAPON_FETUS]=true,
     [WeaponType.WEAPON_LASER]=true,
     [WeaponType.WEAPON_LUDOVICO_TECHNIQUE]=true,
     [WeaponType.WEAPON_MONSTROS_LUNGS]=true,
