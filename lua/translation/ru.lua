@@ -52,7 +52,7 @@ return function(mod)
                 [GI('Hunky Boys')]={ru={"Горячие Парни","Они тебя не интересуют, но ты их..."},},
                 [GI('Bible Thump')]={ru={"Библейский Удар!","Бог Беспощаден!"},},	
                 [GI('Cheep Cheep')]={ru={"Цып-Цып","Ты Маленький Петушок!"},},	
-                [GI('Celest Strawberry')]={en={"Strawberry","!"}, 
+                [GI('Celest Strawberry')]={en={"Strawberry","!"},
                                            ru={"Strawberry","!"},
                 },	
 	}
