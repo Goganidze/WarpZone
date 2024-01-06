@@ -2178,6 +2178,14 @@ function WarpZone:OnGameStart(isSave)
         local var = WarpZone.MenuData.TonyTimeMaxMode
         WarpZone.TonyRageTime = var == 1 and 160 or var == 2 and 180 or var == 3 and 240 or 160
     end
+
+    if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_BLIND_JOHNNY then
+        for i = 0, game:GetNumPlayers() do
+            local player = Isaac.GetPlayer(i)
+            player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS)
+            player:EvaluateItems()
+        end
+    end
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, WarpZone.OnGameStart)
 
@@ -5970,7 +5978,9 @@ function WarpZone:useGravity(collectible, rng, player, useflags, activeslot, cus
             data.WarpZone_data.GravPreWeapon = mainweapon
             local tearWeapon = Isaac.CreateWeapon(WeaponType.WEAPON_TEARS, player)
             player:SetWeapon(tearWeapon, 1)
-            weaponEnt:Remove()
+            if weaponEnt then
+                weaponEnt:Remove()
+            end
         end
     end
 end

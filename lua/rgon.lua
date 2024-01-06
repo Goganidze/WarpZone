@@ -407,8 +407,60 @@ return function(mod)
                 entry:SetColIdx((index-1) % 13 + 1)
                 entry:SetLineIdx(math.floor(index/13))
 
+                ---@type {[1]:EntityPlayer}|fasle
+                local canbePlanetarium = false
+                if PlayerManager.GetTotalTrinketMultiplier(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY) > 1 then
+                    local goldenID = WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY + TrinketType.TRINKET_GOLDEN_FLAG
+                    for i=0, game:GetNumPlayers() do
+                        local pp = Isaac.GetPlayer(i)
+                        local slot1, slot2 = pp:GetTrinket(0), pp:GetTrinket(1)
+                        if slot1 == goldenID then
+                            --canbePlanetarium = {pp, 0, 0}
+                            canbePlanetarium = {pp, 0}
+                            break
+                        elseif slot2 == goldenID then
+                            --canbePlanetarium = {pp, 0, 1}
+                            canbePlanetarium = {pp, 0}
+                            break
+                        end
+                    end
+                    if not canbePlanetarium then
+                        for i=0, game:GetNumPlayers() do
+                            local pp = Isaac.GetPlayer(i)
+                            if pp:GetTrinketMultiplier(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY) > 1 then
+                                local trinklist = pp:GetSmeltedTrinkets()[WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY]
+                                if trinklist.trinketAmount > 1 then
+                                    --canbePlanetarium = {pp, 0, 1}
+                                    canbePlanetarium = {pp, 1}
+                                    break
+                                end
+                                if  trinklist.goldenTrinketAmount > 0 then
+                                    canbePlanetarium = {pp, 1}
+                                    break
+                                end
+                            end
+                        end
+                    end
+                    
+                    if canbePlanetarium then
+                        if canbePlanetarium[2] == 1 then
+                            canbePlanetarium[1]:TryRemoveSmeltedTrinket(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY)
+                            if canbePlanetarium[1]:GetTrinketMultiplier(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY) < 1 then
+                                canbePlanetarium[1]:AddSmeltedTrinket(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY, false)
+                            end
+                        elseif canbePlanetarium[2] == 0 then
+                            canbePlanetarium[1]:TryRemoveTrinket(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY)
+                            if canbePlanetarium[1]:GetTrinketMultiplier(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY) < 1 then
+                                canbePlanetarium[1]:AddTrinket(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY, false)
+                            end
+                        end
+                    end
+                end
+
+                local romType = canbePlanetarium and RoomType.ROOM_PLANETARIUM or RoomType.ROOM_TREASURE
+
                 ---@type RoomConfig_Room
-                local Rconf = RoomConfigHolder.GetRandomRoom(rng:GetSeed(), true, StbType.SPECIAL_ROOMS, RoomType.ROOM_TREASURE, RoomShape.ROOMSHAPE_1x1, -1,-1,nil,nil,15)
+                local Rconf = RoomConfigHolder.GetRandomRoom(rng:GetSeed(), true, StbType.SPECIAL_ROOMS, romType, RoomShape.ROOMSHAPE_1x1, -1,-1,nil,nil,15)
                 
                 rng:Next()
                 --print(index, level:PlaceRoom(entry, Rconf, rng:GetSeed()))
