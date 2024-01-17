@@ -214,7 +214,7 @@ return function(mod)
                         local shootPos = player.Position + aim:Resized(distfromplay/2) - aim:Resized(tearspeed/2 * -fam.OrbitSpeed ) 
                         
                         if udata.PolarStarLVL ~= 2 then
-                            local dmgmulti = udata.PolarStarLVL == 3 and 2.5
+                            local dmgmulti = udata.PolarStarLVL == 3 and 2
                             for i = 0, num-1 do
                                 local vec = prevec:Rotated(i*angle)
                                 vec = vec + Inher
@@ -227,8 +227,8 @@ return function(mod)
                                 vec = vec + Inher
                                 local off = aim:Rotated(90):Resized(10)
 
-                                WarpZone.FirePolarStar(shootPos+off, vec, 0, source, 0.8, lifeTime)       
-                                WarpZone.FirePolarStar(shootPos-off, vec, 0, source, 0.8, lifeTime)
+                                WarpZone.FirePolarStar(shootPos+off, vec, 0, source, 0.65, lifeTime)       
+                                WarpZone.FirePolarStar(shootPos-off, vec, 0, source, 0.65, lifeTime)
                             end
                         end
                         fam.OrbitSpeed = fam.OrbitSpeed + (firedelaay * 1.2 + 1)*2

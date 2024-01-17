@@ -93,6 +93,17 @@ return function(mod)
 		end
 	end
 
+	function mod:PostBombUpdate(bomb)
+		local data = bomb:GetData()
+		if data.WZ_makebounc and bomb.PositionOffset.Y == 0 then
+			bomb:SetFallingSpeed(4.5)
+			bomb:SetHeight(-20)
+			bomb.PositionOffset.Y = - .5
+			data.WZ_makebounc = nil
+		end
+	end
+	mod:AddCallback(ModCallbacks.MC_POST_BOMB_UPDATE, mod.PostBombUpdate)
+
 	--стырено из ff
 	mod:AddCallback(ModCallbacks.MC_PRE_ENTITY_SPAWN, function(_, typ, var, subt, pos, vel, spawner, seed)
 		if typ == EntityType.ENTITY_BOMBDROP then
