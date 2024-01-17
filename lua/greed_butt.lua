@@ -23,17 +23,22 @@ return function (mod)
 
     function WarpZone.GreedButtCoinPickup(player, value)
         if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) then
-            local data = player:GetData().WarpZone_data
-            data.GreedButtCoints = data.GreedButtCoints or 5
-            data.GreedButtCoints = math.min(5, data.GreedButtCoints + value)
+            local data = player:GetData()
+            local wdata = data.WarpZone_data
+            local sdata = data.WarpZone_unsavedata.GreedButt
+            wdata.GreedButtCoints = wdata.GreedButtCoints or 5
+            wdata.GreedButtCoints = math.min(sdata.MaxCoints, wdata.GreedButtCoints + value)
         end
     end
 
+    ---@param player EntityPlayer
     function WarpZone.GreedButtEffect(player, data, spr)
         data.WarpZone_data.GreedButtCoints = data.WarpZone_data.GreedButtCoints or 5
         data.WarpZone_unsavedata.GreedButt = data.WarpZone_unsavedata.GreedButt or {}
         local sdata = data.WarpZone_unsavedata.GreedButt
-
+        sdata.MaxCoints = 5 + 1 - player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) - player:GetEffects():GetCollectibleEffectNum(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT)
+        sdata.MaxCoints = math.max(1,sdata.MaxCoints)
+        
         if not sdata.ent or not sdata.ent:Exists() then
             sdata.ent = Isaac.Spawn(EntityType.ENTITY_EFFECT, GreedButtEffectType, 0, 
                 player.Position, Vector(0,0), player)
@@ -106,7 +111,7 @@ return function (mod)
     function WarpZone.GreedButt_PlayerCollide(ent, player)
         local pdata = player:GetData()
         if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) 
-        and pdata.WarpZone_data.GreedButtCoints >= 5 and not ent:HasEntityFlags(EntityFlag.FLAG_FRIENDLY) then
+        and pdata.WarpZone_data.GreedButtCoints >= pdata.WarpZone_unsavedata.GreedButt.MaxCoints and not ent:HasEntityFlags(EntityFlag.FLAG_FRIENDLY) then
             if ent.Type == EntityType.ENTITY_PROJECTILE or ent:IsActiveEnemy() then
                 effect(player, ent)
                 pdata.WarpZone_data.GreedButtCoints = 0
@@ -246,14 +251,17 @@ return function (mod)
     function WarpZone.GreedButtEffect_ent_render(_, e)
         local data = e:GetData()
         if data["монетки"] then
+            local pdata = e.Parent:GetData().WarpZone_unsavedata
+            local maxcoint = pdata.GreedButt.MaxCoints or 5
             local Rpos = Isaac.WorldToScreen(e.Position)
             Rpos.Y = Rpos.Y - data["высота"]
             local crop --= data["монетки"] == 5 and 0 or (16 - (data["монетки"] / 5 * 9 + 3))
             if data["пердотяга"] then
                 crop = 16 - (math.max(0, data["пердотяга"]+40) / perdotyaga * 9 + 3)
             else
-                crop = data["монетки"] == 5 and 0 or (16 - (data["монетки"] / 5 * 9 + 3))
+                crop = data["монетки"] == maxcoint and 0 or (16 - (data["монетки"] / maxcoint * 9 + 3))
             end
+            crop = math.max(0, crop)
             
             data['спр зад']:RenderLayer(0, Rpos)
             data['спр зад']:RenderLayer(1, Rpos, Vector(0, crop))

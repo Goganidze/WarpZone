@@ -80,6 +80,24 @@ return function(mod)
         if knife.State == 1 then
             knife.FireCooldown = 0
         end
+
+        local room = game:GetRoom()
+
+        if knife.FrameCount % 5 == 0 then
+            local pos = knife.Position
+            local grid = room:GetGridEntityFromPos(pos)
+
+            if grid and grid:Hurt(1) then
+            end
+            for i=0, 360-45, 45 do
+                local pos = knife.Position + Vector.FromAngle(i):Resized(10)
+                local grid = room:GetGridEntityFromPos(pos)
+        
+                if grid and grid:Hurt(1) then
+                        
+                end
+            end
+        end
     end
 
     WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_UPDATE, WarpZone.UpdateJohnnysKnife, WarpZone.JOHNNYS_KNIVES.ENT.HAPPY)

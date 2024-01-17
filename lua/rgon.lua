@@ -743,5 +743,23 @@ return function(mod)
         end
         WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYERHUD_RENDER_ACTIVE_ITEM, WarpZone.ISYOUACTIVERENDER)
 
+        ---@param bomb EntityBomb
+        function WarpZone.PostFireBomb(_, bomb)
+            local player = bomb.SpawnerEntity and bomb.SpawnerEntity:ToPlayer()
+            if player then
+                local pdata = player:GetData()
+                if pdata.InGravityState and pdata.InGravityState > 0 then
+                    bomb.Velocity = Vector(0,0)
+                    bomb.Position = player.Position
+                    --bomb:SetHeight(-100)
+                    bomb:SetFallingSpeed(5)
+                    bomb.PositionOffset.Y = -350
+                    bomb:GetData().WZ_makebounc = true
+                end
+            end
+        end
+
+        WarpZone:AddCallback(ModCallbacks.MC_POST_FIRE_BOMB, WarpZone.PostFireBomb)
+
     end
 end

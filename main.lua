@@ -82,7 +82,7 @@ defaultData.WarpZone_data.playerTumors = 0
 defaultData.WarpZone_data.tonyBuff = 1.7
 defaultData.WarpZone_data.dioDamageOn = false
 defaultData.WarpZone_data.roomsClearedSinceTake = -1
-defaultData.WarpZone_data.itemsSucked = 0
+--defaultData.WarpZone_data.itemsSucked = 0
 defaultData.WarpZone_data.itemsTaken = {}
 defaultData.WarpZone_data.poolsTaken = {}
 defaultData.WarpZone_data.totalFocusDamage = 0
@@ -414,18 +414,25 @@ WarpZone.WarpZoneTypes.PICKUP_WATERBOTTLE = Isaac.GetEntityVariantByName("[Warp 
 WarpZone.WarpZoneTypes.FAKE_BONE_R = Isaac.GetEntityVariantByName("[Warp Zone] bone swing")
 
 
-local ISFOCUSID = {
+WarpZone.ISFOCUSID = {
     [WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS] = true,
     [WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_2] = true,
     [WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_3] = true,
     [WarpZone.WarpZoneTypes.COLLECTIBLE_FOCUS_4] = true,
 }
+local ISFOCUSID = WarpZone.ISFOCUSID
 
-local badPickupsToForceCollide = {
+WarpZone.badPickupsToForceCollide = {
     [PickupVariant.PICKUP_BIGCHEST]=true,
     [PickupVariant.PICKUP_COLLECTIBLE]=true,
     [PickupVariant.PICKUP_BROKEN_SHOVEL]=true,
 }
+local badPickupsToForceCollide = WarpZone.badPickupsToForceCollide
+
+WarpZone.NIGHTMARE_TICK_DAMAGETABLE = {
+    [0] = .5, .75, 1, 1.25, 1.5
+}
+local NIGHTMARE_TICK_DAMAGETABLE = WarpZone.NIGHTMARE_TICK_DAMAGETABLE
 
 --util functions
 
@@ -1710,7 +1717,7 @@ function WarpZone:UIOnRender(player, renderoffset)
     if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) then
         local numCollectibles = player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW)
         
-        data.WarpZone_data.maxArrowNum = math.ceil(30 / (player.MaxFireDelay + 1)) * numCollectibles
+        data.WarpZone_data.maxArrowNum = math.ceil(30 / (player.MaxFireDelay + 1)) * numCollectibles + 2
         local numAroows = data.WarpZone_data.maxArrowNum
         for i = 1, numAroows , 1 do
             if data.WarpZone_data.numArrows - i >= 0 then
@@ -1984,6 +1991,7 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
     for j=0, numPlayers-1, 1 do
         local player = Isaac.GetPlayer(j)
         local data = player:GetData()
+        local wdata = data.WarpZone_data
         if (i == 1 or room) and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GOLDENIDOL) == true and player:HasCollectible(CollectibleType.COLLECTIBLE_BLACK_CANDLE) == false then
             local coin = Isaac.Spawn(EntityType.ENTITY_PICKUP, 
                         PickupVariant.PICKUP_COIN,
@@ -2007,9 +2015,9 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
 
         if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) then
             if REPENTOGON then
-                data.WarpZone_data.roomsClearedSinceTake = data.WarpZone_data.roomsClearedSinceTake + 1
+                wdata.roomsClearedSinceTake = wdata.roomsClearedSinceTake + 1
                 local roomsToSuck = math.max(10 - (2 * player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK)), 1)
-                if data.WarpZone_data.roomsClearedSinceTake % roomsToSuck == 0 then
+                if wdata.roomsClearedSinceTake % roomsToSuck == 0 then
 
                     local history = player:GetHistory()
                     local config = Isaac.GetItemConfig()
@@ -2019,11 +2027,17 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
                         local conf = config:GetCollectible(itemID)
                         if not k:IsTrinket() and not conf:HasTags(ItemConfig.TAG_QUEST) and conf.Type ~= ItemType.ITEM_ACTIVE
                         and itemID ~= WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK then
-                            if history:RemoveHistoryItemByIndex(pos-1) then
+                            --if history:RemoveHistoryItemByIndex(pos-1) then
                                 player:RemoveCollectible(itemID)
+                                local itemconf = Isaac.GetItemConfig():GetCollectible(itemID)
 
-                                data.WarpZone_data.itemsSucked = data.WarpZone_data.itemsSucked + 1
-                                player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
+                                --data.WarpZone_data.itemsSucked = data.WarpZone_data.itemsSucked + 1
+                                wdata.itemsSucked = wdata.itemsSucked or {}
+                                wdata.itemsSucked[itemconf.Quality] = wdata.itemsSucked[itemconf.Quality] 
+                                    and (wdata.itemsSucked[itemconf.Quality]+1) or 1
+                                wdata.itemsSucked.Num = wdata.itemsSucked.Num and (wdata.itemsSucked.Num + 1) or 1
+
+                                player:AddCacheFlags(CacheFlag.CACHE_DAMAGE | CacheFlag.CACHE_TEARFLAG)
                                 player:EvaluateItems()
                                 SfxManager:Play(SoundEffect.SOUND_THUMBS_DOWN)
                                 SfxManager:Play(SoundEffect.SOUND_BOSS_BUG_HISS)
@@ -2032,44 +2046,51 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
                                 local lostitem = Sprite()
                                 lostitem:Load("gfx/005.100_collectible.anm2", true)
                                 lostitem:Play("PlayerPickup")
-                                lostitem:ReplaceSpritesheet(1, Isaac.GetItemConfig():GetCollectible(itemID).GfxFileName)
+                                lostitem:ReplaceSpritesheet(1, itemconf.GfxFileName)
                                 lostitem:LoadGraphics()
                                 data.WarpZone_unsavedata.TickLostItem = {spr = lostitem, frame=0}
-                            end
+                            --end
                             goto postremove
                         end
                     end
                 end
 
             else
-                data.WarpZone_data.roomsClearedSinceTake = data.WarpZone_data.roomsClearedSinceTake + 1
+                wdata.roomsClearedSinceTake = wdata.roomsClearedSinceTake + 1
                 local roomsToSuck = math.max(10 - (2 * player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK)), 1)
-                local itemsTakenHere = data.WarpZone_data.itemsTaken
-                if data.WarpZone_data.roomsClearedSinceTake % roomsToSuck == 0 then
+                local itemsTakenHere = wdata.itemsTaken
+                if wdata.roomsClearedSinceTake % roomsToSuck == 0 then
                     local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK)
                     local shift = 0
-                    for j, item_tag in ipairs(data.WarpZone_data.itemsTaken) do
+                    for j, item_tag in ipairs(wdata.itemsTaken) do
                         if player:HasCollectible(item_tag) == false then
-                            table.remove(data.WarpZone_data.itemsTaken, j-shift)
-                            table.remove(data.WarpZone_data.poolsTaken, j-shift)
+                            table.remove(wdata.itemsTaken, j-shift)
+                            table.remove(wdata.poolsTaken, j-shift)
                             shift = shift + 1
                         end
                     end
                     
                     local pos_to_delete = rng:RandomInt(#itemsTakenHere) + 1
-                    if data.WarpZone_data.itemsTaken[pos_to_delete] ~= nil then
-                        local config = Isaac.GetItemConfig():GetCollectible(data.WarpZone_data.itemsTaken[pos_to_delete])
-                        if (data.WarpZone_data.itemsTaken[pos_to_delete] == WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK or (config.Tags & ItemConfig.TAG_QUEST == ItemConfig.TAG_QUEST)) and #itemsTakenHere > 1 then
+                    if wdata.itemsTaken[pos_to_delete] ~= nil then
+                        local config = Isaac.GetItemConfig():GetCollectible(wdata.itemsTaken[pos_to_delete])
+                        if (wdata.itemsTaken[pos_to_delete] == WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK or (config.Tags & ItemConfig.TAG_QUEST == ItemConfig.TAG_QUEST)) and #itemsTakenHere > 1 then
                             pos_to_delete = (pos_to_delete % #itemsTakenHere) + 1
                         end
                         
-                        config = Isaac.GetItemConfig():GetCollectible(data.WarpZone_data.itemsTaken[pos_to_delete])
-                        if data.WarpZone_data.itemsTaken[pos_to_delete] ~= WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK and (config.Tags & ItemConfig.TAG_QUEST ~= ItemConfig.TAG_QUEST) then
-                            local item_del = table.remove(data.WarpZone_data.itemsTaken, pos_to_delete)
-                            table.remove(data.WarpZone_data.poolsTaken, pos_to_delete)
+                        config = Isaac.GetItemConfig():GetCollectible(wdata.itemsTaken[pos_to_delete])
+                        if wdata.itemsTaken[pos_to_delete] ~= WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK and (config.Tags & ItemConfig.TAG_QUEST ~= ItemConfig.TAG_QUEST) then
+                            local item_del = table.remove(wdata.itemsTaken, pos_to_delete)
+                            local itemconf = Isaac.GetItemConfig():GetCollectible(item_del)
+                            table.remove(wdata.poolsTaken, pos_to_delete)
                             player:RemoveCollectible(item_del)
-                            data.WarpZone_data.itemsSucked = data.WarpZone_data.itemsSucked + 1
-                            player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
+                            
+                            --wdata.itemsSucked = wdata.itemsSucked + 1
+                            wdata.itemsSucked = wdata.itemsSucked or {}
+                            wdata.itemsSucked[itemconf.Quality] = wdata.itemsSucked[itemconf.Quality] 
+                                and (wdata.itemsSucked[itemconf.Quality]+1) or 1
+                            wdata.itemsSucked.Num = wdata.itemsSucked.Num and (wdata.itemsSucked.Num + 1) or 1
+
+                            player:AddCacheFlags(CacheFlag.CACHE_DAMAGE | CacheFlag.CACHE_TEARFLAG)
                             player:EvaluateItems()
                             SfxManager:Play(SoundEffect.SOUND_THUMBS_DOWN)
                             SfxManager:Play(SoundEffect.SOUND_BOSS_BUG_HISS)
@@ -2078,7 +2099,7 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
                             local lostitem = Sprite()
                             lostitem:Load("gfx/005.100_collectible.anm2", true)
                             lostitem:Play("PlayerPickup")
-                            lostitem:ReplaceSpritesheet(1, Isaac.GetItemConfig():GetCollectible(item_del).GfxFileName)
+                            lostitem:ReplaceSpritesheet(1, itemconf.GfxFileName)
                             lostitem:LoadGraphics()
                             data.WarpZone_unsavedata.TickLostItem = {spr = lostitem, frame=0}
                         end
@@ -2088,9 +2109,9 @@ function WarpZone:spawnCleanAward(RNG, SpawnPosition)
             ::postremove::
         end
 
-        if data.WarpZone_data.roomsSinceBreak and data.WarpZone_data.roomsSinceBreak > 0 then
-            data.WarpZone_data.roomsSinceBreak = data.WarpZone_data.roomsSinceBreak - 1
-            if data.WarpZone_data.roomsSinceBreak == 0 then
+        if wdata.roomsSinceBreak and wdata.roomsSinceBreak > 0 then
+            wdata.roomsSinceBreak = wdata.roomsSinceBreak - 1
+            if wdata.roomsSinceBreak == 0 then
                 player:RespawnFamiliars()
             end
         end
@@ -2626,8 +2647,8 @@ function WarpZone:usePastkiller3x(collectible, rng, entityplayer, useflags, acti
     SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT, 2)
     WarpZone:usePastkiller(player)
     swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_2x, activeslot, player, 0)
-    if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BOOK_OF_VIRTUES) or useflags & UseFlag.USE_ALLOWWISPSPAWN then
-        entityplayer:AddWisp(WarpZone.WarpZoneTypes.COLLECTIBLE_BIRTHDAY_CAKE, entityplayer.Position)
+    if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BOOK_OF_VIRTUES) or useflags & UseFlag.USE_ALLOWWISPSPAWN ~= 0 then
+        entityplayer:AddWisp(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER, entityplayer.Position)
     end
     return {
         Discharge = false,
@@ -2661,7 +2682,7 @@ function WarpZone:usePastkiller2x(collectible, rng, entityplayer, useflags, acti
     SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT_SPREAD, 2)
     WarpZone:usePastkiller(player)
     swapOutActive(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER_1x, activeslot, player, 0)
-    if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BOOK_OF_VIRTUES) or useflags & UseFlag.USE_ALLOWWISPSPAWN then
+    if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BOOK_OF_VIRTUES) or useflags & UseFlag.USE_ALLOWWISPSPAWN ~= 0 then
         entityplayer:AddWisp(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER, entityplayer.Position)
     end
     return {
@@ -2696,7 +2717,7 @@ function WarpZone:usePastkiller1x(collectible, rng, entityplayer, useflags, acti
     SfxManager:Play(SoundEffect.SOUND_GFUEL_AIR_HORN, 1)
     SfxManager:Play(SoundEffect.SOUND_GFUEL_GUNSHOT_SPREAD, 4)
     WarpZone:usePastkiller(player)
-    if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BOOK_OF_VIRTUES) or useflags & UseFlag.USE_ALLOWWISPSPAWN then
+    if entityplayer:HasCollectible(CollectibleType.COLLECTIBLE_BOOK_OF_VIRTUES) or useflags & UseFlag.USE_ALLOWWISPSPAWN ~= 0  then
         entityplayer:AddWisp(WarpZone.WarpZoneTypes.COLLECTIBLE_PASTKILLER, entityplayer.Position)
     end
     return {
@@ -2915,14 +2936,20 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
         return true
     end
 
-    if entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == tokenVariant and entity:GetData().Collected ~= true then
-        entity:GetData().Collected = true
-        entity:GetSprite():Play("Collect")
-        data.WarpZone_data.numArrows = data.WarpZone_data.numArrows + 1
-        SfxManager:Play(SoundEffect.SOUND_SHELLGAME, Options.SFXVolume/2)
-        return true
-    elseif entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == tokenVariant then
-        return true
+    if entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == tokenVariant then
+        local data = data.WarpZone_data
+        if not entity:GetData().Collected and data.maxArrowNum and data.numArrows < data.maxArrowNum then
+            entity:GetData().Collected = true
+            entity:GetSprite():Play("Collect")
+            entity.Velocity = Vector(0,0)
+            data.numArrows = data.numArrows + 1
+            SfxManager:Play(SoundEffect.SOUND_SHELLGAME, Options.SFXVolume/2)
+            return true
+        else
+            return true
+        end
+    --elseif entity.Type == EntityType.ENTITY_PICKUP and entity.Variant == tokenVariant then
+    --    return true
     end
 
 
@@ -2961,7 +2988,7 @@ function WarpZone:OnPickupCollide(entity, Collider, Low)
             Isaac.Spawn(EntityType.ENTITY_PICKUP, tumorVariant, 1, game:GetRoom():FindFreePickupSpawnPosition(game:GetRoom():GetCenterPos()), Vector(0,0), nil)
         end
         if entity.SubType == WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW then
-            data.WarpZone_data.numArrows = data.WarpZone_data.numArrows + 3
+            data.WarpZone_data.numArrows = math.min(data.WarpZone_data.maxArrowNum or 6, data.WarpZone_data.numArrows + 6)
         end
     end
     return nil
@@ -2975,6 +3002,28 @@ function WarpZone:PickupUpdate(pickup)
     if pickup.Variant == tokenVariant then
         pickup.Timeout = 60
         pickup.EntityCollisionClass = EntityCollisionClass.ENTCOLL_PLAYERONLY
+        local entpos = pickup.Position
+        local near = false
+        for i=0, game:GetNumPlayers()-1 do
+            local player = Isaac.GetPlayer(i)
+            if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW) then
+                local data = player:GetData().WarpZone_data
+                local ppos = player.Position
+                if data.numArrows < data.maxArrowNum and ppos:Distance(entpos) < 80 then
+                    pickup.Velocity = (ppos-entpos):Resized(16)
+                    near = true
+                end
+            end
+        end
+        if near then
+            data.hasgridcoll = data.hasgridcoll or pickup.GridCollisionClass/1
+            pickup.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_NONE
+        else
+            if data.hasgridcoll then
+                pickup.GridCollisionClass = data.hasgridcoll
+                data.hasgridcoll = nil
+            end
+        end
     end
 
     --Hunky bois
@@ -3092,6 +3141,7 @@ local function tearsMult(firedelay, val)
 	return math.max((30 / newTears) - 1, -0.99)
 end
 
+---@param entityplayer EntityPlayer
 function WarpZone:EvaluateCache(entityplayer, Cache)
     local data = entityplayer:GetData()
     data.WarpZone_unsavedata = data.WarpZone_unsavedata or {}
@@ -3162,9 +3212,9 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
                 entityplayer.MaxFireDelay = tearsMult(entityplayer.MaxFireDelay, 0.5)
             end
         end
-        if REPENTOGON and entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE) then
-            entityplayer.MaxFireDelay = tearsMult(entityplayer.MaxFireDelay, 0.66)
-        end
+        --if REPENTOGON and entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_DIOGENES_POT_LIVE) then
+        --    entityplayer.MaxFireDelay = tearsMult(entityplayer.MaxFireDelay, 0.66)
+        --end
 
     end
         
@@ -3173,15 +3223,23 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
     if Cache == CacheFlag.CACHE_DAMAGE then
         local D8Edenmulti = 1
         if REPENTOGON then
-            D8Edenmulti = 1 + entityplayer:GetD8DamageModifier() + entityplayer:GetEdenDamage()
+            D8Edenmulti = entityplayer:GetD8DamageModifier() + entityplayer:GetEdenDamage()
         end
 
         local damageToAdd = 0
         damageToAdd = damageToAdd + (0.5 * tank_qty)
 
-        if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) then
-            damageToAdd = damageToAdd + (data.WarpZone_data.itemsSucked * 0.75)
-        end
+        --if entityplayer:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_NIGHTMARE_TICK) then
+            --damageToAdd = damageToAdd + (data.WarpZone_data.itemsSucked * 0.75)
+            local suctab = data.WarpZone_data.itemsSucked
+            local socdmg = 0
+            if suctab then
+                for i=0, 4 do
+                    socdmg = socdmg + (suctab[i] or 0) * NIGHTMARE_TICK_DAMAGETABLE[i]
+                end
+            end
+            damageToAdd = damageToAdd + socdmg
+        --end
         
         if data.WarpZone_data.InDemonForm then
             damageToAdd = damageToAdd + 1
@@ -3239,6 +3297,16 @@ function WarpZone:EvaluateCache(entityplayer, Cache)
 
     if Cache == CacheFlag.CACHE_SHOTSPEED then
         entityplayer.ShotSpeed = entityplayer.ShotSpeed + (tank_qty * .16)
+    end
+    if Cache == CacheFlag.CACHE_TEARFLAG then
+        local suctab = data.WarpZone_data.itemsSucked
+        if suctab then
+            local flags = BitSet128(0,0)
+            if suctab.Num > 3 then
+                flags = flags | TearFlags.TEAR_FEAR
+            end
+            entityplayer.TearFlags = entityplayer.TearFlags | flags
+        end
     end
 
     WarpZone.PolarStarBoosterv2_Cache(_, entityplayer, Cache)
@@ -3440,6 +3508,8 @@ function WarpZone:postPlayerUpdate(player)
         if REPENTOGON and data.WarpZone_data.GravPreWeapon then
             player:SetWeapon(data.WarpZone_data.GravPreWeapon, 1)
             data.WarpZone_data.GravPreWeapon = nil
+            player:AddCacheFlags(CacheFlag.CACHE_WEAPON)
+            player:EvaluateItems()
         end
     end
 
@@ -4884,6 +4954,9 @@ local function update_cache(_, player, cache_flag)
 
         local john_pickups =  GetFamiliarItemCount(player, effects, WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES) --player:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES)
         local john_rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES)
+        if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_BLIND_JOHNNY then
+            john_pickups = math.max(1, john_pickups)
+        end
         
         local myRNG4 = RNG()
         --myRNG4:SetSeed(Random(), 1)
@@ -5933,7 +6006,8 @@ end
 
 local GravityWeaponWhiteList = {
     [WeaponType.WEAPON_BRIMSTONE]=true,
-    --[WeaponType.WEAPON_FETUS]=true,
+    [WeaponType.WEAPON_BOMBS]=true,
+    [WeaponType.WEAPON_FETUS]=true,
     [WeaponType.WEAPON_LASER]=true,
     [WeaponType.WEAPON_LUDOVICO_TECHNIQUE]=true,
     [WeaponType.WEAPON_MONSTROS_LUNGS]=true,
