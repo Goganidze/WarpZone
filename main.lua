@@ -437,9 +437,11 @@ local NIGHTMARE_TICK_DAMAGETABLE = WarpZone.NIGHTMARE_TICK_DAMAGETABLE
 --util functions
 
 local function swapOutActive(activeToAdd, slot, player, charge)
-    local activeToRemove = player:GetActiveItem(slot)
-    player:RemoveCollectible(activeToRemove, true, slot, true)
-    player:AddCollectible(activeToAdd, charge, false, slot)
+    if slot ~= -1 then
+        local activeToRemove = player:GetActiveItem(slot)
+        player:RemoveCollectible(activeToRemove, true, slot, true)
+        player:AddCollectible(activeToAdd, charge, false, slot)
+    end
 end
 
 local function isNil(value, replacement)
@@ -1630,7 +1632,7 @@ function WarpZone:postRender(player, offset)
                 data.WarpZone_data.arrowHoldBox = 0
             end
             
-            if maxThreshold > framesToCharge and data.WarpZone_data.arrowHoldBox == 0 then
+            if maxThreshold > (framesToCharge * math.min(1, player.MaxFireDelay/10) ) and data.WarpZone_data.arrowHoldBox == 0 then
                 unsave.fireGlove = 20
                 unsave.GloveHitList = {}
                 WarpZone:fireGlove(player, true, unsave.GloveHitList)
@@ -1729,12 +1731,13 @@ function WarpZone:UIOnRender(player, renderoffset)
         end
     end
     local currentCharge = data.WarpZone_data.arrowHoldBox
-    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOXING_GLOVE) and currentCharge > 0 and currentCharge <= framesToCharge then
-        local frameToSet = math.floor(math.min(currentCharge * (100/framesToCharge), 100))
+    local maxChargeFrame = framesToCharge * math.min(1, player.MaxFireDelay / 10)
+    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOXING_GLOVE) and currentCharge > 0 and currentCharge <= maxChargeFrame then
+        local frameToSet = math.floor(math.min(currentCharge * (100/maxChargeFrame), 100))
         BoxHud:SetFrame("Charging", frameToSet)
         BoxHud:Render(Isaac.WorldToScreen(player.Position) + boxRenderedPosition)
-    elseif player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOXING_GLOVE) and currentCharge > framesToCharge then
-        local frameToSet = math.floor(((currentCharge-framesToCharge))/2) % 6
+    elseif player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOXING_GLOVE) and currentCharge > maxChargeFrame then
+        local frameToSet = math.floor(((currentCharge-maxChargeFrame))/2) % 6
         BoxHud:SetFrame("Charged", frameToSet)
         BoxHud:Render(Isaac.WorldToScreen(player.Position) + boxRenderedPosition)
     end
@@ -2201,7 +2204,7 @@ function WarpZone:OnGameStart(isSave)
     end
 
     if Isaac.GetChallenge() == WarpZone.WarpZoneTypes.CHALLENGE_BLIND_JOHNNY then
-        for i = 0, game:GetNumPlayers() do
+        for i = 0, game:GetNumPlayers()-1 do
             local player = Isaac.GetPlayer(i)
             player:AddCacheFlags(CacheFlag.CACHE_FAMILIARS)
             player:EvaluateItems()
@@ -2222,6 +2225,7 @@ function WarpZone:preGameExit()
     saveData.bossPrepped = bossPrepped
     saveData.roomsPrepped = roomsPrepped
     saveData.preservedItems = preservedItems
+    saveData.PillReplased = WarpZone.SaveFile.PillReplased
 
     saveData.playerdata = {}
     for i=0, numPlayers-1, 1 do

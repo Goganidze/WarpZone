@@ -70,6 +70,7 @@ return function(mod)
         tear.SpriteRotation = (tear.Velocity):GetAngleDegrees()
 
         if tear:IsDead() then
+            tear:GetData().WarpZone_IsDead = true
             local ef = Isaac.Spawn(EntityType.ENTITY_EFFECT, PolarStarEXTent, 10,
                 tear.Position+tear.Velocity+tear.PositionOffset, Vector(0,0), tear)
 
@@ -97,6 +98,39 @@ return function(mod)
         end
     end
     WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, WarpZone.PolarStarBulletUpdate, WarpZone.WarpZoneTypes.TEAR_POLAR_STAR_BULLET)
+
+    if not REPENTOGON then
+        function WarpZone.PolarStarBulletDeath(_, tear)
+            if not tear:GetData().WarpZone_IsDead then
+                local ef = Isaac.Spawn(EntityType.ENTITY_EFFECT, PolarStarEXTent, 10,
+                tear.Position+tear.Velocity+tear.PositionOffset, Vector(0,0), tear)
+                ef.Color = tear.Color
+                ef.SpriteScale = Vector(1.5, 1.5) * tear.Scale
+                if tear:GetDropRNG():RandomInt(4) == 0 then
+                    ef:GetSprite():Play("2")
+                else
+                    ef:GetSprite():Play("1")
+                end
+            end
+        end
+        WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_DEATH, WarpZone.PolarStarBulletDeath, WarpZone.WarpZoneTypes.TEAR_POLAR_STAR_BULLET)
+    else
+        local TEAR_POLAR_STAR_BULLET = WarpZone.WarpZoneTypes.TEAR_POLAR_STAR_BULLET
+        function WarpZone.PolarStarBulletDeath(_, tear)
+            if tear.Variant == TEAR_POLAR_STAR_BULLET and not tear:GetData().WarpZone_IsDead then
+                local ef = Isaac.Spawn(EntityType.ENTITY_EFFECT, PolarStarEXTent, 10,
+                tear.Position+tear.Velocity+tear.PositionOffset, Vector(0,0), tear)
+                ef.Color = tear.Color
+                ef.SpriteScale = Vector(1.5, 1.5) * tear.Scale
+                if tear:GetDropRNG():RandomInt(4) == 0 then
+                    ef:GetSprite():Play("2")
+                else
+                    ef:GetSprite():Play("1")
+                end
+            end
+        end
+        WarpZone:AddCallback(ModCallbacks.MC_POST_ENTITY_REMOVE, WarpZone.PolarStarBulletDeath, EntityType.ENTITY_TEAR)
+    end
 
 
     ---@param fam EntityFamiliar
