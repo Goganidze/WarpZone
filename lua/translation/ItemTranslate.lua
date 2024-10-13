@@ -11,9 +11,10 @@ local ButtonAction = ButtonAction
 local ActiveSlot = ActiveSlot
 local Vector = Vector
 local KColor = KColor
+local itemConfig = Isaac.GetItemConfig()
 
 local modname = ModName or "main"   
-local ITver = Modver or 1.08
+local ITver = Modver or 1.091
 
 --if not ItemTranslate or ItemTranslate.Ver and ItemTranslate.Ver < ITver then
 	local LocalDeleteCallback
@@ -106,10 +107,9 @@ local ITver = Modver or 1.08
 
 	function ITrsl.TranslateBirthright(playerID)
 		if IT.MenuData.CollTranslate ~= true then
-			local BirthName = BirthrightDefaultName[GetLang()] or 'Birthright'
+			local BirthName = BirthrightDefaultName[GetLang()]
 
-			if IT.CollTabl[CollectibleType.COLLECTIBLE_BIRTHRIGHT] 
-			and IT.CollTabl[CollectibleType.COLLECTIBLE_BIRTHRIGHT][GetLang()] then
+			if IT.CollTabl[CollectibleType.COLLECTIBLE_BIRTHRIGHT] then
 				BirthName = IT.CollTabl[CollectibleType.COLLECTIBLE_BIRTHRIGHT][GetLang()][1]
 			end
 			
@@ -129,7 +129,7 @@ local ITver = Modver or 1.08
 
 	function ITrsl.TranslatePickedPickup(player, Pickup)
 		if IT.MenuData.cardpickupTranslate ~= true then
-			local PickupName = Isaac.GetItemConfig():GetCard(Pickup).Name
+			local PickupName = itemConfig:GetCard(Pickup).Name
 
 			if PickupName and IT.CardTabl[PickupName] and CheckModEnable(IT.CardTabl[PickupName]) then
 				if IT.CardTabl[PickupName][GetLang()] then
@@ -160,7 +160,7 @@ local ITver = Modver or 1.08
 			GenPickupTrackerTabl(player.Index) 
 		end
 		local PickData = playerPickupTracker[player.Index]
-		            
+					
 		if PickData.PickupTouched and PickData.PickupTouched>0 then
 			PickData.PickupTouched = PickData.PickupTouched - 1
 			
@@ -202,8 +202,8 @@ local ITver = Modver or 1.08
 	end
 
 	function ITrsl.TranslateUsedPill(_,ID, p, flag)
-	   if IT.MenuData.cardpickupTranslate ~= true then
-		local PillName = Isaac.GetItemConfig():GetPillEffect(ID).Name
+		if IT.MenuData.cardpickupTranslate ~= true then
+		local PillName = itemConfig:GetPillEffect(ID).Name
 		
 		if PillName and IT.PillsTabl[PillName] and CheckModEnable(IT.PillsTabl[PillName]) == true then
 			if IT.PillsTabl[PillName][GetLang()] then
@@ -212,7 +212,7 @@ local ITver = Modver or 1.08
 				hud:ShowItemText(str[1],str[2],false)
 			end
 		end
-	   end
+		end
 	end
 
 	local function CheckLazarusHologram(player)
@@ -230,57 +230,116 @@ local ITver = Modver or 1.08
 	end
 
 	local PocketItemStrings = {}
-	function ITrsl.CheckHoldingCardPill() 
+	function ITrsl.CheckHoldingCardPill()
 		PocketItemStrings = {}
 		for i=0, game:GetNumPlayers()-1 do
 			local player = Isaac.GetPlayer(i)
 			local TrslName
 			local lang = GetLang()
-			
-			if player:GetCard(0) ~= 0 then
-				
-				local name = Isaac.GetItemConfig():GetCard(player:GetCard(0)).Name
-				if IT.CardTabl[name] and IT.CardTabl[name][lang] 
-				and CheckModEnable(IT.CardTabl[name]) then
-					local str =  IT.CardTabl[name][lang][1]
-					if Input.IsActionPressed(ButtonAction.ACTION_MAP, player.ControllerIndex) 
-					and IT.CardTabl[name][lang][2] then
-						str =  IT.CardTabl[name][lang][2]
-					end
-					TrslName = str
-				end
-
-			elseif player:GetPill(0) ~= 0 and player:GetPill(0) ~= 14 then
-				local pill = game:GetItemPool():GetPillEffect(player:GetPill(0))
-				local name = Isaac.GetItemConfig():GetPillEffect(pill).Name
-				local check = IT.CheckedPills[name] or player:HasCollectible(CollectibleType.COLLECTIBLE_PHD,false)
-				
-				if check and IT.PillsTabl[name] and CheckModEnable(IT.PillsTabl[name])
-				and IT.PillsTabl[name][lang] then
-					local str = IT.PillsTabl[name][lang][1]
-					if Input.IsActionPressed(ButtonAction.ACTION_MAP, player.ControllerIndex) 
-					and IT.PillsTabl[name][lang][2] then
-						str =  IT.PillsTabl[name][lang][2]
-					end
-					
-					TrslName = str					
-				end
-			end
-			
-			local slot1 = player:GetPill(0) ~= 0 or player:GetCard(0) ~= 0
-			local PocketItem = player:GetActiveItem(ActiveSlot.SLOT_POCKET)
 			local IsActiveItem = false
 
-			if PocketItem and slot1 == false then
-				if IT.CollTabl[PocketItem] and CheckModEnable(IT.CollTabl[PocketItem]) 
-				and IT.CollTabl[PocketItem][lang] then
-					local str = IT.CollTabl[PocketItem][lang][1]
-					if Input.IsActionPressed(ButtonAction.ACTION_MAP, player.ControllerIndex) 
-					and IT.CollTabl[PocketItem][lang][2] then
-						str =  IT.CollTabl[PocketItem][lang][2]
+			if REPENTOGON then
+				local slot1 = player:GetPocketItem(0)
+				local stype = slot1:GetType()
+				
+				if stype == 0 then --pills
+					local pill = game:GetItemPool():GetPillEffect(slot1:GetSlot())
+					local conf = itemConfig:GetPillEffect(pill)
+					if conf then
+						local name = conf.Name
+
+						local check = IT.CheckedPills[name] or player:HasCollectible(CollectibleType.COLLECTIBLE_PHD,false)
+						
+						local pn = IT.PillsTabl[name]
+						if check and pn and CheckModEnable(pn)
+						and pn[lang] then
+							local str = pn[lang][1]
+							if Input.IsActionPressed(ButtonAction.ACTION_MAP, player.ControllerIndex) 
+							and pn[lang][2] then
+								str =  pn[lang][2]
+							end
+							TrslName = str			
+						end
 					end
-					TrslName = str	
-					IsActiveItem = true
+				elseif stype == 1 then --cards
+					local card = slot1:GetSlot()
+					local conf = itemConfig:GetCard(card)
+					if conf then
+						local name = conf.Name
+						local cn = IT.CardTabl[name]
+						if cn and cn[lang] 
+						and CheckModEnable(cn) then
+							local str = cn[lang][1]
+							if Input.IsActionPressed(ButtonAction.ACTION_MAP, player.ControllerIndex) 
+							and cn[lang][2] then
+								str =  cn[lang][2]
+							end
+							TrslName = str
+						end
+					end
+				elseif stype == 2 then --actives
+					local PocketItem = player:GetActiveItem(slot1:GetSlot()-1)
+					local cn = IT.CollTabl[PocketItem]
+					if cn and CheckModEnable(cn) 
+					and cn[lang] then
+						local str = cn[lang][1]
+						if Input.IsActionPressed(ButtonAction.ACTION_MAP, player.ControllerIndex) 
+						and cn[lang][2] then
+							str =  cn[lang][2]
+						end
+						TrslName = str
+					end
+				end
+			else
+				local card = player:GetCard(0)
+				local pill = player:GetPill(0)
+				if card ~= 0 then
+					local conf = itemConfig:GetCard(card)
+					if conf then
+						local name = conf.Name
+						if IT.CardTabl[name] and IT.CardTabl[name][lang] 
+						and CheckModEnable(IT.CardTabl[name]) then
+							local str =  IT.CardTabl[name][lang][1]
+							if Input.IsActionPressed(ButtonAction.ACTION_MAP, player.ControllerIndex) 
+							and IT.CardTabl[name][lang][2] then
+								str =  IT.CardTabl[name][lang][2]
+							end
+							TrslName = str
+						end
+					end
+
+				elseif pill ~= 0 and pill ~= 14 then
+					local pill = game:GetItemPool():GetPillEffect(pill)
+					local name = itemConfig:GetPillEffect(pill).Name
+					local check = IT.CheckedPills[name] or player:HasCollectible(CollectibleType.COLLECTIBLE_PHD,false)
+					
+					if check and IT.PillsTabl[name] and CheckModEnable(IT.PillsTabl[name])
+					and IT.PillsTabl[name][lang] then
+						local str = IT.PillsTabl[name][lang][1]
+						if Input.IsActionPressed(ButtonAction.ACTION_MAP, player.ControllerIndex) 
+						and IT.PillsTabl[name][lang][2] then
+							str =  IT.PillsTabl[name][lang][2]
+						end
+						
+						TrslName = str					
+					end
+				end
+			
+				local slot1 = pill ~= 0 or card ~= 0
+				local PocketItem = player:GetActiveItem(ActiveSlot.SLOT_POCKET)
+				--local IsActiveItem = false
+
+				if PocketItem and slot1 == false then
+					if IT.CollTabl[PocketItem] and CheckModEnable(IT.CollTabl[PocketItem]) 
+					and IT.CollTabl[PocketItem][lang] then
+						local str = IT.CollTabl[PocketItem][lang][1]
+						if Input.IsActionPressed(ButtonAction.ACTION_MAP, player.ControllerIndex) 
+						and IT.CollTabl[PocketItem][lang][2] then
+							str =  IT.CollTabl[PocketItem][lang][2]
+						end
+						TrslName = str	
+						IsActiveItem = true
+					end
 				end
 			end
 
@@ -289,14 +348,17 @@ local ITver = Modver or 1.08
 				if player:GetPlayerType() == PlayerType.PLAYER_ESAU then 
 					id = -1
 				end
-				PocketItemStrings[id] = {Name = TrslName or "", player = player, IsActiveItem = IsActiveItem}
+				PocketItemStrings[id] = {Name = TrslName or "", --player = player,
+					IsActiveItem = IsActiveItem,
+					PType = player:GetPlayerType(), CtrlIdx = player.ControllerIndex, MaxHearts = player:GetMaxHearts(),
+				}
 			end
 		end
 	end
 
 	function ITrsl.UsedPillSave(_,ID, p, flag)
 		if p:GetPill(0) ~= 14 then
-			IT.CheckedPills[Isaac.GetItemConfig():GetPillEffect(ID).Name] = true
+			IT.CheckedPills[itemConfig:GetPillEffect(ID).Name] = true
 		end
 	end
 
@@ -310,32 +372,29 @@ local ITver = Modver or 1.08
 		if game:GetFrameCount() < 10 then
 			PocketItemStrings = {}
 		end
-		if game:GetFrameCount()>10 and hud:IsVisible() and IT.MenuData.pickup_renderTranslate ~= true then
+		if game:GetFrameCount() > 10 and hud:IsVisible() and IT.MenuData.pickup_renderTranslate ~= true then
 			local fontSize, SizeOffset = 0.5, 0
 			if IT.MenuData.FontSize == true then
 				fontSize, SizeOffset = 1, -3
 			end
 			for i, k in pairs(PocketItemStrings) do
-				if k.player and not k.player:Exists() then
-					k.player = nil
-				end
 				local id = i - 1
-				if k.Name and k.player and k.player:ToPlayer() then
+				if k.Name then -- and k.player and k.player:Exists() and k.player:ToPlayer() then
 					local str = k.Name
 					alpha[i] = alpha[i] or 1
-					local pType = k.player:GetPlayerType()
+					local pType = k.PType -- k.player:GetPlayerType()
 
 					if (pType ~= PlayerType.PLAYER_ESAU and pType ~= PlayerType.PLAYER_JACOB) or
 						((pType == PlayerType.PLAYER_ESAU or pType == PlayerType.PLAYER_JACOB) and
-							Input.IsActionPressed(ButtonAction.ACTION_DROP, k.player.ControllerIndex)) then
+							Input.IsActionPressed(ButtonAction.ACTION_DROP, k.CtrlIdx)) then
 						alpha[i] = alpha[i] * 0.8 + 0.2
 					elseif (pType == PlayerType.PLAYER_ESAU or pType == PlayerType.PLAYER_JACOB) then
 						alpha[i] = alpha[i] * 0.8 + 0.1
 					end
 					local ah = alpha[i]
 
-					if i > 1 and PocketItemStrings[1] and PocketItemStrings[1].player
-						and PocketItemStrings[1].player:GetPlayerType() == PlayerType.PLAYER_ESAU then
+					if i > 1 and PocketItemStrings[1] and PocketItemStrings[1].pType
+						and PocketItemStrings[1].pType == PlayerType.PLAYER_ESAU then
 						id = id - 1
 					end
 					if pType == PlayerType.PLAYER_ESAU then
@@ -368,8 +427,8 @@ local ITver = Modver or 1.08
 						elseif id == 1 then
 							local ActiveItemOffset = k.IsActiveItem and Vector(-2, 0) or Vector.Zero
 
-							local heartoffset = k.player:GetMaxHearts() > 18 and
-							10 * math.ceil((k.player:GetMaxHearts() - 18) / 6) or 0
+							local heartoffset = k.MaxHearts > 18 and
+							10 * math.ceil((k.MaxHearts - 18) / 6) or 0
 
 							local Corner = Vector(Isaac.GetScreenWidth(), 0) --Vector(0,0)
 							local Offset = -Vector(Options.HUDOffset * 24.5 + 140.0,
@@ -381,8 +440,8 @@ local ITver = Modver or 1.08
 						elseif id == 2 then
 							local ActiveItemOffset = k.IsActiveItem and Vector(-2.5, 0) or Vector.Zero
 
-							local heartoffset = k.player:GetMaxHearts() > 18 and
-							5 * math.ceil((k.player:GetMaxHearts() - 18) / 6) or 0
+							local heartoffset = k.MaxHearts > 18 and
+							5 * math.ceil((k.MaxHearts - 18) / 6) or 0
 							local Corner = Vector(0, Isaac.GetScreenHeight())
 							local Offset = Vector(Options.HUDOffset * 22 + 28.0,
 								-Options.HUDOffset * 6 - 11)
@@ -393,8 +452,8 @@ local ITver = Modver or 1.08
 						elseif id == 3 then
 							local ActiveItemOffset = k.IsActiveItem and Vector(-2.5, 0) or Vector.Zero
 
-							local heartoffset = k.player:GetMaxHearts() > 18 and
-							10 * math.ceil((k.player:GetMaxHearts() - 18) / 6) or 0
+							local heartoffset = k.MaxHearts > 18 and
+							10 * math.ceil((k.MaxHearts - 18) / 6) or 0
 							local Corner = Vector(Isaac.GetScreenWidth(), Isaac.GetScreenHeight())
 							local Offset = -Vector(Options.HUDOffset * 16 + 149,
 								Options.HUDOffset * 6 + 11)
@@ -429,6 +488,12 @@ local ITver = Modver or 1.08
 		HUDRENDERCALLBACKID = ModCallbacks.MC_HUD_RENDER
 	end
 
+	local function SafeRemoveCallback(mod, callid, func)
+		if func then
+			pcall(mod.RemoveCallback, mod, callid, func)
+		end
+	end
+
 	ITrsl:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, ITrsl.GetTables)
 	ITrsl:AddCallback(ModCallbacks.MC_USE_PILL, ITrsl.UsePillCallbacks)
 	ITrsl:AddCallback(ModCallbacks.MC_POST_UPDATE, ITrsl.CheckHoldingCardPill)
@@ -439,33 +504,33 @@ local ITver = Modver or 1.08
 	ITrsl:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, ITrsl.ExitRunClearData)
 
 	LocalDeleteCallback = function()
-		ITrsl:RemoveCallback(ModCallbacks.MC_POST_GAME_STARTED, ITrsl.GetTables)
-		ITrsl:RemoveCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, ITrsl.PostItemPickup)
-		ITrsl:RemoveCallback(ModCallbacks.MC_PRE_PLAYER_COLLISION, ITrsl.PickupCollCheck)
-		ITrsl:RemoveCallback(ModCallbacks.MC_USE_PILL, ITrsl.UsePillCallbacks)
-		ITrsl:RemoveCallback(HUDRENDERCALLBACKID, ITrsl.CheckHoldingCardPill)
-		ITrsl:RemoveCallback(ModCallbacks.MC_POST_RENDER, ITrsl.RenderPocketItemName)
-		ITrsl:RemoveCallback(ModCallbacks.MC_POST_GAME_STARTED, ITrsl.NewRunClearData)
+		SafeRemoveCallback(ITrsl, ModCallbacks.MC_POST_GAME_STARTED, ITrsl.GetTables)
+		SafeRemoveCallback(ITrsl, ModCallbacks.MC_POST_PEFFECT_UPDATE, ITrsl.PostItemPickup)
+		SafeRemoveCallback(ITrsl, ModCallbacks.MC_PRE_PLAYER_COLLISION, ITrsl.PickupCollCheck)
+		SafeRemoveCallback(ITrsl, ModCallbacks.MC_USE_PILL, ITrsl.UsePillCallbacks)
+		SafeRemoveCallback(ITrsl, HUDRENDERCALLBACKID, ITrsl.CheckHoldingCardPill)
+		SafeRemoveCallback(ITrsl, ModCallbacks.MC_POST_RENDER, ITrsl.RenderPocketItemName)
+		SafeRemoveCallback(ITrsl, ModCallbacks.MC_POST_GAME_STARTED, ITrsl.NewRunClearData)
 		if ITrsl.UpdateDDSMenu then
-			ITrsl:RemoveCallback(ModCallbacks.MC_POST_GAME_STARTED, ITrsl.UpdateDDSMenu)
+			SafeRemoveCallback(ITrsl, ModCallbacks.MC_POST_GAME_STARTED, ITrsl.UpdateDDSMenu)
 		end
-		ITrsl:RemoveCallback(ModCallbacks.MC_PRE_GAME_EXIT, ITrsl.ExitRunClearData)
+		SafeRemoveCallback(ITrsl, ModCallbacks.MC_PRE_GAME_EXIT, ITrsl.ExitRunClearData)
 	end
 
 	local function InitFunctions()
 		ITrsl.GetTables()
 
 		function IT.RemoveTSRLCallback()
-			ITrsl:RemoveCallback(ModCallbacks.MC_POST_GAME_STARTED, ITrsl.GetTables)
-			ITrsl:RemoveCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, ITrsl.PostItemPickup)
-			ITrsl:RemoveCallback(ModCallbacks.MC_PRE_PLAYER_COLLISION, ITrsl.PickupCollCheck)
-			ITrsl:RemoveCallback(ModCallbacks.MC_USE_PILL, ITrsl.UsePillCallbacks)
-			ITrsl:RemoveCallback(ModCallbacks.MC_POST_UPDATE, ITrsl.CheckHoldingCardPill)
-			ITrsl:RemoveCallback(ModCallbacks.MC_POST_RENDER, ITrsl.RenderPocketItemName)
-			ITrsl:RemoveCallback(HUDRENDERCALLBACKID, ITrsl.RenderPocketItemName)
-			ITrsl:RemoveCallback(ModCallbacks.MC_POST_GAME_STARTED, ITrsl.NewRunClearData)
+			SafeRemoveCallback(ITrsl, ModCallbacks.MC_POST_GAME_STARTED, ITrsl.GetTables)
+			SafeRemoveCallback(ITrsl, ModCallbacks.MC_POST_PEFFECT_UPDATE, ITrsl.PostItemPickup)
+			SafeRemoveCallback(ITrsl, ModCallbacks.MC_PRE_PLAYER_COLLISION, ITrsl.PickupCollCheck)
+			SafeRemoveCallback(ITrsl, ModCallbacks.MC_USE_PILL, ITrsl.UsePillCallbacks)
+			SafeRemoveCallback(ITrsl, ModCallbacks.MC_POST_UPDATE, ITrsl.CheckHoldingCardPill)
+			SafeRemoveCallback(ITrsl, ModCallbacks.MC_POST_RENDER, ITrsl.RenderPocketItemName)
+			SafeRemoveCallback(ITrsl, HUDRENDERCALLBACKID, ITrsl.RenderPocketItemName)
+			SafeRemoveCallback(ITrsl, ModCallbacks.MC_POST_GAME_STARTED, ITrsl.NewRunClearData)
 			if ITrsl.UpdateDDSMenu then
-				ITrsl:RemoveCallback(ModCallbacks.MC_POST_GAME_STARTED, ITrsl.UpdateDDSMenu)
+				SafeRemoveCallback(ITrsl, ModCallbacks.MC_POST_GAME_STARTED, ITrsl.UpdateDDSMenu)
 			end
 		end
 
@@ -644,6 +709,23 @@ local ITver = Modver or 1.08
 	end
 	--end
 
+	for i, call in pairs(Isaac.GetCallbacks(ModCallbacks.MC_POST_UPDATE) or {}) do
+		if type(call) == "table" and call.Mod and call.Mod.Name then
+			local name = call.Mod.Name
+			if name ~= ModName 
+			and type(name) == "string" and string.find(tostring(name), "ItemTranslate") then
+				if ItemTranslate and ItemTranslate.Ver <= 1.08 then
+					local oldremove = call.Mod.RemoveCallback
+					call.Mod.RemoveCallback = function(mod, callback, func, ...)
+						if func then
+							return oldremove(mod, callback, func, ...)
+						end
+					end
+				end
+			end
+		end
+	end
+
 	if not IT or (IT.Ver < ITver) then
 		if IT then
 			IT.RemoveTSRLCallback()
@@ -685,7 +767,7 @@ local Trinkets = {
 			ru = {"Имя на русском","Описание на русском"},
 		},
 	}
- 
+	
 
 local Cards = {
 		[CardName] = { 		--description is optional

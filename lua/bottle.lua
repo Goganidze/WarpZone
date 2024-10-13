@@ -288,9 +288,10 @@ return function(mod)
         end
     end
 
-    local save = WarpZone.SaveFile
+    --local save = WarpZone.SaveFile
     ---@param ent EntityPickup
     function WarpZone.PickupReplase(_, ent)
+        local save = WarpZone.SaveFile
         
         if save.IsLoaded and save.PillReplased 
         and (game:GetRoom():GetFrameCount() < 2 or WarpZone.CanBeRestocked == 1) then
@@ -302,6 +303,9 @@ return function(mod)
                     ent:Morph(EntityType.ENTITY_PICKUP, WarpZone.WarpZoneTypes.PICKUP_WATERBOTTLE, 0, true, true, false)
                 end
             end
+            save.PillReplased[seed] = 1
+        elseif game:GetRoom():GetFrameCount() > 2 then
+            local seed = tostring(ent.InitSeed)
             save.PillReplased[seed] = 1
         end
     end
