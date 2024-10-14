@@ -99,7 +99,7 @@ return function(mod)
     end
     WarpZone:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, WarpZone.PolarStarBulletUpdate, WarpZone.WarpZoneTypes.TEAR_POLAR_STAR_BULLET)
 
-    if not REPENTOGON then
+    if REPENTOGON then
         function WarpZone.PolarStarBulletDeath(_, tear)
             if not tear:GetData().WarpZone_IsDead then
                 local ef = Isaac.Spawn(EntityType.ENTITY_EFFECT, PolarStarEXTent, 10,
@@ -117,6 +117,7 @@ return function(mod)
     else
         local TEAR_POLAR_STAR_BULLET = WarpZone.WarpZoneTypes.TEAR_POLAR_STAR_BULLET
         function WarpZone.PolarStarBulletDeath(_, tear)
+            tear = tear:ToTear()
             if tear.Variant == TEAR_POLAR_STAR_BULLET and not tear:GetData().WarpZone_IsDead then
                 local ef = Isaac.Spawn(EntityType.ENTITY_EFFECT, PolarStarEXTent, 10,
                 tear.Position+tear.Velocity+tear.PositionOffset, Vector(0,0), tear)
