@@ -168,7 +168,7 @@ if EID then
     if REPENTOGON then
         EID:addTrinket(Isaac.GetTrinketIdByName("Celest Strawberry"), "Beating the boss without taking damage spawns a strawberry. When picked up, this strawberry will spawn an additional treasure room on the floor", "Celest Strawberry", "en_us")
     else
-        EID:addTrinket(Isaac.GetTrinketIdByName("Celest Strawberry"), "БЕЗ ГОНА", "Celest Strawberry", "en_us")
+        EID:addTrinket(Isaac.GetTrinketIdByName("Celest Strawberry"), "No effect, repentogon needed", "Celest Strawberry", "en_us")
     end
 
 end
