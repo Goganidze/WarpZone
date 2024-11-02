@@ -166,7 +166,7 @@ if EID then
     EID:addCard(Isaac.GetCardIdByName("DemonForm"), "{{Player7}} До конца комнаты превращает игрока в азазеля с широким бримстоуном#{{Damage}} +1 Урон", "Облик Демона", "ru")
 
     if REPENTOGON then
-        EID:addTrinket(Isaac.GetTrinketIdByName("Celest Strawberry"), "С ГОНОМ", "Celest Strawberry", "en_us")
+        EID:addTrinket(Isaac.GetTrinketIdByName("Celest Strawberry"), "Beating the boss without taking damage spawns a strawberry. When picked up, this strawberry will spawn an additional treasure room on the floor", "Celest Strawberry", "en_us")
     else
         EID:addTrinket(Isaac.GetTrinketIdByName("Celest Strawberry"), "БЕЗ ГОНА", "Celest Strawberry", "en_us")
     end
