@@ -4159,7 +4159,6 @@ function WarpZone:updateLaser(laser)
             local params = player:GetTearHitParams(WeaponType.WEAPON_TEARS, 1.5)
 
             local anlge = laser:IsCircleLaser() and laser.Velocity:GetAngleDegrees()-180 or laser.Angle
-            
             WarpZone.ShotArrow(laser.Position, Vector.FromAngle(anlge):Resized(player.ShotSpeed*12), 
                 player, params.TearScale, player.Damage*2, nil, true)
 
@@ -4170,7 +4169,6 @@ function WarpZone:updateLaser(laser)
                 if  laser.FrameCount % 3 == 0 then --laser.FrameCount < 30 and
                     local params = player:GetTearHitParams(WeaponType.WEAPON_TEARS, .7)
                     local miss = laser:GetDropRNG():RandomInt(30)-15
-
                     local anlge = laser:IsCircleLaser() and (laser.Velocity:GetAngleDegrees()-180) or laser.Angle
                     WarpZone.ShotArrow(laser.Position, Vector.FromAngle(anlge+miss):Resized(player.ShotSpeed*12), 
                         player, params.TearScale, player.Damage*.5, true)
@@ -4178,7 +4176,6 @@ function WarpZone:updateLaser(laser)
                 if data.WZ_ShotArrow <= 0 then   --laser.FrameCount % 30 == 0 then
                     local miss = laser:GetDropRNG():RandomInt(30)-15
                     local params = player:GetTearHitParams(WeaponType.WEAPON_TEARS, 1)
-
                     local anlge = laser:IsCircleLaser() and laser.Velocity:GetAngleDegrees()-180 or laser.Angle
                     WarpZone.ShotArrow(laser.Position, Vector.FromAngle(anlge+miss):Resized(player.ShotSpeed*12), 
                         player, params.TearScale, player.Damage*1, nil, true)
