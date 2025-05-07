@@ -2390,6 +2390,12 @@ function WarpZone:LevelStart()
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, WarpZone.LevelStart)
 
+local specialEntityTypesThatForgetAboutFriendlyStatus = {
+}
+if TheFuture then
+    specialEntityTypesThatForgetAboutFriendlyStatus[TheFuture.Monsters.Spookie.ID] = specialEntityTypesThatForgetAboutFriendlyStatus[TheFuture.Monsters.Spookie.ID] or {}
+    specialEntityTypesThatForgetAboutFriendlyStatus[TheFuture.Monsters.Spookie.ID][TheFuture.Monsters.Spookie.Var] = true
+end
 
 function WarpZone:NewRoom()
     local testPlayer = Isaac.GetPlayer(0)
@@ -2508,8 +2514,15 @@ function WarpZone:NewRoom()
             if entity_pos:GetData().InPossession == true then
                 tempnumPossessed = tempnumPossessed + 1
             end
+            local flags = entity_pos:GetEntityFlags()
             if charmed < possessPlayer:GetCollectibleNum(WarpZone.WarpZoneTypes.COLLECTIBLE_POSSESSION) and numPossessed < 15 
-            and entity_pos:IsVulnerableEnemy() and not entity_pos:IsBoss() and not entity_pos:HasEntityFlags(EntityFlag.FLAG_CHARM) then
+            and entity_pos:IsVulnerableEnemy() and not entity_pos:IsBoss() 
+            --and not entity_pos:HasEntityFlags(EntityFlag.FLAG_CHARM) then
+            and flags & EntityFlag.FLAG_CHARM ~= EntityFlag.FLAG_CHARM
+            and flags & EntityFlag.FLAG_NO_TARGET ~= EntityFlag.FLAG_NO_TARGET
+            and entity_pos:CanShutDoors()
+            and not
+                (specialEntityTypesThatForgetAboutFriendlyStatus[entity_pos.Type] and specialEntityTypesThatForgetAboutFriendlyStatus[entity_pos.Type][entity_pos.Variant]) then
                 entity_pos:AddCharmed(EntityRef(possessPlayer), -1)
                 local poof = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.POOF01, 0, entity_pos.Position, Vector(0,0), possessPlayer)
                 poof.Color = Color(1 + 345/255,1,1 + 295/255, 1)
@@ -3635,22 +3648,24 @@ function WarpZone:postPlayerUpdate(player)
         end
     end
 
-    if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES) then
+    --[[if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_JOHNNYS_KNIVES) and player.FrameCount % 5 == 0 then
         local creeps = Isaac.FindByType(EntityType.ENTITY_EFFECT, EffectVariant.PLAYER_CREEP_RED)
         local pastvalue = isNil(data.JohnnyCreepTearBonus, false)
         data.JohnnyCreepTearBonus = false
         --for i, creep in ipairs(creeps) do
+
         for i=1, #creeps do
             local creep = creeps[i]
             if (creep.Position-player.Position):Length() <= (creep.Size)/2 + 10 then
                 data.JohnnyCreepTearBonus = true
-            end
-            if pastvalue ~= data.JohnnyCreepTearBonus then
-                player:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
-                player:EvaluateItems()
+                break
             end
         end
-    end
+        if pastvalue ~= data.JohnnyCreepTearBonus then
+            player:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
+            player:EvaluateItems()
+        end
+    end]]
     if player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_GREED_BUTT) then
         WarpZone.GreedButtEffect(player, data, spr)
     end
@@ -4142,7 +4157,7 @@ function WarpZone:updateLaser(laser)
     if data.WZ_ShotArrow ~= nil and player then
         if data.WZ_ShotArrow == true then
             local params = player:GetTearHitParams(WeaponType.WEAPON_TEARS, 1.5)
-            
+
             local anlge = laser:IsCircleLaser() and laser.Velocity:GetAngleDegrees()-180 or laser.Angle
             WarpZone.ShotArrow(laser.Position, Vector.FromAngle(anlge):Resized(player.ShotSpeed*12), 
                 player, params.TearScale, player.Damage*2, nil, true)
@@ -4154,7 +4169,6 @@ function WarpZone:updateLaser(laser)
                 if  laser.FrameCount % 3 == 0 then --laser.FrameCount < 30 and
                     local params = player:GetTearHitParams(WeaponType.WEAPON_TEARS, .7)
                     local miss = laser:GetDropRNG():RandomInt(30)-15
-					
                     local anlge = laser:IsCircleLaser() and (laser.Velocity:GetAngleDegrees()-180) or laser.Angle
                     WarpZone.ShotArrow(laser.Position, Vector.FromAngle(anlge+miss):Resized(player.ShotSpeed*12), 
                         player, params.TearScale, player.Damage*.5, true)
@@ -4162,7 +4176,6 @@ function WarpZone:updateLaser(laser)
                 if data.WZ_ShotArrow <= 0 then   --laser.FrameCount % 30 == 0 then
                     local miss = laser:GetDropRNG():RandomInt(30)-15
                     local params = player:GetTearHitParams(WeaponType.WEAPON_TEARS, 1)
-                    
                     local anlge = laser:IsCircleLaser() and laser.Velocity:GetAngleDegrees()-180 or laser.Angle
                     WarpZone.ShotArrow(laser.Position, Vector.FromAngle(anlge+miss):Resized(player.ShotSpeed*12), 
                         player, params.TearScale, player.Damage*1, nil, true)

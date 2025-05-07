@@ -145,7 +145,7 @@ return function(mod)
     WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.OnJohnnyTouch, WarpZone.JOHNNYS_KNIVES.ENT.HAPPY)
     WarpZone:AddCallback(ModCallbacks.MC_PRE_FAMILIAR_COLLISION, WarpZone.OnJohnnyTouch, WarpZone.JOHNNYS_KNIVES.ENT.SAD)
 
-    function WarpZone:JohnnyKill(ent)
+    --[[function WarpZone:JohnnyKill(ent)
         local data = ent:GetData()
         if data.WarpZone_KilledJohnny and data.WarpZone_KilledJohnny:Exists() then
             local playerdata = data.WarpZone_KilledJohnny:GetData().WarpZone_unsavedata
@@ -154,8 +154,8 @@ return function(mod)
             data.WarpZone_KilledJohnny:AddCacheFlags(CacheFlag.CACHE_FIREDELAY)
             data.WarpZone_KilledJohnny:EvaluateItems()
         end
-    end
-    WarpZone:AddCallback(ModCallbacks.MC_POST_ENTITY_KILL, WarpZone.JohnnyKill)
+    end]]
+    --WarpZone:AddCallback(ModCallbacks.MC_POST_ENTITY_KILL, WarpZone.JohnnyKill)
 
     WarpZone.DoubleTapCallback[#WarpZone.DoubleTapCallback+1] =
         {function(player, direction)
