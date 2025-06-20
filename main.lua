@@ -1524,7 +1524,7 @@ function WarpZone:postRender(player, offset)
             end
             
             if isAim then
-                if unsave.DTArrowTime > 0 then
+                if unsave.DTArrowTime and unsave.DTArrowTime > 0 then
                     if getAngleDiv(unsave.DTLastAngle, angle) < 45 then
                         for i=1, #WarpZone.DoubleTapCallback do
                             local callback = WarpZone.DoubleTapCallback[i]
@@ -3499,14 +3499,38 @@ function WarpZone:postPlayerUpdate(player)
         spr:LoadGraphics()
     end
 
+    if data.InGravityState and game:GetFrameCount() - data.InGravityState < 150 then
+        if not data.gravReticle or not data.gravReticle:Exists() then
+            data.gravReticle = Isaac.Spawn(1000, 30, 0, player.Position, Vector(0, 0), player)
+            data.gravReticle:GetSprite():ReplaceSpritesheet(0, "gfx/gravity_lander.png")
+            data.gravReticle:GetSprite():LoadGraphics()
+            data.gravReticle.Color = Color(0.392, 0.917, 0.509, .5, 0, 0, 0)
+        end
+    end
+    
     if data.gravReticle then
         ---@type EntityEffect
         local ret = data.gravReticle
         ret.Position = player.Position
-        if ret.FrameCount % 16 < 8 then
-            ret.Color = Color(0.392, 0.917, 0.509, .9, 0, 0, 0)
+        local frame = player.FrameCount
+        if game:GetFrameCount() - data.InGravityState > 125 then
+            if frame % 2 < 1 then
+                ret.Color = Color(0.392 * 0.7, 0.917 * 0.7, 0.509 * 0.7, .9, 0, 0, 0)
+            else
+                ret.Color = Color(0.392, 0.917, 0.509, .9, 0.7, 0.7, 0.7)
+            end
+        elseif game:GetFrameCount() - data.InGravityState > 90 then
+            if frame % 8 < 4 then
+                ret.Color = Color(0.392 * 0.9, 0.917 * 0.9, 0.509 * 0.9, .9, 0, 0, 0)
+            else
+                ret.Color = Color(0.392, 0.917, 0.509, .9, 0.4, 0.4, 0.4)
+            end
         else
-            ret.Color = Color(0.392, 0.917, 0.509, .9, 0.2, 0.2, 0.2)
+            if ret.FrameCount % 16 < 8 then
+                ret.Color = Color(0.392, 0.917, 0.509, .9, 0, 0, 0)
+            else
+                ret.Color = Color(0.392, 0.917, 0.509, .9, 0.2, 0.2, 0.2)
+            end
         end
     end
 
