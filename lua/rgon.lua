@@ -347,6 +347,7 @@ return function(mod)
 
         WarpZone.CELESTROOMS_indexs = {}
 
+        ---@deprecated
         function WarpZone.StrawBearry_Effect(player)
            --ItemOverlay.Show(WarpZone.WarpZoneTypes.GIANTBOOK_TREASURE_ADD, 3, player)
             local level = game:GetLevel()
@@ -491,6 +492,103 @@ return function(mod)
                         local nroom = level:GetRoomByIdx(k)
                         UpdateAllowedDoor(nroom, index)
                     end
+
+                    WarpZone.TreasureRoomAddedNotification = true
+
+                    ItemOverlay.Show(WarpZone.WarpZoneTypes.GIANTBOOK_TREASURE_ADD, 3, player)
+                end
+            end
+        end
+
+        function WarpZone.StrawBearry_Effect2(player)
+            local level = game:GetLevel()
+            local rng = player:GetTrinketRNG(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY)
+
+            local canbePlanetarium = false
+            if PlayerManager.GetTotalTrinketMultiplier(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY) > 1 then
+                local goldenID = WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY + TrinketType.TRINKET_GOLDEN_FLAG
+                for i=0, game:GetNumPlayers() do
+                    local pp = Isaac.GetPlayer(i)
+                    local slot1, slot2 = pp:GetTrinket(0), pp:GetTrinket(1)
+                    if slot1 == goldenID then
+                        --canbePlanetarium = {pp, 0, 0}
+                        canbePlanetarium = {pp, 0}
+                        break
+                    elseif slot2 == goldenID then
+                        --canbePlanetarium = {pp, 0, 1}
+                        canbePlanetarium = {pp, 0}
+                        break
+                    end
+                end
+                if not canbePlanetarium then
+                    for i=0, game:GetNumPlayers() do
+                        local pp = Isaac.GetPlayer(i)
+                        if pp:GetTrinketMultiplier(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY) > 1 then
+                            local trinklist = pp:GetSmeltedTrinkets()[WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY]
+                            if trinklist.trinketAmount > 1 then
+                                --canbePlanetarium = {pp, 0, 1}
+                                canbePlanetarium = {pp, 1}
+                                break
+                            end
+                            if  trinklist.goldenTrinketAmount > 0 then
+                                canbePlanetarium = {pp, 1}
+                                break
+                            end
+                        end
+                    end
+                end
+                
+                if canbePlanetarium then
+                    if canbePlanetarium[2] == 1 then
+                        canbePlanetarium[1]:TryRemoveSmeltedTrinket(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY)
+                        if canbePlanetarium[1]:GetTrinketMultiplier(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY) < 1 then
+                            canbePlanetarium[1]:AddSmeltedTrinket(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY, false)
+                        end
+                    elseif canbePlanetarium[2] == 0 then
+                        canbePlanetarium[1]:TryRemoveTrinket(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY)
+                        if canbePlanetarium[1]:GetTrinketMultiplier(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY) < 1 then
+                            canbePlanetarium[1]:AddTrinket(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY, false)
+                        end
+                    end
+                end
+            end
+
+            local romType = canbePlanetarium and RoomType.ROOM_PLANETARIUM or RoomType.ROOM_TREASURE
+
+            local Rconf = RoomConfigHolder.GetRandomRoom(rng:GetSeed(), true, StbType.SPECIAL_ROOMS, romType, RoomShape.ROOMSHAPE_1x1, -1,-1,nil,nil,15)
+
+            local candidatas = level:FindValidRoomPlacementLocations(Rconf, -1, false, true)
+            local candidatas2 = {}
+            if #candidatas > 0 then
+                for i = 1, #candidatas do
+                    local roomindex = candidatas[i]
+                    local hasdefroom = false
+                    for j, desc in pairs(level:GetNeighboringRooms(roomindex, RoomShape.ROOMSHAPE_1x1, -1)) do
+                        if desc.Data.Type == RoomType.ROOM_DEFAULT then
+                            hasdefroom = true
+                            candidatas2[#candidatas2+1] = roomindex
+                            goto continue
+                        end
+                    end
+                    ::continue::
+                end
+            end
+
+            if #candidatas2 > 0 then
+                local ranInx = candidatas2[rng:RandomInt(#candidatas2)+1]
+
+                local isplaced = level:TryPlaceRoom(Rconf, ranInx, -1, nil, false, true )
+                if isplaced then
+                    local newroom = level:GetRoomByIdx(ranInx)
+                    newroom.DisplayFlags = 7
+                    newroom.AllowedDoors = 0 --alldoor
+                    level:Update()
+                    game:GetHUD():Update()
+                    game:GetHUD():PostUpdate()
+
+                    UpdateAllowedDoorR(newroom, nil, true)
+
+                    WarpZone.CELESTROOMS_indexs[newroom.SafeGridIndex] = true
 
                     WarpZone.TreasureRoomAddedNotification = true
 
@@ -650,7 +748,7 @@ return function(mod)
                                         for i=0, game:GetNumPlayers()-1 do
                                             local player = Isaac.GetPlayer(i)
                                             if player:HasTrinket(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY) or player:GetEffects():HasTrinketEffect(WarpZone.WarpZoneTypes.TRINKET_STRAWBERRY) then
-                                                WarpZone.StrawBearry_Effect(player)
+                                                WarpZone.StrawBearry_Effect2(player)
                                             end
                                         end
                                     end
