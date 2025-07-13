@@ -18,7 +18,6 @@ return function(mod)
 
     ---@param source Entity|EntityPlayer?
     function WarpZone.FirePolarStar(pos, vec, flag, source, dmgmulti, LifeTime)
-        print(pos, vec, LifeTime)
         --local firePosition = pos + vec:Resized(12) --+ Vector(0, 13)
         local tear
         if source then
