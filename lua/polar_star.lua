@@ -18,6 +18,7 @@ return function(mod)
 
     ---@param source Entity|EntityPlayer?
     function WarpZone.FirePolarStar(pos, vec, flag, source, dmgmulti, LifeTime)
+        print(pos, vec, LifeTime)
         --local firePosition = pos + vec:Resized(12) --+ Vector(0, 13)
         local tear
         if source then
@@ -317,6 +318,7 @@ return function(mod)
         fam.PositionOffset = Vector(0,-15)
         fam.DepthOffset = 1
         fam:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+        fam.OrbitSpeed = fam.Player and fam.Player.MaxFireDelay*1.2 or 0
     end
     WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, WarpZone.init_PolarStar_Ent, PolarStarVar)
 

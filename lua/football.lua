@@ -35,7 +35,7 @@ return function(mod)
 		local d = fam:GetData()
 		local spr = fam:GetSprite()
 		local room = game:GetRoom()
-
+		
 		if fam.Target then
 			if not fam.Target:GetData().WarpZone_data.HoldEntity or fam.Target:GetData().WarpZone_data.HoldEntity.Index ~= fam.Index then
 				fam.Target = nil
@@ -58,11 +58,37 @@ return function(mod)
 			if fam.Target:ToPlayer():IsExtraAnimationFinished() then
 				fam.Target:GetData().WarpZone_data.HoldEntity = nil
 			end
+
+			if d.preAlpha then
+					fam.Keys = 0
+					fam.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_GROUND
+
+					local c = fam.Color
+					fam.Color = Color(c.R,c.G,c.B,d.preAlpha)
+					spr.Scale = d.prescale
+
+					d.preAlpha = nil
+					d.CurScale = nil
+					d.prescale = nil
+				end
 		else
 			if fam.State == 0 then
 				fam.State = 1
 			end
 			if fam.State == 1 then
+				if d.preAlpha then
+					fam.Keys = 0
+					fam.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_GROUND
+
+					local c = fam.Color
+					fam.Color = Color(c.R,c.G,c.B,d.preAlpha)
+					spr.Scale = d.prescale
+
+					d.preAlpha = nil
+					d.CurScale = nil
+					d.prescale = nil
+				end
+
 				fam.DepthOffset = 0
 				fam.EntityCollisionClass = EntityCollisionClass.ENTCOLL_ALL
 				fam.GridCollisionClass = EntityGridCollisionClass.GRIDCOLL_GROUND
