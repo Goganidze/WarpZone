@@ -317,6 +317,7 @@ return function(mod)
         fam.PositionOffset = Vector(0,-15)
         fam.DepthOffset = 1
         fam:ClearEntityFlags(EntityFlag.FLAG_APPEAR)
+        fam.OrbitSpeed = fam.Player and fam.Player.MaxFireDelay*1.2 or 0
     end
     WarpZone:AddCallback(ModCallbacks.MC_FAMILIAR_INIT, WarpZone.init_PolarStar_Ent, PolarStarVar)
 
