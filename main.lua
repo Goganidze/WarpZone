@@ -4154,7 +4154,8 @@ function WarpZone:checkLaser(entitylaser)
     if player then
         pdata.LaserRedirect = false
 
-        if not ignoreLaserVar and laser.Variant ~= 10 and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW)
+        if not ignoreLaserVar and laser.Variant ~= 10 
+        and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_BOW_AND_ARROW)
         and pdata.WarpZone_data.numArrows > 0 then
             
 			--pdata.WarpZone_data.numArrows = pdata.WarpZone_data.numArrows - 1
@@ -4178,7 +4179,7 @@ function WarpZone:updateLaser(laser)
         SfxManager:Stop(SoundEffect.SOUND_REDLIGHTNING_ZAP)
         SfxManager:Stop(SoundEffect.SOUND_REDLIGHTNING_ZAP_WEAK)
     end
-    if data.WZ_ShotArrow ~= nil and player then
+    if laser.Visible and data.WZ_ShotArrow ~= nil and player then
         if data.WZ_ShotArrow == true then
             local params = player:GetTearHitParams(WeaponType.WEAPON_TEARS, 1.5)
 
