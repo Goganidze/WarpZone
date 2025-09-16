@@ -1490,12 +1490,27 @@ function WarpZone:postRender(player, offset)
     local unsave = data.WarpZone_unsavedata
     local controllerid = player.ControllerIndex
     if not game:IsPaused() then
-        if player:HasTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS) and Input.IsActionTriggered(ButtonAction.ACTION_DROP, controllerid) then
-            --player:DropTrinket(player.Position)
-            player:TryRemoveTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS)
-            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS, player.Position, Vector(0, 0), nil)
+        --if player:HasTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS) and Input.IsActionTriggered(ButtonAction.ACTION_DROP, controllerid) then
+
+        --[[if Isaac.GetFrameCount() % 2 == 0 and Input.IsActionTriggered(ButtonAction.ACTION_DROP, controllerid) then
+            print(Isaac.GetFrameCount(), Input.IsActionTriggered(ButtonAction.ACTION_DROP, controllerid))
+            local slot1 = player:GetTrinket(0)
+            if slot1 % TrinketType.TRINKET_GOLDEN_FLAG == WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS then
+                player:TryRemoveTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS)
+                Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, slot1, player.Position, Vector(0, 0), nil)
+            else
+                local slot2 = player:GetTrinket(1)
+                if slot2 % TrinketType.TRINKET_GOLDEN_FLAG == WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS then
+                    player:TryRemoveTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS)
+                    Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, slot2, player.Position, Vector(0, 0), nil)
+                end
+            end
+            ----player:DropTrinket(player.Position)
             
-        end
+            --player:TryRemoveTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS)
+            --Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS, player.Position, Vector(0, 0), nil)
+            
+        end]]
         if not data.WarpZone_data then
             data.WarpZone_data = {}
         end
@@ -3869,6 +3884,26 @@ function WarpZone:postPlayerUpdate(player)
     end
     WarpZone.TonyTake_update(player)
     WarpZone.Bottle_PlayerUpdate(player)
+
+    local controllerid = player.ControllerIndex
+    if Input.IsActionTriggered(ButtonAction.ACTION_DROP, controllerid) then
+        local slot1 = player:GetTrinket(0)
+        if slot1 % TrinketType.TRINKET_GOLDEN_FLAG == WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS then
+            player:TryRemoveTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS)
+            Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, slot1, player.Position, Vector(0, 0), nil)
+        else
+            local slot2 = player:GetTrinket(1)
+            if slot2 % TrinketType.TRINKET_GOLDEN_FLAG == WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS then
+                player:TryRemoveTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS)
+                Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, slot2, player.Position, Vector(0, 0), nil)
+            end
+        end
+        ----player:DropTrinket(player.Position)
+        
+        --player:TryRemoveTrinket(WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS)
+        --Isaac.Spawn(EntityType.ENTITY_PICKUP, PickupVariant.PICKUP_TRINKET, WarpZone.WarpZoneTypes.TRINKET_HUNKY_BOYS, player.Position, Vector(0, 0), nil)
+        
+        end
 
     if Isaac.GetFrameCount() % 60 == 0 then
         unsave.MetalItemCount = 0
