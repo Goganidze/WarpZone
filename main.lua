@@ -395,6 +395,7 @@ WarpZone.WarpZoneTypes.SOUND_MURDER_STING = Isaac.GetSoundIdByName("MurderSting"
 WarpZone.WarpZoneTypes.SOUND_MURDER_KILL = Isaac.GetSoundIdByName("MurderKillSnd")
 WarpZone.WarpZoneTypes.SOUND_GUN_SWAP = Isaac.GetSoundIdByName("GunSwap")
 WarpZone.WarpZoneTypes.SOUND_BLANK_USE = Isaac.GetSoundIdByName("WZblankUse")
+WarpZone.WarpZoneTypes.SOUND_VENT_OPEN = Isaac.GetSoundIdByName("WZVentOpen")
 
 
 WarpZone.WarpZoneTypes.COSTUME_DIOGENES_ON = Isaac.GetCostumeIdByPath("gfx/characters/DiogenesPotCostume.anm2")
@@ -3884,6 +3885,89 @@ function WarpZone:postPlayerUpdate(player)
     if unsave.DiogenesFireDelay then
         unsave.DiogenesFireDelay = unsave.DiogenesFireDelay - .5
     end
+
+    if unsave.MurderV2 then
+        --player.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+        ---@type MurderV2data
+        local MurderV2 = unsave.MurderV2
+
+        if MurderV2.State == 0 then
+            --player:PlayExtraAnimation("Trapdoor")
+            player:AnimateTrapdoor()
+            spr.PlaybackSpeed = 1.5
+            MurderV2.State = 1
+        elseif MurderV2.State == 1 then
+            player.ControlsCooldown = math.max(player.ControlsCooldown, 3)
+            player.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+            
+            --if spr:GetAnimation() ~= "Trapdoor" then
+                --player:PlayExtraAnimation("Trapdoor")
+            --else
+                if player:IsExtraAnimationFinished() then
+                    MurderV2.State = 2
+                    player.Visible = false
+                    player.Position = MurderV2.ExitPos
+                    local EnterEnt = MurderV2.Enter and MurderV2.Enter.Ref
+                    if EnterEnt then
+                        EnterEnt:GetSprite():Play("close")
+                    end
+                    local ExitEnt = MurderV2.Exit and MurderV2.Exit.Ref
+                    if ExitEnt then
+                        ExitEnt:GetSprite():Play("open")
+                    end
+                else
+                    local enterPos = MurderV2.TarPos
+                    if enterPos then
+                        player.Velocity = (enterPos - player.Position) * 0.2
+                    end
+                end
+            --end
+        elseif MurderV2.State == 2 then
+            player.ControlsCooldown = math.max(player.ControlsCooldown, 3)
+            player.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+            local ExitEnt = MurderV2.Exit and MurderV2.Exit.Ref
+            if ExitEnt then
+                if ExitEnt:GetSprite():GetFrame() > 8 then
+                    MurderV2.State = 3
+                    player:PlayExtraAnimation("Jump")
+                    spr.PlaybackSpeed = 1.5
+                    --player.Position = ExitEnt.Position
+                    player.Visible = true
+                    spr:SetFrame(3)
+                    player:SetMinDamageCooldown (20)
+                    player.EntityCollisionClass = EntityCollisionClass.ENTCOLL_ALL
+
+                    local list = Isaac.FindInRadius(player.Position, 70, EntityPartition.ENEMY)
+                    local ref = EntityRef(player)
+                    local playerDamage = player.Damage
+                    for i=1, #list do
+                        local e = list[i]
+                        if e:IsActiveEnemy() and not e:IsInvincible() then
+                            local dist = e.Position:Distance(player.Position)
+                            e:TakeDamage(playerDamage + math.max(0, 70-dist) * 0.75 + 10, 0, ref, 0)
+                            e:BloodExplode()
+                            e:AddVelocity( (e.Position - player.Position):Resized(7) )
+                        end
+                    end
+                    if #list > 0 then
+                        Isaac.Spawn(1000, EffectVariant.POOF02, 1, player.Position, Vector.Zero, player).Color = Color(0.6,0.6,0.6,1)
+                    end
+                end
+            end
+        elseif MurderV2.State == 3 then
+            --player.ControlsCooldown = math.max(player.ControlsCooldown, 1)
+            if player:IsExtraAnimationFinished() then
+                spr.PlaybackSpeed = 1
+                player.EntityCollisionClass = EntityCollisionClass.ENTCOLL_ALL
+                player:AddCacheFlags (CacheFlag.CACHE_FLYING)
+                player:EvaluateItems()
+                unsave.MurderV2 = nil
+                MurderV2.State = 4
+            end
+        end
+
+    end
+
 end
 WarpZone:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, WarpZone.postPlayerUpdate, 0)
 
@@ -3897,7 +3981,7 @@ function WarpZone:checkTear(entitytear)
     if player and player:HasCollectible(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON) then
         local chance = player.Luck * 5 + 10
         if data.WarpZone_unsavedata then
-            chance = chance + data.WarpZone_unsavedata.MetalItemCount*5
+            chance = chance + (data.WarpZone_unsavedata.MetalItemCount or 0)*5
         end
         local rng = player:GetCollectibleRNG(WarpZone.WarpZoneTypes.COLLECTIBLE_RUSTY_SPOON)
         if player:HasTrinket(TrinketType.TRINKET_TEARDROP_CHARM) then
@@ -5877,6 +5961,7 @@ function WarpZone:UseDemonForm2(card, player, useflags)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseDemonForm2, WarpZone.WarpZoneTypes.CARD_DEMON_FORM)
 
+--[[
 function WarpZone:UseMurderCard(card, player, useflags)
     player:GetData().MurderFrame = game:GetFrameCount()
     player:GetSprite().Color = Color(1, 0, 0, 1, 0, 0, 0)
@@ -5885,6 +5970,105 @@ function WarpZone:UseMurderCard(card, player, useflags)
     SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_MURDER_STING)
 end
 WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseMurderCard, WarpZone.WarpZoneTypes.CARD_MURDER)
+]]
+
+---@class MurderV2data
+---@field TarPos Vector
+---@field ExitPos Vector
+---@field Enter EntityPtr
+---@field Exit EntityPtr
+---@field State number
+
+
+WarpZone.SuSVents = {
+    level = {},
+    anm2 = "gfx/effects/sus_killer_vent.anm2",
+    spawn = function(pos1, pos2)
+        local vent1 = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.LADDER, 0, pos1, Vector.Zero, nil)
+        local vent2 = Isaac.Spawn(EntityType.ENTITY_EFFECT, EffectVariant.LADDER, 0, pos2, Vector.Zero, nil)
+        local spr1 = vent1:GetSprite()
+        local spr2 = vent2:GetSprite()
+        spr1:Load(WarpZone.SuSVents.anm2, true)
+        spr2:Load(WarpZone.SuSVents.anm2, true)
+        spr1:Play("closed", true)
+        spr2:Play("closed", true)
+        vent1.Parent = vent2
+        vent2.Parent = vent1
+        local vdata1 = vent1:GetData()
+        local vdata2 = vent2:GetData()
+        vdata1.WARPZONE_ISSUSVENT = true
+        vdata2.WARPZONE_ISSUSVENT = true
+    end,
+    update = function(_, eff)
+        local spr = eff:GetSprite()
+        local data = eff:GetData()
+        if data.WARPZONE_ISSUSVENT then
+            local anim = spr:GetAnimation()
+
+            if anim == "closed" then
+                local closestPlayer = game:GetNearestPlayer(eff.Position)
+                if closestPlayer.Position:Distance(eff.Position) < 30 then
+                    local pdata = closestPlayer:GetData()
+                    if not pdata.WarpZone_unsavedata.MurderV2 then
+                        spr:Play("open", true)
+                        SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_VENT_OPEN, 1, 0, false, 1)
+
+                        closestPlayer.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+                        pdata.WarpZone_unsavedata.MurderV2 = {
+                            TarPos = eff.Position,
+                            ExitPos = eff.Parent.Position,
+                            Enter = EntityPtr(eff),
+                            Exit = EntityPtr(eff.Parent),
+                            State = 0,
+                        }
+                    end
+                end
+            elseif anim == "opened" then
+                local closestPlayer = game:GetNearestPlayer(eff.Position)
+                if closestPlayer.Position:Distance(eff.Position) > 50 then
+                    spr:Play("close", true)
+                    SfxManager:Play(WarpZone.WarpZoneTypes.SOUND_VENT_OPEN, 1, 0, false, 0.8)
+                end
+            elseif anim == "close" then
+                if spr:IsFinished() then
+                    spr:Play("closed", true)
+                end
+            elseif anim == "open" then
+                if spr:IsFinished() then
+                    spr:Play("opened", true)
+                end
+            end
+        end
+    end,
+}
+WarpZone:AddCallback(ModCallbacks.MC_POST_EFFECT_UPDATE, WarpZone.SuSVents.update, EffectVariant.LADDER)
+
+function WarpZone:UseMurderV2Card(card, player, useflags)
+    local list = Isaac.FindInRadius(player.Position, 2000, EntityPartition.ENEMY)
+    local min, TargEnemy = 10000000, nil
+    for i = 1, #list do
+        local ent = list[i]
+        if ent:IsActiveEnemy() and ent:IsVulnerableEnemy() then
+            local dist = ent.Position:Distance(player.Position)
+            if dist < min then
+                min = dist
+                TargEnemy = ent
+            end
+        end
+    end
+    if TargEnemy then
+        local data = player:GetData()
+        WarpZone.SuSVents.spawn(player.Position, TargEnemy.Position)
+        --player.EntityCollisionClass = EntityCollisionClass.ENTCOLL_NONE
+        --[[data.MurderV2 = {
+            Target = EntityPtr(TargEnemy),
+            TarPos = TargEnemy.Position,
+
+        }]]
+    end
+    SfxManager:Play(SoundEffect.SOUND_DEATH_CARD)
+end
+WarpZone:AddCallback(ModCallbacks.MC_USE_CARD, WarpZone.UseMurderV2Card, WarpZone.WarpZoneTypes.CARD_MURDER)
 
 
 function WarpZone:UseAmberChunk(card, player, useflags)

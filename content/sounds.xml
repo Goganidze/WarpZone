@@ -20,4 +20,7 @@
     <sound name="WZblankUse">
         <sample weight="1" path="blank.wav" />
     </sound>
+    <sound name="WZVentOpen">
+        <sample weight="1" path="WZ_sus vent open.wav" />
+    </sound>
 </sounds>
