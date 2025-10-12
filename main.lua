@@ -6358,7 +6358,8 @@ local extrafiles = {
     "lua.bottle",
     "lua.eid",
     "lua.wisps",
-    "lua.rgon"
+    "lua.rgon",
+    "lua.modcompat",
 }
 for i=1,#extrafiles do
     local module = include(extrafiles[i])
